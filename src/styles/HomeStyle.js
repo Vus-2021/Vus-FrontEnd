@@ -11,7 +11,7 @@ const HomeStyle = createUseStyles({
     requireLogin: {
         fontStyle: 'normal',
         fontWeight: 'normal',
-        fontSize: '23px',
+        fontSize: '20px',
         lineHeight: '19px',
         /* identical to box height */
 
@@ -29,7 +29,6 @@ const HomeStyle = createUseStyles({
         lineHeight: '15px',
     },
     chooseBus: {
-        height: '38%',
         overflowX: 'auto',
         overflowY: 'hidden',
     },
@@ -70,7 +69,6 @@ const HomeStyle = createUseStyles({
         justifyContent: 'flex-end',
     },
     board: {
-        height: '27%',
         overflow: 'hidden',
         border: '1px solid',
         borderRadius: '15px',
@@ -78,6 +76,10 @@ const HomeStyle = createUseStyles({
     },
     tabBox: {
         overflow: 'auto',
+    },
+    titleBox: {
+        display: 'flex',
+        alignItems: 'center',
     },
     buttonList: {
         display: 'flex',

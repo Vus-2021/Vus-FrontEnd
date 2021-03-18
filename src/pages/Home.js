@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import SignUpDialog from './SignUp';
 import HomeStyle from '../styles/HomeStyle';
 import {
     Box,
@@ -23,7 +24,7 @@ import MangPo from '../images/망포버스.png';
 import SeongNam from '../images/성남버스.png';
 import clsx from 'clsx';
 
-const testData = [
+const busDummyData = [
     {
         name: 'GangNam',
         busNumber: '77사 7082',
@@ -61,40 +62,70 @@ const testData = [
     },
 ];
 
+const boardDummyData = {
+    notice: [
+        {
+            title: '5월 1일부터 엑셀 신청은 받지 않습니다.',
+        },
+        {
+            title: '4월 13일 강남노선 미운영',
+        },
+        {
+            title: '신규 입사자 필독!',
+        },
+    ],
+    board: [
+        {
+            title: '안산노선 버스 정차 상세내용',
+        },
+        {
+            title: '강남노선 버스 정차 상세내용',
+        },
+        {
+            title: '망포노선 버스 정차 상세내용',
+        },
+    ],
+};
 const Home = () => {
     const classes = HomeStyle();
-    const [isLogin] = useState(false);
-    const [busData] = useState(testData);
+    const [isLogin, setLogin] = useState(false);
+    const [busData] = useState(busDummyData);
     const [boardNum, setNumber] = useState(0);
+    const [signUp, setSignUp] = useState(false);
+
+    const handleClose = value => {
+        setSignUp(false);
+        setLogin(value);
+    };
 
     return (
         <div>
             <Header />
             <Box pl={3} pr={3} pt={2} className={classes.mainBox}>
-                <Box className={classes.requireLogin}>
+                <Box height="4%" className={classes.requireLogin}>
                     <Box mr={1}>
                         <AccountCircle fontSize="large" />
                     </Box>
                     {isLogin ? '환영합니다.' : '로그인이 필요합니다.'}
                 </Box>
-                <Box className={classes.getMyData}>
+                <Box mt={1} mb={1} height="3%" className={classes.getMyData}>
                     <Button disabled={!isLogin}>
                         <Box className={classes.buttonFont}>나의 신청현황 보기</Box>
                     </Button>
                 </Box>
-                <Box mt={1} className={classes.chooseBus}>
+                <Box mt={1} height="38%" className={classes.chooseBus}>
                     <BusList busData={busData} />
                 </Box>
                 <Box height="3%" className={classes.moreBoard}>
                     <Button size="large">더보기</Button>
                 </Box>
-                <Box mb={1} className={classes.board}>
+                <Box mb={1} height="27%" className={classes.board}>
                     <Box height="30%">
                         <AppBar position="static">
                             <Tabs
                                 value={boardNum}
                                 onChange={(e, newValue) => setNumber(newValue)}
-                                aria-label="simple tabs example"
+                                aria-label="bus board tabs"
                                 centered
                                 variant="fullWidth"
                             >
@@ -119,22 +150,24 @@ const Home = () => {
                             </Tabs>
                         </AppBar>
                     </Box>
-                    <TabPanel value={boardNum} index={0} />
-                    <TabPanel value={boardNum} index={1} />
+                    <TabPanel content={boardDummyData.notice} value={boardNum} index={0} />
+                    <TabPanel content={boardDummyData.board} value={boardNum} index={1} />
                 </Box>
-                <Box mb={1} className={classes.buttonList}>
+                <Box mb={1} height="20%" className={classes.buttonList}>
                     <Button
                         className={clsx(classes.buttonCommon, classes.loginButton)}
                         variant="contained"
                     >
-                        로그인
+                        {isLogin ? '노선 신청하기' : '로그인'}
                     </Button>
                     <Button
                         className={clsx(classes.buttonCommon, classes.signUpButton)}
                         variant="contained"
+                        onClick={() => setSignUp(true)}
                     >
-                        회원가입
+                        {isLogin ? '로그아웃' : '회원가입'}
                     </Button>
+                    <SignUpDialog open={signUp} onClose={handleClose} />
                 </Box>
             </Box>
         </div>
@@ -143,15 +176,18 @@ const Home = () => {
 
 const TabPanel = props => {
     const classes = HomeStyle();
-    const { value, index } = props;
+    const { content, value, index } = props;
 
+    const boardList = content.map((data, index) => (
+        <Box key={index} pl={2} height="33%" className={classes.titleBox}>
+            <Typography>{data.title}</Typography>
+        </Box>
+    ));
     return (
         <React.Fragment>
             {value === index && (
-                <Box height="70%" className={classes.tabBox} p={1}>
-                    <Box height="33%">test!!</Box>
-                    <Box height="33%">test!!</Box>
-                    <Box height="33%">test!!</Box>
+                <Box height="70%" className={classes.tabBox}>
+                    {boardList}
                 </Box>
             )}
         </React.Fragment>
