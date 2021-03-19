@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SignUpStyle from '../styles/SignUpStyle';
 import {
     Dialog,
@@ -9,48 +9,165 @@ import {
     Button,
     IconButton,
     InputAdornment,
+    Snackbar,
+    MenuItem,
 } from '@material-ui/core';
+import { Alert } from '@material-ui/lab';
 import { DatePicker } from '@material-ui/pickers';
 import { Backspace, Visibility, VisibilityOff } from '@material-ui/icons';
 import { useForm, Controller } from 'react-hook-form';
+import { CHECK_USERID } from '../gql/signup/query';
+import { SIGNUP_USER } from '../gql/signup/mutation';
+import { useLazyQuery, useMutation } from '@apollo/react-hooks';
+import * as dayjs from 'dayjs';
+
+const companyType = [
+    {
+        name: '바텍',
+        initial: 'VT',
+    },
+    {
+        name: '바텍이우홀딩스',
+        initial: 'VH',
+    },
+    {
+        name: '이우소프트',
+        initial: 'ES',
+    },
+    {
+        name: '레이언스',
+        initial: 'RY',
+    },
+    {
+        name: '우리엔',
+        initial: 'WR',
+    },
+    {
+        name: '바텍엠시스',
+        initial: 'VM',
+    },
+    {
+        name: '바텍이엔지',
+        initial: 'VE',
+    },
+    {
+        name: '바텍에스앤씨',
+        initial: 'VS',
+    },
+    {
+        name: '관리자',
+        initial: 'ADMIN',
+    },
+    {
+        name: '버스기사',
+        initial: 'DRIVER',
+    },
+];
 
 const SignUp = props => {
     const { open, onClose } = props;
     const classes = SignUpStyle();
     const [isLogin] = useState(false);
-    const [showPwd, setShowPwd] = useState(false);
-    const [date, setDate] = useState(new Date());
-    const [state, setState] = useState({
-        userId: '',
-        password: '',
-        name: '',
-        phoneNumber: '',
-        type: '',
-        registerDate: '',
-    });
-    const { errors, handleSubmit, control, getValues } = useForm();
+    const [exist, setExist] = useState(false); // 아이디 중복 여부
+    const [confirmId, setConfirmId] = useState(false); //중복확인 버튼 클릭 여부
+    const [showPwd, setShowPwd] = useState(false); //비밀번호 입력 가시화
+    const [openSnackbar, setSnackbar] = useState(false); //등록완료 후 사용자에게 alert
+    const [typeSelect, setTypeSelect] = useState('VT');
+    const [date, setDate] = useState(dayjs(new Date()).format('YYYY-MM-DD'));
 
+    const { errors, handleSubmit, control, getValues, watch, setError, clearErrors } = useForm();
+
+    const [checkUser, { data }] = useLazyQuery(CHECK_USERID);
+    const [signupUser] = useMutation(SIGNUP_USER);
+
+    //Dialog창 닫기
     const handleClose = () => {
         onClose(isLogin);
+        setConfirmId(false);
+        setExist(false);
+        setSnackbar(false);
     };
 
+    //비밀번호 가시화
     const handleClickShowPassword = () => {
         setShowPwd(!showPwd);
     };
 
-    const setIdentity = data => {
-        console.log(data.phoneNumber);
-        setState({
-            ...state,
-            userId: data.userId,
-            password: data.password,
-            name: data.name,
-            phoneNumber: data.phoneNumber,
-            type: data.type,
-            registerDate: data.registerDate,
-        });
+    //중복확인 여부 검사
+    const existAlready = value => {
+        if (value === '') {
+            setError('userId', {
+                type: 'required',
+            });
+        } else checkUser({ variables: { userId: value } });
     };
-    console.log(state);
+
+    useEffect(() => {
+        if (data) {
+            const { success } = data.checkUserId;
+            if (success) {
+                setConfirmId(true);
+                clearErrors('userId');
+            } else {
+                setError('userId', {
+                    type: 'exist',
+                });
+            }
+            setExist(!success);
+            console.log(success);
+        }
+
+        return () => setExist(false);
+    }, [data, clearErrors, setError]);
+
+    //회원가입 완료하여 유저 등록
+    const registerUser = data => {
+        signupUser({
+            variables: {
+                input: {
+                    userId: data.userId,
+                    password: data.password,
+                    name: data.name,
+                    phoneNumber: data.phoneNumber,
+                    type: data.type,
+                    registerDate: date,
+                },
+            },
+        });
+        setSnackbar(true);
+    };
+
+    //등록 과정에서 오류 catch
+    const catchError = errors => {
+        if (errors.userId) setConfirmId(false);
+    };
+
+    //userId의 helpertext값 dynamic하게 변경
+    const UserIdHelperText = props => {
+        const { errors } = props;
+
+        if (errors) {
+            const { type } = errors;
+            if (type === 'required') return '아이디를 입력해주세요.';
+            if (type === 'exist') return '중복된 아이디입니다.';
+            if (type === 'confirmId') return '중복확인을 먼저 눌러주세요.';
+        }
+        // if (exist) return '중복된 아이디입니다.';
+
+        return '';
+    };
+
+    const PhoneNumberHelperText = props => {
+        const { errors } = props;
+        if (errors) {
+            const { type } = errors;
+            if (type === 'required') return '휴대폰 번호를 입력해주세요.';
+            if (type === 'maxLength' || type === 'minLength') return '11자리를 입력해주세요.';
+            if (type === 'isNumber') return '숫자만 입력해주세요.';
+        }
+        return '';
+    };
+
     return (
         <Dialog fullScreen onClose={handleClose} open={open} TransitionComponent={Transition}>
             <Box height="6%" className={classes.headerBox}>
@@ -66,8 +183,8 @@ const SignUp = props => {
                 <Box width="33%"></Box>
             </Box>
             <Box pl={3} pr={3} pt={2} height="94%">
-                <form onSubmit={handleSubmit(data => setIdentity(data))}>
-                    <Box mt={3} mb={1} style={{ display: 'flex' }}>
+                <form onSubmit={handleSubmit(registerUser, catchError)}>
+                    <Box mt={3} mb={1} className="userId" style={{ display: 'flex' }}>
                         <Box height="100%" width="70%" mr={2}>
                             <Controller
                                 as={TextField}
@@ -78,18 +195,37 @@ const SignUp = props => {
                                 fullWidth
                                 variant="outlined"
                                 size="small"
-                                rules={{ required: true }}
+                                rules={{
+                                    required: '아이디를 입력해주세요.',
+                                    validate: {
+                                        exist: () => exist === false,
+                                        confirmId: () => confirmId === true,
+                                    },
+                                }}
+                                disabled={confirmId}
                                 error={errors.userId ? true : false}
-                                helperText={errors.userId ? '아이디를 입력해주세요.' : ' '}
+                                helperText={
+                                    errors.userId ? (
+                                        <UserIdHelperText errors={errors.userId} />
+                                    ) : (
+                                        ' '
+                                    )
+                                }
                             />
                         </Box>
                         <Box height="100%" width="25%">
-                            <Button fullWidth variant="outlined" type="submit">
-                                중복확인
+                            <Button
+                                className={classes.checkIdButton}
+                                fullWidth
+                                variant="outlined"
+                                onClick={() => existAlready(getValues('userId'))}
+                                disabled={confirmId}
+                            >
+                                {confirmId ? '검사완료' : '중복확인'}
                             </Button>
                         </Box>
                     </Box>
-                    <Box mb={1}>
+                    <Box mb={1} className="password">
                         <Controller
                             as={TextField}
                             name="password"
@@ -103,7 +239,6 @@ const SignUp = props => {
                             rules={{ required: true }}
                             error={errors.password ? true : false}
                             helperText={errors.password ? '비밀번호를 입력해주세요.' : ' '}
-                            onChange={e => setState({ ...state, password: e.target.value })}
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="end">
@@ -118,7 +253,7 @@ const SignUp = props => {
                             }}
                         />
                     </Box>
-                    <Box mb={1}>
+                    <Box mb={1} className="passwordConfirm">
                         <Controller
                             as={TextField}
                             name="confirmPassword"
@@ -131,7 +266,7 @@ const SignUp = props => {
                             type={showPwd ? 'text' : 'password'}
                             rules={{
                                 required: true,
-                                validate: value => value === getValues('password'),
+                                validate: value => value === watch('password'),
                             }}
                             error={errors.confirmPassword ? true : false}
                             InputProps={{
@@ -151,7 +286,7 @@ const SignUp = props => {
                             }
                         />
                     </Box>
-                    <Box mb={1}>
+                    <Box mb={1} className="name">
                         <Controller
                             as={TextField}
                             name="name"
@@ -166,49 +301,73 @@ const SignUp = props => {
                             helperText={errors.name ? '이름을 입력해주세요.' : ' '}
                         />
                     </Box>
-                    <Box mb={1}>
+                    <Box mb={1} className="phoneNumber">
                         <Controller
                             as={TextField}
                             name="phoneNumber"
                             control={control}
                             defaultValue=""
                             label="휴대폰 번호"
-                            placeholder="숫자만 입력해주세요."
                             fullWidth
                             variant="outlined"
                             size="small"
-                            rules={{ required: true }}
+                            rules={{
+                                required: true,
+                                minLength: 11,
+                                maxLength: 11,
+                                validate: {
+                                    isNumber: value => !isNaN(value),
+                                },
+                            }}
                             error={errors.phoneNumber ? true : false}
-                            helperText={errors.phoneNumber ? '휴대폰 번호를 입력해주세요.' : ' '}
+                            helperText={
+                                errors.phoneNumber ? (
+                                    <PhoneNumberHelperText errors={errors.phoneNumber} />
+                                ) : (
+                                    ' '
+                                )
+                            }
                         />
                     </Box>
-                    <Box mb={1}>
+                    <Box mb={1} className="type">
                         <Controller
-                            as={TextField}
+                            as={
+                                <TextField
+                                    select
+                                    value={typeSelect}
+                                    onChange={e => setTypeSelect(e.target.value)}
+                                    variant="outlined"
+                                    label="소속"
+                                    fullWidth
+                                    size="small"
+                                    helperText={errors.type ? '소속을 입력해주세요.' : ' '}
+                                >
+                                    {companyType.map(data => (
+                                        <MenuItem key={data.name} value={data.initial}>
+                                            {data.name}({data.initial})
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                            }
                             name="type"
                             control={control}
-                            defaultValue=""
-                            label="소속"
-                            fullWidth
-                            variant="outlined"
-                            size="small"
+                            defaultValue="VT"
                             rules={{ required: true }}
                             error={errors.type ? true : false}
-                            helperText={errors.type ? '소속을 입력해주세요.' : ' '}
                         />
                     </Box>
-                    <Box mb={1}>
+                    <Box mb={1} className="registerDate">
                         <Controller
                             name="registerDate"
                             control={control}
-                            defaultValue={new Date()}
+                            defaultValue={date}
                             render={() => (
                                 <DatePicker
                                     autoOk
                                     openTo="year"
                                     format="YYYY-MM-DD"
                                     value={date}
-                                    onChange={date => setDate(date)}
+                                    onChange={date => setDate(dayjs(date).format('YYYY-MM-DD'))}
                                     label="입사일"
                                     inputVariant="outlined"
                                     size="small"
@@ -231,10 +390,14 @@ const SignUp = props => {
                     </Box>
                 </form>
             </Box>
+            <Snackbar open={openSnackbar} autoHideDuration={1500} onClose={handleClose}>
+                <Alert severity="success">회원가입 요청이 완료되었습니다.</Alert>
+            </Snackbar>
         </Dialog>
     );
 };
 
+//Dialog창이 아래서 올라오게 함.
 const Transition = React.forwardRef((props, ref) => {
     return <Slide direction="up" ref={ref} {...props} timeout={600} />;
 });

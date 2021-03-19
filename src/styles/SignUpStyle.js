@@ -18,6 +18,11 @@ const SignUpStyle = createUseStyles({
         display: 'flex',
         flexFlow: 'column',
     },
+    checkIdButton: {
+        '&.MuiButton-outlined': {
+            padding: '7px 5px',
+        },
+    },
     registerBox: {},
     registerButton: {
         '&.MuiButton-root': {

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import SignUpDialog from './SignUp';
+import LogInDialog from './LogIn';
 import HomeStyle from '../styles/HomeStyle';
 import {
     Box,
@@ -88,14 +89,20 @@ const boardDummyData = {
 };
 const Home = () => {
     const classes = HomeStyle();
-    const [isLogin, setLogin] = useState(false);
+    const [isLogin, setIsLogin] = useState(false);
     const [busData] = useState(busDummyData);
     const [boardNum, setNumber] = useState(0);
     const [signUp, setSignUp] = useState(false);
+    const [logIn, setLogIn] = useState(false);
 
-    const handleClose = value => {
+    const handleSignUpClose = value => {
         setSignUp(false);
-        setLogin(value);
+        setIsLogin(value);
+    };
+
+    const handleLogInClose = value => {
+        setLogIn(false);
+        setIsLogin(value);
     };
 
     return (
@@ -157,6 +164,7 @@ const Home = () => {
                     <Button
                         className={clsx(classes.buttonCommon, classes.loginButton)}
                         variant="contained"
+                        onClick={() => setLogIn(true)}
                     >
                         {isLogin ? '노선 신청하기' : '로그인'}
                     </Button>
@@ -167,7 +175,8 @@ const Home = () => {
                     >
                         {isLogin ? '로그아웃' : '회원가입'}
                     </Button>
-                    <SignUpDialog open={signUp} onClose={handleClose} />
+                    <SignUpDialog open={signUp} onClose={handleSignUpClose} />
+                    <LogInDialog open={logIn} onClose={handleLogInClose} />
                 </Box>
             </Box>
         </div>
