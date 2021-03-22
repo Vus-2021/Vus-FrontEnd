@@ -4,7 +4,6 @@ import {
     Dialog,
     Slide,
     Box,
-    Typography,
     TextField,
     Button,
     IconButton,
@@ -14,12 +13,13 @@ import {
 } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
 import { DatePicker } from '@material-ui/pickers';
-import { Backspace, Visibility, VisibilityOff } from '@material-ui/icons';
+import { Visibility, VisibilityOff } from '@material-ui/icons';
 import { useForm, Controller } from 'react-hook-form';
 import { CHECK_USERID } from '../gql/signup/query';
 import { SIGNUP_USER } from '../gql/signup/mutation';
 import { useLazyQuery, useMutation } from '@apollo/react-hooks';
 import * as dayjs from 'dayjs';
+import Header2 from '../layout/Header2';
 
 const companyType = [
     {
@@ -67,23 +67,22 @@ const companyType = [
 const SignUp = props => {
     const { open, onClose } = props;
     const classes = SignUpStyle();
-    const [isLogin] = useState(false);
     const [exist, setExist] = useState(false); // 아이디 중복 여부
-    const [confirmId, setConfirmId] = useState(false); //중복확인 버튼 클릭 여부
     const [showPwd, setShowPwd] = useState(false); //비밀번호 입력 가시화
     const [openSnackbar, setSnackbar] = useState(false); //등록완료 후 사용자에게 alert
     const [typeSelect, setTypeSelect] = useState('VT');
     const [date, setDate] = useState(dayjs(new Date()).format('YYYY-MM-DD'));
 
+    const [tmpUserId, setTmpUserId] = useState('');
+
     const { errors, handleSubmit, control, getValues, watch, setError, clearErrors } = useForm();
 
-    const [checkUser, { data }] = useLazyQuery(CHECK_USERID);
+    const [checkUser, { data }] = useLazyQuery(CHECK_USERID, { fetchPolicy: 'no-cache' });
     const [signupUser] = useMutation(SIGNUP_USER);
 
     //Dialog창 닫기
     const handleClose = () => {
-        onClose(isLogin);
-        setConfirmId(false);
+        onClose(false);
         setExist(false);
         setSnackbar(false);
     };
@@ -99,14 +98,17 @@ const SignUp = props => {
             setError('userId', {
                 type: 'required',
             });
-        } else checkUser({ variables: { userId: value } });
+        } else {
+            checkUser({ variables: { userId: value } });
+            // updateQuery({ variables: { userId: value } });
+            setTmpUserId(value);
+        }
     };
 
     useEffect(() => {
-        if (data) {
+        if (data && open) {
             const { success } = data.checkUserId;
             if (success) {
-                setConfirmId(true);
                 clearErrors('userId');
             } else {
                 setError('userId', {
@@ -118,7 +120,7 @@ const SignUp = props => {
         }
 
         return () => setExist(false);
-    }, [data, clearErrors, setError]);
+    }, [data, open, clearErrors, setError]);
 
     //회원가입 완료하여 유저 등록
     const registerUser = data => {
@@ -135,11 +137,6 @@ const SignUp = props => {
             },
         });
         setSnackbar(true);
-    };
-
-    //등록 과정에서 오류 catch
-    const catchError = errors => {
-        if (errors.userId) setConfirmId(false);
     };
 
     //userId의 helpertext값 dynamic하게 변경
@@ -167,23 +164,11 @@ const SignUp = props => {
         }
         return '';
     };
-
     return (
         <Dialog fullScreen onClose={handleClose} open={open} TransitionComponent={Transition}>
-            <Box height="6%" className={classes.headerBox}>
-                <Box width="33%">
-                    &nbsp;&nbsp;
-                    <Backspace onClick={handleClose} />
-                </Box>
-                <Box width="33%">
-                    <Typography align="center" className={classes.headerTitle}>
-                        회원가입
-                    </Typography>
-                </Box>
-                <Box width="33%"></Box>
-            </Box>
+            <Header2 handleClose={handleClose} headerText="회원가입" />
             <Box pl={3} pr={3} pt={2} height="94%">
-                <form onSubmit={handleSubmit(registerUser, catchError)}>
+                <form onSubmit={handleSubmit(registerUser)}>
                     <Box mt={3} mb={1} className="userId" style={{ display: 'flex' }}>
                         <Box height="100%" width="70%" mr={2}>
                             <Controller
@@ -199,16 +184,17 @@ const SignUp = props => {
                                     required: '아이디를 입력해주세요.',
                                     validate: {
                                         exist: () => exist === false,
-                                        confirmId: () => confirmId === true,
+                                        confirmId: value => value === tmpUserId,
                                     },
                                 }}
-                                disabled={confirmId}
                                 error={errors.userId ? true : false}
                                 helperText={
                                     errors.userId ? (
                                         <UserIdHelperText errors={errors.userId} />
-                                    ) : (
+                                    ) : getValues('userId') == null ? (
                                         ' '
+                                    ) : (
+                                        '사용가능한 아이디입니다.'
                                     )
                                 }
                             />
@@ -219,9 +205,9 @@ const SignUp = props => {
                                 fullWidth
                                 variant="outlined"
                                 onClick={() => existAlready(getValues('userId'))}
-                                disabled={confirmId}
+                                color="secondary"
                             >
-                                {confirmId ? '검사완료' : '중복확인'}
+                                중복확인
                             </Button>
                         </Box>
                     </Box>

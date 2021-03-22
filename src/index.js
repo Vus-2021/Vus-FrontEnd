@@ -8,13 +8,26 @@ import { ApolloProvider } from 'react-apollo';
 import { ApolloClient } from 'apollo-client';
 import { createHttpLink } from 'apollo-link-http';
 import { InMemoryCache } from 'apollo-cache-inmemory';
+import { ApolloLink, concat } from 'apollo-boost';
 
 const httpLink = createHttpLink({
-    uri: 'http://172.31.99.48:4000',
+    uri: 'http://172.26.50.46:4000',
+});
+
+const authMiddleware = new ApolloLink((operation, forward) => {
+    if (localStorage.getItem('accessToken')) {
+        operation.setContext({
+            headers: {
+                authorization: localStorage.getItem('accessToken'),
+            },
+        });
+    }
+
+    return forward(operation);
 });
 
 const client = new ApolloClient({
-    link: httpLink,
+    link: concat(authMiddleware, httpLink),
     cache: new InMemoryCache(),
 });
 

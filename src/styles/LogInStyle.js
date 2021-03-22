@@ -1,15 +1,6 @@
 import { createUseStyles } from 'react-jss';
 
-const SignUpStyle = createUseStyles({
-    idBox: {
-        display: 'flex',
-        flexFlow: 'column',
-    },
-    checkIdButton: {
-        '&.MuiButton-outlined': {
-            padding: '7px 5px',
-        },
-    },
+const LogInStyle = createUseStyles({
     registerButton: {
         '&.MuiButton-root': {
             borderRadius: 50,
@@ -26,4 +17,4 @@ const SignUpStyle = createUseStyles({
     },
 });
 
-export default SignUpStyle;
+export default LogInStyle;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SignUpDialog from './SignUp';
 import LogInDialog from './LogIn';
 import HomeStyle from '../styles/HomeStyle';
@@ -24,42 +24,25 @@ import AnSan from '../images/안산버스.png';
 import MangPo from '../images/망포버스.png';
 import SeongNam from '../images/성남버스.png';
 import clsx from 'clsx';
+import { GET_MY_INFO, GET_ROUTE_INFO } from '../gql/home/query';
+import { useLazyQuery, useQuery } from '@apollo/react-hooks';
+import * as dayjs from 'dayjs';
 
-const busDummyData = [
+const busImages = [
     {
-        name: 'GangNam',
-        busNumber: '77사 7082',
         image: GangNam,
-        applicant: 30,
-        limit: 45,
     },
     {
-        name: 'ByeongJeom',
-        busNumber: '74자 8614',
         image: ByeongJeom,
-        applicant: 18,
-        limit: 20,
     },
     {
-        name: 'AnSan',
-        busNumber: '76아 8440',
         image: AnSan,
-        applicant: 39,
-        limit: 45,
     },
     {
-        name: 'MangPo',
-        busNumber: '74자 8614',
         image: MangPo,
-        applicant: 12,
-        limit: 20,
     },
     {
-        name: 'SeongNam',
-        busNumber: '78아 5990',
         image: SeongNam,
-        applicant: 11,
-        limit: 20,
     },
 ];
 
@@ -87,33 +70,84 @@ const boardDummyData = {
         },
     ],
 };
+
 const Home = () => {
     const classes = HomeStyle();
-    const [isLogin, setIsLogin] = useState(false);
-    const [busData] = useState(busDummyData);
+    const [isLogin, setIsLogin] = useState(false); //로그인 상태 여부
     const [boardNum, setNumber] = useState(0);
-    const [signUp, setSignUp] = useState(false);
-    const [logIn, setLogIn] = useState(false);
+    const [signUpDialog, setSignUpDialog] = useState(false); //회원가입 Dialog open 여부
+    const [LoginDialog, setLoginDialog] = useState(false); //로그인 Dialog open 여부
+    const [userData, setUserData] = useState({
+        //user의 정보를 담음.
+        name: '',
+        userId: '',
+        type: '',
+    });
+    const [routeInfo, setRouteInfo] = useState([]);
+
+    const [getMyInfo, { data: myData }] = useLazyQuery(GET_MY_INFO, { fetchPolicy: 'no-cache' });
+    const { data: busData } = useQuery(GET_ROUTE_INFO, {
+        variables: { month: dayjs(new Date()).format('YYYY-MM') },
+    });
 
     const handleSignUpClose = value => {
-        setSignUp(false);
-        setIsLogin(value);
+        setSignUpDialog(false);
     };
 
     const handleLogInClose = value => {
-        setLogIn(false);
-        setIsLogin(value);
+        setLoginDialog(false);
+        getMyInfo();
     };
+
+    const secondButtonClick = () => {
+        if (isLogin) {
+            localStorage.clear();
+            setIsLogin(false);
+            window.location.reload();
+        } else setSignUpDialog(true);
+    };
+
+    // 로그인 성공 후 유저의 데이터를 불러옴
+    useEffect(() => {
+        if (myData) {
+            if (myData.getMyInformation.success) {
+                const { name, userId, type } = myData.getMyInformation.data;
+                setIsLogin(true);
+                setUserData({
+                    name: name,
+                    userId: userId,
+                    type: type,
+                });
+            }
+        }
+
+        return () =>
+            setUserData({
+                name: '',
+                userId: '',
+                type: '',
+            });
+    }, [myData]);
+
+    //버스 데이터를 불러옴
+    useEffect(() => {
+        if (busData) {
+            const { success, data } = busData.getRoutesInfo;
+            if (success) {
+                setRouteInfo(data);
+            }
+        }
+    }, [busData]);
 
     return (
         <div>
             <Header />
-            <Box pl={3} pr={3} pt={2} className={classes.mainBox}>
+            <Box pl={3} pr={3} pt={2} pb={2} className={classes.mainBox}>
                 <Box height="4%" className={classes.requireLogin}>
                     <Box mr={1}>
                         <AccountCircle fontSize="large" />
                     </Box>
-                    {isLogin ? '환영합니다.' : '로그인이 필요합니다.'}
+                    {isLogin ? `환영합니다. ${userData.name} 님` : '로그인이 필요합니다.'}
                 </Box>
                 <Box mt={1} mb={1} height="3%" className={classes.getMyData}>
                     <Button disabled={!isLogin}>
@@ -121,14 +155,14 @@ const Home = () => {
                     </Button>
                 </Box>
                 <Box mt={1} height="38%" className={classes.chooseBus}>
-                    <BusList busData={busData} />
+                    <BusList routeInfo={routeInfo} />
                 </Box>
                 <Box height="3%" className={classes.moreBoard}>
                     <Button size="large">더보기</Button>
                 </Box>
                 <Box mb={1} height="27%" className={classes.board}>
-                    <Box height="30%">
-                        <AppBar position="static">
+                    <Box>
+                        <AppBar height="30%" position="static">
                             <Tabs
                                 value={boardNum}
                                 onChange={(e, newValue) => setNumber(newValue)}
@@ -164,19 +198,19 @@ const Home = () => {
                     <Button
                         className={clsx(classes.buttonCommon, classes.loginButton)}
                         variant="contained"
-                        onClick={() => setLogIn(true)}
+                        onClick={() => setLoginDialog(true)}
                     >
                         {isLogin ? '노선 신청하기' : '로그인'}
                     </Button>
                     <Button
                         className={clsx(classes.buttonCommon, classes.signUpButton)}
                         variant="contained"
-                        onClick={() => setSignUp(true)}
+                        onClick={secondButtonClick}
                     >
                         {isLogin ? '로그아웃' : '회원가입'}
                     </Button>
-                    <SignUpDialog open={signUp} onClose={handleSignUpClose} />
-                    <LogInDialog open={logIn} onClose={handleLogInClose} />
+                    <LogInDialog open={LoginDialog} onClose={handleLogInClose} />
+                    <SignUpDialog open={signUpDialog} onClose={handleSignUpClose} />
                 </Box>
             </Box>
         </div>
@@ -205,18 +239,18 @@ const TabPanel = props => {
 
 const BusList = props => {
     const classes = HomeStyle();
-    const { busData } = props;
-    const busList = busData.map(data => (
-        <GridListTile key={data.name}>
+    const { routeInfo } = props;
+    const busList = routeInfo.map((data, index) => (
+        <GridListTile key={data.route}>
             <Card elevation={5} className={classes.busCard}>
                 <CardActionArea className={classes.cardAction}>
-                    <CardMedia component="img" src={data.image} title="BusImage" />
+                    <CardMedia component="img" src={busImages[index].image} title="BusImage" />
                     <CardContent>
                         <Typography className={classes.busInfo} align="center">
                             {data.busNumber}
                         </Typography>
                         <Typography align="center">
-                            신청자: {data.applicant} / {data.limit}
+                            신청자: {data.registerCount} / {data.limitCount}
                         </Typography>
                     </CardContent>
                 </CardActionArea>
