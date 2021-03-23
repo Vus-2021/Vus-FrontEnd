@@ -5,7 +5,7 @@ import { createUseStyles } from 'react-jss';
 
 const Header2 = props => {
     const { handleClose, headerText, height } = props;
-    const headerHeight = height ? height : '6%';
+    const headerHeight = height ? height : '5%';
     const classes = useStyles();
     return (
         <Box height={headerHeight} className={classes.headerBox}>

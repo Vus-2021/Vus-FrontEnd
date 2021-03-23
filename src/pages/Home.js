@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import SignUpDialog from './SignUp';
-import LogInDialog from './LogIn';
+import { SignUpDialog, LogInDialog, RegisterBusDialog } from './index';
 import HomeStyle from '../styles/HomeStyle';
 import {
     Box,
@@ -27,21 +26,27 @@ import clsx from 'clsx';
 import { GET_MY_INFO, GET_ROUTE_INFO } from '../gql/home/query';
 import { useLazyQuery, useQuery } from '@apollo/react-hooks';
 import * as dayjs from 'dayjs';
+import { useHistory } from 'react-router-dom';
 
 const busImages = [
     {
+        name: '강남',
         image: GangNam,
     },
     {
+        name: '병점',
         image: ByeongJeom,
     },
     {
+        name: '안산',
         image: AnSan,
     },
     {
+        name: '망포',
         image: MangPo,
     },
     {
+        name: '성남',
         image: SeongNam,
     },
 ];
@@ -76,7 +81,8 @@ const Home = () => {
     const [isLogin, setIsLogin] = useState(false); //로그인 상태 여부
     const [boardNum, setNumber] = useState(0);
     const [signUpDialog, setSignUpDialog] = useState(false); //회원가입 Dialog open 여부
-    const [LoginDialog, setLoginDialog] = useState(false); //로그인 Dialog open 여부
+    const [loginDialog, setLoginDialog] = useState(false); //로그인 Dialog open 여부
+    const [registerBusDialog, setRegisterBusDialog] = useState(false); //버스신청 Dialog open 여부
     const [userData, setUserData] = useState({
         //user의 정보를 담음.
         name: '',
@@ -86,7 +92,7 @@ const Home = () => {
     const [routeInfo, setRouteInfo] = useState([]);
 
     const [getMyInfo, { data: myData }] = useLazyQuery(GET_MY_INFO, { fetchPolicy: 'no-cache' });
-    const { data: busData } = useQuery(GET_ROUTE_INFO, {
+    const { data: busData, refetch } = useQuery(GET_ROUTE_INFO, {
         variables: { month: dayjs(new Date()).format('YYYY-MM') },
     });
 
@@ -96,7 +102,17 @@ const Home = () => {
 
     const handleLogInClose = value => {
         setLoginDialog(false);
-        getMyInfo();
+        if (value) getMyInfo();
+    };
+
+    const handleRegisterBusClose = () => {
+        setRegisterBusDialog(false);
+        refetch();
+    };
+
+    const firstButtonClick = () => {
+        if (isLogin) setRegisterBusDialog(true);
+        else setLoginDialog(true);
     };
 
     const secondButtonClick = () => {
@@ -139,6 +155,10 @@ const Home = () => {
         }
     }, [busData]);
 
+    useEffect(() => {
+        if (localStorage) getMyInfo();
+    }, [getMyInfo]);
+
     return (
         <div>
             <Header />
@@ -162,7 +182,7 @@ const Home = () => {
                 </Box>
                 <Box mb={1} height="27%" className={classes.board}>
                     <Box>
-                        <AppBar height="30%" position="static">
+                        <AppBar color="primary" height="30%" position="static">
                             <Tabs
                                 value={boardNum}
                                 onChange={(e, newValue) => setNumber(newValue)}
@@ -198,7 +218,7 @@ const Home = () => {
                     <Button
                         className={clsx(classes.buttonCommon, classes.loginButton)}
                         variant="contained"
-                        onClick={() => setLoginDialog(true)}
+                        onClick={firstButtonClick}
                     >
                         {isLogin ? '노선 신청하기' : '로그인'}
                     </Button>
@@ -209,8 +229,9 @@ const Home = () => {
                     >
                         {isLogin ? '로그아웃' : '회원가입'}
                     </Button>
-                    <LogInDialog open={LoginDialog} onClose={handleLogInClose} />
+                    <LogInDialog open={loginDialog} onClose={handleLogInClose} />
                     <SignUpDialog open={signUpDialog} onClose={handleSignUpClose} />
+                    <RegisterBusDialog open={registerBusDialog} onClose={handleRegisterBusClose} />
                 </Box>
             </Box>
         </div>
@@ -239,11 +260,20 @@ const TabPanel = props => {
 
 const BusList = props => {
     const classes = HomeStyle();
+    const history = useHistory();
     const { routeInfo } = props;
     const busList = routeInfo.map((data, index) => (
-        <GridListTile key={data.route}>
+        <GridListTile key={index}>
             <Card elevation={5} className={classes.busCard}>
-                <CardActionArea className={classes.cardAction}>
+                <CardActionArea
+                    className={classes.cardAction}
+                    onClick={() =>
+                        history.push({
+                            pathname: './businfo',
+                            state: { busName: busImages[index].name },
+                        })
+                    }
+                >
                     <CardMedia component="img" src={busImages[index].image} title="BusImage" />
                     <CardContent>
                         <Typography className={classes.busInfo} align="center">
