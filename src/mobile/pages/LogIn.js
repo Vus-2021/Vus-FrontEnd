@@ -136,6 +136,7 @@ const LogIn = props => {
                 autoHideDuration={1300}
                 style={{ height: '60%' }}
                 onClose={() => setSnackbar(false)}
+                onClick={() => setSnackbar(false)}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             >
                 <Alert severity="error">잘못된 아이디 혹은 비밀번호 입니다.</Alert>

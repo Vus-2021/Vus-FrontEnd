@@ -1,21 +1,27 @@
 import React from 'react';
 import { Switch, Route } from 'react-router-dom';
-import { Home, BusInfo } from './pages';
+import { Home, BusInfo } from './mobile/pages';
+import { AdminHome, Admin } from './desktop/pages';
 import { useMediaQuery } from 'react-responsive';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DayjsUtils from '@date-io/dayjs';
 
 const App = () => {
     const isMobile = useMediaQuery({
-        query: '(max-width:600px)',
+        query: '(max-width:500px)',
     });
 
     return (
         <MuiPickersUtilsProvider utils={DayjsUtils}>
-            {isMobile && (
+            {isMobile ? (
                 <Switch>
                     <Route path="/" component={Home} exact />
                     <Route path="/businfo" component={BusInfo} />
+                </Switch>
+            ) : (
+                <Switch>
+                    <Route path="/" component={AdminHome} exact />
+                    <Route path="/admin" component={Admin} />
                 </Switch>
             )}
         </MuiPickersUtilsProvider>

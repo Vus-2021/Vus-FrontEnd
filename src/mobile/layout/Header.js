@@ -4,9 +4,9 @@ import { createUseStyles } from 'react-jss';
 import logo from '../images/Vatech_logo.png';
 
 const Header = () => {
-    const styles = useStyles();
+    const classes = useStyles();
     return (
-        <Container className={styles.container} fixed disableGutters>
+        <Container className={classes.container} fixed disableGutters>
             {' '}
         </Container>
     );
