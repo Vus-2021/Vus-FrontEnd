@@ -12,7 +12,7 @@ const AdminStyle = makeStyles(theme => ({
     },
     mainBox: {
         padding: '10px',
-        height: 'calc(100% - 80px)',
+        height: 'calc(100% - 84px)',
         overflow: 'auto',
         flexGrow: 1,
         transition: theme.transitions.create('margin', {

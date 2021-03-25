@@ -12,7 +12,7 @@ const HomeStyle = createUseStyles({
         display: 'flex',
         alignItems: 'center',
         flexDirection: 'column',
-        height: 'calc(100% - 60px)',
+        height: 'calc(100% - 64px)',
         overflow: 'auto',
     },
     loginPaper: {

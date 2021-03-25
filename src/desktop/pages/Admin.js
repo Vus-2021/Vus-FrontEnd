@@ -5,6 +5,8 @@ import { Box, Typography } from '@material-ui/core';
 import clsx from 'clsx';
 
 import User from './User';
+import Route from './Route';
+import Notice from './Notice';
 
 const Admin = () => {
     const classes = AdminStyle();
@@ -26,10 +28,10 @@ const Admin = () => {
                 />
 
                 <Box className={clsx(classes.mainBox, { [classes.mainBoxShift]: openDrawer })}>
-                    <Box width="100%" height="40px">
+                    <Box height="40px" ml={5}>
                         <Typography className={classes.titleText}>{state.titleName}</Typography>
                     </Box>
-                    <Box width="100%" className={classes.viewBox}>
+                    <Box className={classes.viewBox}>
                         <SelectView view={state.view} setState={setState} />
                     </Box>
                 </Box>
@@ -41,9 +43,14 @@ const Admin = () => {
 const SelectView = props => {
     const { view } = props;
 
+    console.log({ User });
     switch (view) {
         case 'userDefault':
-            return <React.Fragment>{User}</React.Fragment>;
+            return <User />;
+        case 'routeDefault':
+            return <Route />;
+        case 'noticeDefault':
+            return <Notice />;
         default:
             return <div>default!</div>;
     }
