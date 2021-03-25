@@ -7,12 +7,13 @@ const HomeStyle = createUseStyles({
         backgroundRepeat: 'no-repeat',
         backgroundSize: 'cover',
         height: '100%',
-        overflow: 'auto',
     },
     mainBox: {
         display: 'flex',
         alignItems: 'center',
         flexDirection: 'column',
+        height: 'calc(100% - 60px)',
+        overflow: 'auto',
     },
     loginPaper: {
         '&.MuiPaper-root': {
