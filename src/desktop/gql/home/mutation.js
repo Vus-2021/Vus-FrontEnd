@@ -5,6 +5,7 @@ export const SIGNIN = gql`
         signin(userId: $userId, password: $password) {
             success
             message
+            code
             data {
                 accessToken
                 refreshToken

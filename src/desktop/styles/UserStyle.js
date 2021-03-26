@@ -33,6 +33,10 @@ const UserStyle = makeStyles(theme => ({
         color: 'white',
         backgroundColor: '#0078CE',
         height: '40px',
+        '&:hover': {
+            color: 'white',
+            backgroundColor: '#0078CE',
+        },
     },
 }));
 

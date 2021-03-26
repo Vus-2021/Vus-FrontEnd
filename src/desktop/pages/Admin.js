@@ -7,6 +7,7 @@ import clsx from 'clsx';
 import User from './User';
 import Route from './Route';
 import Notice from './Notice';
+import CreateRoute from './CreateRoute';
 
 const Admin = () => {
     const classes = AdminStyle();
@@ -43,12 +44,13 @@ const Admin = () => {
 const SelectView = props => {
     const { view } = props;
 
-    console.log({ User });
     switch (view) {
         case 'userDefault':
             return <User />;
         case 'routeDefault':
             return <Route />;
+        case 'routeCreate':
+            return <CreateRoute />;
         case 'noticeDefault':
             return <Notice />;
         default:

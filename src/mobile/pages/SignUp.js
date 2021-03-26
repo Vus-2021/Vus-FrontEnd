@@ -54,14 +54,6 @@ const companyType = [
         name: '바텍에스앤씨',
         initial: 'VS',
     },
-    {
-        name: '관리자',
-        initial: 'ADMIN',
-    },
-    {
-        name: '버스기사',
-        initial: 'DRIVER',
-    },
 ];
 
 const SignUp = props => {

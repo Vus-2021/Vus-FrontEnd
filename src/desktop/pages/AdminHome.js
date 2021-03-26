@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import HomeStyle from '../styles/HomeStyle';
 import {
     Box,
@@ -13,17 +13,38 @@ import { Alert } from '@material-ui/lab';
 import { Visibility, VisibilityOff } from '@material-ui/icons';
 import Header from '../layout/Header';
 import { useForm, Controller } from 'react-hook-form';
-// import { SIGNIN } from '../gql/home/mutation';
+import { SIGNIN } from '../gql/home/mutation';
+import { useMutation } from '@apollo/react-hooks';
 
-const AdminHome = () => {
+const AdminHome = ({ history }) => {
     const classes = HomeStyle();
     const [showPwd, setShowPwd] = useState(false);
 
     const { errors, handleSubmit, control } = useForm();
 
+    const [signin, { data }] = useMutation(SIGNIN);
+
     const signInSubmit = data => {
-        console.log(data);
+        signin({
+            variables: {
+                userId: data.adminId,
+                password: data.password,
+            },
+        });
     };
+
+    useEffect(() => {
+        if (data) {
+            const { success, message, data: token } = data.signin;
+            if (success) {
+                localStorage.setItem('accessToken', token.accessToken);
+                localStorage.setItem('refreshToken', token.refreshToken);
+                history.push('/admin');
+            } else {
+                console.log(message);
+            }
+        }
+    }, [data, history]);
 
     return (
         <React.Fragment>

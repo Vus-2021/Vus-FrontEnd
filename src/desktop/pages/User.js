@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Button,
@@ -15,38 +15,105 @@ import { DeleteForever, Search } from '@material-ui/icons';
 import UserStyle from '../styles/UserStyle';
 import { useForm, Controller } from 'react-hook-form';
 import RegisterDialog from './Register';
+import { GET_USERS } from '../gql/user/query';
+import { DELETE_USER } from '../gql/user/mutation';
+import { useQuery, useMutation } from '@apollo/react-hooks';
+import { useHistory } from 'react-router-dom';
 
 const columns = [
     { field: 'name', headerName: '이름', width: 90 },
     { field: 'type', headerName: '소속', width: 160 },
-    { field: 'employeeNumber', headerName: '사원번호', width: 130 },
+    { field: 'userId', headerName: '아이디(사원번호)', width: 150 },
     { field: 'phoneNumber', headerName: '휴대폰번호', width: 160 },
     { field: 'registerDate', headerName: '입사일', width: 200 },
 ];
 
-const rows = [
-    {
-        id: 1,
-        name: '김바텍',
-        type: 'test',
-        employeeNumber: 'v13243',
-        phoneNumber: '01088435154',
-        registerDate: '2021-03-03',
-    },
-];
-
 const User = props => {
     const classes = UserStyle();
+    const history = useHistory();
     const [selection, setSelection] = useState([]);
     const [registerDialog, setRegisterDialog] = useState(false); //등록 Dialog open 여부
+    const [userRow, setUserRow] = useState([]);
 
     const { handleSubmit, control } = useForm();
 
+    const { data, refetch } = useQuery(GET_USERS);
+    const [deleteUser] = useMutation(DELETE_USER, {
+        onCompleted() {
+            refetch();
+        },
+    });
+
     const searchClick = data => {
         console.log(data);
+        refetch({
+            [data.select]: data.search,
+        });
     };
 
-    console.log(selection);
+    const deleteUserClick = () => {
+        deleteUser({ variables: { userId: selection } });
+    };
+
+    useEffect(() => {
+        refetch();
+    }, [registerDialog, refetch]);
+
+    useEffect(() => {
+        if (data) {
+            const { data: userData, success, message } = data.getUsers;
+            if (success) {
+                let userDataChange = userData;
+                userDataChange.forEach(user => {
+                    // let typeName;
+                    // switch (user.type) {
+                    //     case 'VT':
+                    //         typeName = '바텍';
+                    //         break;
+                    //     case 'VH':
+                    //         typeName = '바텍이우홀딩스';
+                    //         break;
+                    //     case 'ES':
+                    //         typeName = '이우소프트';
+                    //         break;
+                    //     case 'RY':
+                    //         typeName = '레이언스';
+                    //         break;
+                    //     case 'WR':
+                    //         typeName = '우리엔';
+                    //         break;
+                    //     case 'VM':
+                    //         typeName = '바텍엠시스';
+                    //         break;
+                    //     case 'VE':
+                    //         typeName = '바텍이엔지';
+                    //         break;
+                    //     case 'VS':
+                    //         typeName = '바텍에스앤씨';
+                    //         break;
+                    //     case 'ADMIN':
+                    //         typeName = '관리자';
+                    //         break;
+                    //     case 'DRIVER':
+                    //         typeName = '버스기사';
+                    //         break;
+                    //     default:
+                    //         typeName = 'null';
+                    //         break;
+                    // }
+                    // typeName += '(' + user.type + ')';
+                    // user.type = typeName;
+                    user.id = user.userId;
+                });
+                setUserRow(userDataChange);
+            } else {
+                history.push('/');
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                console.log(message);
+            }
+        }
+    }, [data, history]);
 
     return (
         <Box px={15} pt={5}>
@@ -59,6 +126,7 @@ const User = props => {
                             color="secondary"
                             className={classes.buttonDelete}
                             disabled={selection.length === 0}
+                            onClick={deleteUserClick}
                         >
                             <DeleteForever /> <Typography>&nbsp;삭제</Typography>
                         </Button>
@@ -107,6 +175,9 @@ const User = props => {
                                                                 <MenuItem value="type">
                                                                     소속
                                                                 </MenuItem>
+                                                                <MenuItem value="userId">
+                                                                    사원번호
+                                                                </MenuItem>
                                                             </Select>
                                                         </FormControl>
                                                     )}
@@ -136,7 +207,7 @@ const User = props => {
                     <Box width="100%" height="500px">
                         <DataGrid
                             columns={columns}
-                            rows={rows}
+                            rows={userRow}
                             checkboxSelection
                             hideFooter
                             onSelectionModelChange={newSelection => {
