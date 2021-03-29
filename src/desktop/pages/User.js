@@ -21,7 +21,7 @@ import { useQuery, useMutation } from '@apollo/react-hooks';
 import { useHistory } from 'react-router-dom';
 
 const columns = [
-    { field: 'name', headerName: '이름', width: 90 },
+    { field: 'name', headerName: '이름', width: 130 },
     { field: 'type', headerName: '소속', width: 160 },
     { field: 'userId', headerName: '아이디(사원번호)', width: 150 },
     { field: 'phoneNumber', headerName: '휴대폰번호', width: 160 },
@@ -117,15 +117,13 @@ const User = props => {
                                                     name="select"
                                                     defaultValue="name"
                                                     render={props => (
-                                                        <FormControl
-                                                            size="small"
-                                                            variant="standard"
-                                                        >
+                                                        <FormControl variant="standard">
                                                             <Select
                                                                 defaultValue="name"
                                                                 onChange={e =>
                                                                     props.onChange(e.target.value)
                                                                 }
+                                                                disableUnderline
                                                             >
                                                                 <MenuItem value="name">
                                                                     이름

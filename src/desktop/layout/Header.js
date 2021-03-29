@@ -22,7 +22,6 @@ import {
     AssignmentInd,
     DirectionsBus,
     NotificationsActive,
-    PersonAddDisabled,
     AirlineSeatReclineExtra,
     ExpandLess,
     ExpandMore,
@@ -103,11 +102,7 @@ const MenuItems = props => {
             icon: <NotificationsActive className={classes.listIcon} />,
         },
         {
-            text: '노선 취소 승인',
-            icon: <PersonAddDisabled className={classes.listIcon} />,
-        },
-        {
-            text: '신청자 관리/선별',
+            text: '탑승객 관리',
             icon: <AirlineSeatReclineExtra className={classes.listIcon} />,
         },
     ];
@@ -123,11 +118,8 @@ const MenuItems = props => {
             case 2: //공지 관리
                 setState({ titleName: '공지 관리', view: 'noticeDefault' });
                 break;
-            case 3: //노선 취소 승인
-                setState({ titleName: '노선 취소 승인', view: 'routeCancelDefault' });
-                break;
-            case 4: //신청자 관리/선별
-                setState({ titleName: '신청자 관리/선별', view: 'applicantDefault' });
+            case 3: //신청자 관리/선별
+                setState({ titleName: '탑승객 관리', view: 'boarderDefault' });
                 break;
             default:
                 break;

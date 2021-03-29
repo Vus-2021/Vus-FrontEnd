@@ -23,7 +23,7 @@ import AnSan from '../images/안산버스.png';
 import MangPo from '../images/망포버스.png';
 import SeongNam from '../images/성남버스.png';
 import clsx from 'clsx';
-import { GET_MY_INFO, GET_ROUTE_INFO } from '../gql/home/query';
+import { GET_MY_INFO, GET_ROUTES_INFO } from '../gql/home/query';
 import { useLazyQuery, useQuery } from '@apollo/react-hooks';
 import * as dayjs from 'dayjs';
 import { useHistory } from 'react-router-dom';
@@ -34,20 +34,20 @@ const busImages = [
         image: GangNam,
     },
     {
-        name: '병점',
-        image: ByeongJeom,
-    },
-    {
-        name: '안산',
-        image: AnSan,
-    },
-    {
         name: '망포',
         image: MangPo,
     },
     {
+        name: '병점',
+        image: ByeongJeom,
+    },
+    {
         name: '성남',
         image: SeongNam,
+    },
+    {
+        name: '안산',
+        image: AnSan,
     },
 ];
 
@@ -92,7 +92,7 @@ const Home = () => {
     const [routeInfo, setRouteInfo] = useState([]);
 
     const [getMyInfo, { data: myData }] = useLazyQuery(GET_MY_INFO, { fetchPolicy: 'no-cache' });
-    const { data: busData, refetch } = useQuery(GET_ROUTE_INFO, {
+    const { data: busData, refetch } = useQuery(GET_ROUTES_INFO, {
         variables: { month: dayjs(new Date()).format('YYYY-MM') },
     });
 
@@ -148,10 +148,11 @@ const Home = () => {
     //버스 데이터를 불러옴
     useEffect(() => {
         if (busData) {
-            const { success, data } = busData.getRoutesInfo;
+            const { success, message, data } = busData.getRoutesInfo;
             if (success) {
                 setRouteInfo(data);
-            }
+                console.log(data);
+            } else console.log(message);
         }
     }, [busData]);
 
@@ -231,7 +232,11 @@ const Home = () => {
                     </Button>
                     <LogInDialog open={loginDialog} onClose={handleLogInClose} />
                     <SignUpDialog open={signUpDialog} onClose={handleSignUpClose} />
-                    <RegisterBusDialog open={registerBusDialog} onClose={handleRegisterBusClose} />
+                    <RegisterBusDialog
+                        open={registerBusDialog}
+                        onClose={handleRegisterBusClose}
+                        routeInfo={routeInfo}
+                    />
                 </Box>
             </Box>
         </div>
@@ -280,7 +285,7 @@ const BusList = props => {
                             {data.busNumber}
                         </Typography>
                         <Typography align="center">
-                            신청자: {data.registerCount} / {data.limitCount}
+                            신청자: {data.month.registerCount} / {data.limitCount}
                         </Typography>
                     </CardContent>
                 </CardActionArea>

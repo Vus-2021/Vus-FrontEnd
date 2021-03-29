@@ -9,10 +9,10 @@ import { useMutation } from '@apollo/react-hooks';
 import { APPLY_ROUTE } from '../gql/registerbus/mutation';
 
 const RegisterBus = props => {
-    const { open, onClose } = props;
+    const { open, onClose, routeInfo } = props;
     const classes = LogInStyle();
     const [valMonth, setValMonth] = useState(dayjs(new Date()).format('YYYY-MM'));
-    const [routeName, setRouteName] = useState('GANGNAM');
+    const [routeName, setRouteName] = useState('강남');
     const [openSnackbar, setSnackbar] = useState(false);
     const { handleSubmit, control } = useForm();
 
@@ -93,11 +93,11 @@ const RegisterBus = props => {
                                     fullWidth
                                     size="small"
                                 >
-                                    <MenuItem value="GANGNAM">강남노선</MenuItem>
-                                    <MenuItem value="BYEONGJEOM">병점노선</MenuItem>
-                                    <MenuItem value="ANSAN">안산노선</MenuItem>
-                                    <MenuItem value="MANGPO">망포노선</MenuItem>
-                                    <MenuItem value="SUNGNAM">성남노선</MenuItem>
+                                    {routeInfo.map(data => (
+                                        <MenuItem key={data.route} value={data.route}>
+                                            {data.route}노선
+                                        </MenuItem>
+                                    ))}
                                 </TextField>
                             }
                             name="routeName"

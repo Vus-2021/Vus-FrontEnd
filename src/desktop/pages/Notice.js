@@ -129,15 +129,13 @@ const Notice = () => {
                                                     name="select"
                                                     defaultValue="notice"
                                                     render={props => (
-                                                        <FormControl
-                                                            size="small"
-                                                            variant="standard"
-                                                        >
+                                                        <FormControl variant="standard">
                                                             <Select
                                                                 defaultValue="notice"
                                                                 onChange={e =>
                                                                     props.onChange(e.target.value)
                                                                 }
+                                                                disableUnderline
                                                             >
                                                                 <MenuItem value="notice">
                                                                     제목

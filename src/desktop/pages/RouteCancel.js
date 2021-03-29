@@ -102,15 +102,13 @@ const RouteCancel = () => {
                                                     name="select"
                                                     defaultValue="name"
                                                     render={props => (
-                                                        <FormControl
-                                                            size="small"
-                                                            variant="standard"
-                                                        >
+                                                        <FormControl variant="standard">
                                                             <Select
                                                                 defaultValue="name"
                                                                 onChange={e =>
                                                                     props.onChange(e.target.value)
                                                                 }
+                                                                disableUnderline
                                                             >
                                                                 <MenuItem value="name">
                                                                     이름

@@ -10,7 +10,7 @@ import User from './User';
 import Route from './Route';
 import Notice from './Notice';
 import CreateRoute from './CreateRoute';
-import RouteCancel from './RouteCancel';
+import Boarder from './Boarder';
 
 const Admin = () => {
     const classes = AdminStyle();
@@ -18,7 +18,7 @@ const Admin = () => {
     const [openDrawer, setOpenDrawer] = useState(false);
     const [state, setState] = useState({
         titleName: '사용자 관리',
-        view: 'routeCancelDefault',
+        view: 'userDefault',
     });
 
     const [routeItems, setRouteItems] = useState([]);
@@ -51,7 +51,7 @@ const Admin = () => {
                         <Typography className={classes.titleText}>{state.titleName}</Typography>
                     </Box>
                     <Box className={classes.viewBox}>
-                        <SelectView view={state.view} setState={setState} />
+                        <SelectView view={state.view} setState={setState} routeItems={routeItems} />
                     </Box>
                 </Box>
             </div>
@@ -60,7 +60,7 @@ const Admin = () => {
 };
 
 const SelectView = props => {
-    const { view } = props;
+    const { view, routeItems } = props;
 
     switch (view) {
         case 'userDefault':
@@ -71,8 +71,8 @@ const SelectView = props => {
             return <CreateRoute />;
         case 'noticeDefault':
             return <Notice />;
-        case 'routeCancelDefault':
-            return <RouteCancel />;
+        case 'boarderDefault':
+            return <Boarder routeItems={routeItems} />;
         default:
             return <div>default!</div>;
     }
