@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import HeaderStyle from '../styles/HeaderStyle';
 import logo from '../images/Vatech_logo.png';
 import {
@@ -28,26 +28,10 @@ import {
     ExpandMore,
     PlaylistAdd,
 } from '@material-ui/icons';
-import { useQuery } from '@apollo/react-hooks';
-import { GET_ROUTE_NAME } from '../gql/header/query';
 
 const Header = props => {
-    const { adminName, openDrawer, setOpenDrawer, setState } = props;
+    const { adminName, openDrawer, setOpenDrawer, setState, routeItems } = props;
     const classes = HeaderStyle();
-
-    const { data } = useQuery(GET_ROUTE_NAME);
-
-    const [routeItems, setRouteItems] = useState([]);
-
-    useEffect(() => {
-        if (data) {
-            const { success, data: routeName } = data.getRoutesInfo;
-            if (success) {
-                console.log('routeName fetched');
-                setRouteItems(routeName);
-            } else console.log('failure');
-        }
-    }, [data]);
 
     const menuClick = () => {
         setOpenDrawer(!openDrawer);

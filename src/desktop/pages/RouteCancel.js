@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     Box,
     Button,
@@ -6,87 +6,72 @@ import {
     TextField,
     InputAdornment,
     Select,
-    MenuItem,
     FormControl,
+    MenuItem,
     Paper,
 } from '@material-ui/core';
 import { DataGrid } from '@material-ui/data-grid';
-import { DeleteForever, Search } from '@material-ui/icons';
-import UserStyle from '../styles/UserStyle';
-import { useForm, Controller } from 'react-hook-form';
-import RegisterDialog from './Register';
-import { GET_USERS } from '../gql/user/query';
-import { DELETE_USER } from '../gql/user/mutation';
-import { useQuery, useMutation } from '@apollo/react-hooks';
-import { useHistory } from 'react-router-dom';
+import { Search, AssignmentTurnedIn, CancelPresentation } from '@material-ui/icons';
+import { Controller, useForm } from 'react-hook-form';
+import RouteCancelStyle from '../styles/RouteCancelStyle';
 
 const columns = [
-    { field: 'name', headerName: '이름', width: 90 },
-    { field: 'type', headerName: '소속', width: 160 },
+    { field: 'name', headerName: '이름', width: 100 },
+    { field: 'type', headerName: '소속', width: 130 },
     { field: 'userId', headerName: '아이디(사원번호)', width: 150 },
-    { field: 'phoneNumber', headerName: '휴대폰번호', width: 160 },
-    { field: 'registerDate', headerName: '입사일', width: 200 },
+    { field: 'routeName', headerName: '노선 명', width: 100 },
 ];
 
-const User = props => {
-    const classes = UserStyle();
-    const history = useHistory();
+const rows = [{ id: 1, name: '김바텍', type: 'VT', userId: 'v12345', routeName: '강남' }];
+
+const RouteCancel = () => {
+    const classes = RouteCancelStyle();
+    const { control, handleSubmit } = useForm();
+
     const [selection, setSelection] = useState([]);
-    const [registerDialog, setRegisterDialog] = useState(false); //등록 Dialog open 여부
-    const [userRow, setUserRow] = useState([]);
-
-    const { handleSubmit, control } = useForm();
-
-    const { data, refetch } = useQuery(GET_USERS);
-    const [deleteUser] = useMutation(DELETE_USER, {
-        onCompleted() {
-            refetch();
-        },
-    });
 
     const searchClick = data => {
         console.log(data);
-        refetch({
-            [data.select]: data.search,
-        });
     };
 
-    const deleteUserClick = () => {
-        deleteUser({ variables: { userId: selection } });
+    const admitButtonClick = () => {
+        console.log('admit');
         setSelection([]);
     };
 
-    useEffect(() => {
-        if (data) {
-            const { data: userData, success, message } = data.getUsers;
-            if (success) {
-                let userDataChange = userData;
-                userDataChange.forEach(user => {
-                    user.id = user.userId;
-                });
-                setUserRow(userDataChange);
-            } else {
-                history.push('/');
-                localStorage.clear();
-                console.log(message);
-            }
-        }
-    }, [data, history]);
+    const rejectButtonClick = () => {
+        console.log('reject');
+        setSelection([]);
+    };
 
     return (
         <Box px={15} pt={5} minWidth="600px">
-            <Box className={classes.mainBox} mb={1}>
-                <Box className={classes.searchBox}>
+            <Box display="flex" justifyContent="space-between" alignItems="flex-end" mb={1}>
+                <Box display="flex" flexDirection="row" alignItems="center">
+                    <Box mr={1}>
+                        <Button
+                            size="small"
+                            variant="contained"
+                            color="secondary"
+                            className={classes.buttonAdmit}
+                            disabled={selection.length === 0}
+                            onClick={admitButtonClick}
+                        >
+                            <AssignmentTurnedIn />
+                            <Typography>&nbsp;승인</Typography>
+                        </Button>
+                    </Box>
                     <Box mr={2}>
                         <Button
                             size="small"
                             variant="contained"
                             color="secondary"
-                            className={classes.buttonDelete}
+                            className={classes.buttonReject}
                             disabled={selection.length === 0}
-                            onClick={deleteUserClick}
+                            onClick={rejectButtonClick}
                         >
-                            <DeleteForever /> <Typography>&nbsp;삭제</Typography>
+                            <CancelPresentation />
+                            <Typography>&nbsp;거부</Typography>
                         </Button>
                     </Box>
                     <Box>
@@ -95,7 +80,7 @@ const User = props => {
                 </Box>
                 <Box>
                     <form onSubmit={handleSubmit(searchClick)}>
-                        <Box className={classes.searchBox}>
+                        <Box display="flex" flexDirection="row" alignItems="center">
                             <Box width="230px" mr={1}>
                                 <Controller
                                     name="search"
@@ -133,8 +118,8 @@ const User = props => {
                                                                 <MenuItem value="type">
                                                                     소속
                                                                 </MenuItem>
-                                                                <MenuItem value="userId">
-                                                                    사원번호
+                                                                <MenuItem value="routeName">
+                                                                    노선 명
                                                                 </MenuItem>
                                                             </Select>
                                                         </FormControl>
@@ -165,9 +150,10 @@ const User = props => {
                     <Box width="100%" height="500px">
                         <DataGrid
                             columns={columns}
-                            rows={userRow}
+                            rows={rows}
                             checkboxSelection
-                            hideFooter
+                            hideFooterSelectedRowCount
+                            autoPageSize
                             onSelectionModelChange={newSelection => {
                                 setSelection(newSelection.selectionModel);
                             }}
@@ -175,19 +161,8 @@ const User = props => {
                     </Box>
                 </Paper>
             </Box>
-            <Box className={classes.registerBox}>
-                <Button
-                    variant="contained"
-                    className={classes.registerButton}
-                    color="primary"
-                    onClick={() => setRegisterDialog(true)}
-                >
-                    <Typography>관리자/버스기사 등록</Typography>
-                </Button>
-            </Box>
-            <RegisterDialog open={registerDialog} onClose={setRegisterDialog} refetch={refetch} />
         </Box>
     );
 };
 
-export default User;
+export default RouteCancel;

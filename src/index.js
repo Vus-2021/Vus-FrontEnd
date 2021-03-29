@@ -11,7 +11,7 @@ import { InMemoryCache } from 'apollo-cache-inmemory';
 import { ApolloLink, concat } from 'apollo-boost';
 
 const httpLink = createHttpLink({
-    uri: 'http://172.26.50.46:4000',
+    uri: 'http://172.26.50.42:4000',
 });
 
 const authMiddleware = new ApolloLink((operation, forward) => {

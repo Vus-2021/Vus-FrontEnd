@@ -8,12 +8,16 @@ import { useMutation } from '@apollo/react-hooks';
 import { CREATE_ADMIN_NOTICE } from '../gql/notice/mutation';
 
 const CreateNotice = props => {
-    const { open, onClose } = props;
+    const { open, onClose, refetch } = props;
     const classes = NoticeStyle();
     const { handleSubmit, control, errors } = useForm();
     const [openSnackbar, setSnackbar] = useState(false);
 
-    const [createAdminNotice, { data }] = useMutation(CREATE_ADMIN_NOTICE);
+    const [createAdminNotice, { data }] = useMutation(CREATE_ADMIN_NOTICE, {
+        onCompleted() {
+            refetch();
+        },
+    });
 
     const handleClose = () => {
         onClose(false);

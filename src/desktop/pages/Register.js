@@ -24,7 +24,7 @@ import * as dayjs from 'dayjs';
 
 const Register = props => {
     const classes = RegisterStyle();
-    const { open, onClose } = props;
+    const { open, onClose, refetch } = props;
     const { handleSubmit, control, errors, getValues, setError, clearErrors } = useForm();
 
     const [boardNum, setNumber] = useState(0);
@@ -34,7 +34,11 @@ const Register = props => {
     const [openSnackbar, setSnackbar] = useState(false);
 
     const [checkUser, { data }] = useLazyQuery(CHECK_USERID, { fetchPolicy: 'no-cache' });
-    const [signupUser] = useMutation(SIGNUP_USER);
+    const [signupUser] = useMutation(SIGNUP_USER, {
+        onCompleted() {
+            refetch();
+        },
+    });
 
     const registerUser = data => {
         const type = boardNum === 0 ? 'ADMIN' : 'DRIVER';

@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../layout/Header';
 import AdminStyle from '../styles/AdminStyle';
 import { Box, Typography } from '@material-ui/core';
 import clsx from 'clsx';
+import { useQuery } from '@apollo/react-hooks';
+import { GET_ROUTE_NAME } from '../gql/header/query';
 
 import User from './User';
 import Route from './Route';
 import Notice from './Notice';
 import CreateRoute from './CreateRoute';
+import RouteCancel from './RouteCancel';
 
 const Admin = () => {
     const classes = AdminStyle();
@@ -15,8 +18,22 @@ const Admin = () => {
     const [openDrawer, setOpenDrawer] = useState(false);
     const [state, setState] = useState({
         titleName: '사용자 관리',
-        view: 'userDefault',
+        view: 'routeCancelDefault',
     });
+
+    const [routeItems, setRouteItems] = useState([]);
+
+    const { data } = useQuery(GET_ROUTE_NAME);
+
+    useEffect(() => {
+        if (data) {
+            const { success, data: routeName } = data.getRoutesInfo;
+            if (success) {
+                console.log('routeName fetched');
+                setRouteItems(routeName);
+            } else console.log('failure');
+        }
+    }, [data]);
 
     return (
         <React.Fragment>
@@ -26,6 +43,7 @@ const Admin = () => {
                     openDrawer={openDrawer}
                     setOpenDrawer={setOpenDrawer}
                     setState={setState}
+                    routeItems={routeItems}
                 />
 
                 <Box className={clsx(classes.mainBox, { [classes.mainBoxShift]: openDrawer })}>
@@ -53,6 +71,8 @@ const SelectView = props => {
             return <CreateRoute />;
         case 'noticeDefault':
             return <Notice />;
+        case 'routeCancelDefault':
+            return <RouteCancel />;
         default:
             return <div>default!</div>;
     }

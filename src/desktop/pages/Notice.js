@@ -16,8 +16,9 @@ import NoticeStyle from '../styles/NoticeStyle';
 import { useForm, Controller } from 'react-hook-form';
 import CreateNoticeDialog from './CreateNotice';
 import DetailNoticeDialog from './DetailNotice';
-import { useQuery } from '@apollo/react-hooks';
-import { GET_ADMIN_NOTICE } from '../gql/notice/query';
+import { useQuery, useLazyQuery, useMutation } from '@apollo/react-hooks';
+import { GET_ADMIN_NOTICE, GET_ONE_ADMIN_NOTICE } from '../gql/notice/query';
+import { DELETE_NOTICE } from '../gql/notice/mutation';
 import * as dayjs from 'dayjs';
 
 const columns = [
@@ -30,32 +31,42 @@ const columns = [
 
 const Notice = () => {
     const classes = NoticeStyle();
-    const [selection, setSelection] = useState([]);
-    const [noticeDialog, setNoticeDialog] = useState(false);
-    const [detailDialog, setDetailDialog] = useState(false);
-    const [detailUserId, setDetailUserId] = useState(''); //공지글 작성자 정보
-    const [noticeRows, setNoticeRows] = useState([]);
+    const [selection, setSelection] = useState([]); //선택한 공지글들의 partitionKey를 담음.
+    const [noticeDialog, setNoticeDialog] = useState(false); //noticeDialog의 open 여부
+    const [detailDialog, setDetailDialog] = useState(false); //detailDialog의 open 여부
+    const [noticeRows, setNoticeRows] = useState([]); //공지글 항목
+    const [partitionKey, setPartitionKey] = useState(''); //공지글 partitionKey
 
     const { handleSubmit, control } = useForm();
 
     const { data, refetch } = useQuery(GET_ADMIN_NOTICE);
 
+    const [getOneAdminNotice, { data: oneNoticeData }] = useLazyQuery(GET_ONE_ADMIN_NOTICE, {
+        fetchPolicy: 'no-cache',
+    });
+
+    const [deleteNotice] = useMutation(DELETE_NOTICE, {
+        onCompleted() {
+            refetch();
+        },
+    });
+
     const searchClick = data => {
-        console.log(data);
+        refetch({
+            [data.select]: data.search,
+        });
     };
 
     const deleteUserClick = () => {
-        console.log('delete');
+        deleteNotice({ variables: { partitionKey: selection } });
+        setSelection([]);
     };
 
-    const handleCellClick = data => {
+    const handleCellClick = pk => {
+        getOneAdminNotice({ variables: { partitionKey: pk } });
         setDetailDialog(true);
-        setDetailUserId(data);
+        setPartitionKey(pk);
     };
-
-    useEffect(() => {
-        refetch();
-    }, [noticeDialog, detailDialog, refetch]);
 
     useEffect(() => {
         if (data) {
@@ -63,12 +74,11 @@ const Notice = () => {
             if (success) {
                 let noticeDataChange = noticeData;
                 noticeDataChange.forEach(notice => {
-                    notice.id = notice.partitionKey + '+' + notice.sortKey;
+                    notice.id = notice.partitionKey;
                     notice.createdAt = dayjs(notice.createdAt).format('YYYY-MM-DD');
                     notice.updatedAt = dayjs(notice.updatedAt).format('YYYY-MM-DD');
                 });
                 setNoticeRows(noticeDataChange);
-                console.log(noticeDataChange);
             } else {
                 console.log(message);
             }
@@ -76,7 +86,7 @@ const Notice = () => {
     }, [data]);
 
     return (
-        <Box px={15} pt={5}>
+        <Box px={15} pt={5} minWidth="600px">
             <Box mb={1} display="flex" justifyContent="space-between" alignItems="flex-end">
                 <Box display="flex" flexDirection="row" alignItems="center">
                     <Box mr={2}>
@@ -175,7 +185,6 @@ const Notice = () => {
                             hideFooterSelectedRowCount
                             autoPageSize
                             onSelectionModelChange={newSelection => {
-                                console.log(newSelection);
                                 setSelection(newSelection.selectionModel);
                             }}
                             onCellClick={cellClick => {
@@ -196,11 +205,13 @@ const Notice = () => {
                     <Typography>공지 생성</Typography>
                 </Button>
             </Box>
-            <CreateNoticeDialog open={noticeDialog} onClose={setNoticeDialog} />
+            <CreateNoticeDialog open={noticeDialog} onClose={setNoticeDialog} refetch={refetch} />
             <DetailNoticeDialog
                 open={detailDialog}
                 onClose={setDetailDialog}
-                userId={detailUserId}
+                noticeData={oneNoticeData}
+                partitionKey={partitionKey}
+                refetch={refetch}
             />
         </Box>
     );
