@@ -36,10 +36,15 @@ const Notice = () => {
     const [detailDialog, setDetailDialog] = useState(false); //detailDialog의 open 여부
     const [noticeRows, setNoticeRows] = useState([]); //공지글 항목
     const [partitionKey, setPartitionKey] = useState(''); //공지글 partitionKey
+    const [search, setSearch] = useState({
+        notice: null,
+        author: null,
+        content: null,
+    });
 
     const { handleSubmit, control } = useForm();
 
-    const { data, refetch } = useQuery(GET_ADMIN_NOTICE);
+    const { data, loading, refetch } = useQuery(GET_ADMIN_NOTICE);
 
     const [getOneAdminNotice, { data: oneNoticeData }] = useLazyQuery(GET_ONE_ADMIN_NOTICE, {
         fetchPolicy: 'no-cache',
@@ -52,7 +57,7 @@ const Notice = () => {
     });
 
     const searchClick = data => {
-        refetch({
+        setSearch({
             [data.select]: data.search,
         });
     };
@@ -67,6 +72,14 @@ const Notice = () => {
         setDetailDialog(true);
         setPartitionKey(pk);
     };
+
+    useEffect(() => {
+        refetch({
+            notice: search.notice,
+            author: search.author,
+            content: search.content,
+        });
+    }, [search, refetch]);
 
     useEffect(() => {
         if (data) {
@@ -189,6 +202,7 @@ const Notice = () => {
                                 const { field, id } = cellClick;
                                 if (field !== '__check__') handleCellClick(id);
                             }}
+                            loading={loading}
                         />
                     </Box>
                 </Paper>

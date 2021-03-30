@@ -9,6 +9,11 @@ export const GET_MY_INFO = gql`
                 name
                 userId
                 type
+                routeInfo {
+                    routes
+                    month
+                    busId
+                }
             }
         }
     }
@@ -20,6 +25,7 @@ export const GET_ROUTES_INFO = gql`
             success
             message
             data {
+                partitionKey
                 route
                 busNumber
                 limitCount

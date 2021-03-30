@@ -1,7 +1,7 @@
 import React from 'react';
 import { Switch, Route } from 'react-router-dom';
 import { Home, BusInfo } from './mobile/pages';
-import { AdminHome, Admin } from './desktop/pages';
+import { AdminHome, Admin, Error } from './desktop/pages';
 import { useMediaQuery } from 'react-responsive';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DayjsUtils from '@date-io/dayjs';
@@ -22,6 +22,7 @@ const App = () => {
                 <Switch>
                     <Route path="/" component={AdminHome} exact />
                     <Route path="/admin" component={Admin} />
+                    <Route path="/error" component={Error} />
                 </Switch>
             )}
         </MuiPickersUtilsProvider>

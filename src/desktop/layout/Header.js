@@ -29,7 +29,7 @@ import {
 } from '@material-ui/icons';
 
 const Header = props => {
-    const { adminName, openDrawer, setOpenDrawer, setState, routeItems } = props;
+    const { adminName, openDrawer, setOpenDrawer, setState, routeItems, loading } = props;
     const classes = HeaderStyle();
 
     const menuClick = () => {
@@ -76,7 +76,12 @@ const Header = props => {
                     }}
                 >
                     <Box mb={1} className={classes.toolbar} />
-                    <MenuItems classes={classes} routeItems={routeItems} setState={setState} />
+                    <MenuItems
+                        classes={classes}
+                        routeItems={routeItems}
+                        setState={setState}
+                        loading={loading}
+                    />
                 </Drawer>
             )}
             <Box height="64px"></Box>
@@ -85,7 +90,7 @@ const Header = props => {
 };
 
 const MenuItems = props => {
-    const { classes, routeItems, setState } = props;
+    const { classes, routeItems, setState, loading } = props;
     const [open, setOpen] = useState(false);
 
     const menuItems = [
@@ -139,7 +144,7 @@ const MenuItems = props => {
                 </React.Fragment>
             )}
             <List disablePadding>
-                <ListItem button onClick={() => managementClick(index)}>
+                <ListItem button onClick={() => managementClick(index)} disabled={loading}>
                     <ListItemIcon>{data.icon}</ListItemIcon>
                     <ListItemText>
                         <Typography className={classes.listText}>{data.text}</Typography>

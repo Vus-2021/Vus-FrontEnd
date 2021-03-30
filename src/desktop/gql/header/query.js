@@ -5,6 +5,7 @@ export const GET_ROUTE_NAME = gql`
         getRoutesInfo {
             success
             data {
+                partitionKey
                 route
             }
         }

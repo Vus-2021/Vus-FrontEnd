@@ -48,6 +48,14 @@ const ApplicantStyle = makeStyles(theme => ({
         textAlign: 'center',
         color: 'white',
     },
+    addButton: {
+        width: '110px',
+        backgroundColor: '#FA8700',
+        color: 'white',
+        '&:hover': {
+            backgroundColor: '#FA8700',
+        },
+    },
 }));
 
 export default ApplicantStyle;

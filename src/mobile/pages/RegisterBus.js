@@ -2,44 +2,81 @@ import React, { useEffect, useState } from 'react';
 import Header2 from '../layout/Header2';
 import { Dialog, Box, TextField, MenuItem, Button, Slide, Snackbar } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
-import { useForm, Controller } from 'react-hook-form';
 import * as dayjs from 'dayjs';
 import LogInStyle from '../styles/LogInStyle';
-import { useMutation } from '@apollo/react-hooks';
+import { useLazyQuery, useMutation } from '@apollo/react-hooks';
+import { GET_ROUTE_BY_MONTH } from '../gql/registerbus/query';
 import { APPLY_ROUTE } from '../gql/registerbus/mutation';
 
 const RegisterBus = props => {
     const { open, onClose, routeInfo } = props;
     const classes = LogInStyle();
-    const [valMonth, setValMonth] = useState(dayjs(new Date()).format('YYYY-MM'));
-    const [routeName, setRouteName] = useState('강남');
     const [openSnackbar, setSnackbar] = useState(false);
-    const { handleSubmit, control } = useForm();
+    const [route, setRoute] = useState({
+        routeName: '',
+        partitionKey: '',
+    });
+    const [month, setMonth] = useState('');
+    const [routeMonth, setRouteMonth] = useState([]);
 
-    const [applyRoute, { data }] = useMutation(APPLY_ROUTE);
+    const [getRouteByMonth, { data, refetch }] = useLazyQuery(GET_ROUTE_BY_MONTH);
+    const [applyRoute, { data: applyData }] = useMutation(APPLY_ROUTE);
 
     const handleClose = () => {
         onClose();
         setSnackbar(false);
     };
 
-    const registerSubmit = data => {
+    const changeRoute = e => {
+        const partitionKey = e.target.value.split('+')[0];
+        const routeName = e.target.value.split('+')[1];
+        setRoute({ partitionKey: partitionKey, routeName: routeName });
+        refetch({ partitionKey: partitionKey });
+    };
+
+    const registerSubmit = () => {
+        console.log(route.partitionKey);
         applyRoute({
             variables: {
-                route: data.routeName,
-                month: data.registerMonth,
+                route: route.routeName,
+                partitionKey: route.partitionKey,
+                month: month,
             },
         });
     };
 
     useEffect(() => {
-        if (data && open) {
-            const { success, message } = data.applyRoute;
+        if (applyData && open) {
+            const { success, message } = applyData.applyRoute;
             if (success) {
                 setSnackbar(true);
             } else console.log(message);
         }
-    }, [data, open, onClose]);
+    }, [applyData, open, onClose]);
+
+    useEffect(() => {
+        if (routeInfo.length > 0) {
+            setRoute({
+                routeName: routeInfo[0].route,
+                partitionKey: routeInfo[0].partitionKey,
+            });
+            getRouteByMonth({
+                variables: {
+                    partitionKey: routeInfo[0].partitionKey,
+                },
+            });
+        }
+    }, [routeInfo, getRouteByMonth]);
+
+    useEffect(() => {
+        if (data) {
+            const { success, message, data: monthData } = data.getRouteByMonth;
+            if (success) {
+                setRouteMonth(monthData);
+                setMonth(monthData[0].month);
+            } else console.log(message);
+        }
+    }, [data]);
 
     return (
         <Dialog
@@ -51,66 +88,46 @@ const RegisterBus = props => {
         >
             <Header2 handleClose={handleClose} headerText="노선신청" height="40px" />
             <Box pl={3} pr={3} pt={5} pb={5}>
-                <form onSubmit={handleSubmit(registerSubmit)}>
-                    <Box mb={4}>
-                        <Controller
-                            as={
-                                <TextField
-                                    select
-                                    value={valMonth}
-                                    onChange={e => setValMonth(e.target.value)}
-                                    variant="outlined"
-                                    label="신청 월"
-                                    fullWidth
-                                    size="small"
-                                >
-                                    <MenuItem value={dayjs(new Date()).format('YYYY-MM')}>
-                                        {dayjs(new Date()).format('YYYY년 MM월')}
-                                    </MenuItem>
+                <Box mb={4}>
+                    <TextField
+                        select
+                        value={route.partitionKey + '+' + route.routeName}
+                        onChange={changeRoute}
+                        variant="outlined"
+                        label="노선 명"
+                        fullWidth
+                        size="small"
+                    >
+                        {routeInfo.map(data => (
+                            <MenuItem key={data.route} value={data.partitionKey + '+' + data.route}>
+                                {data.route}노선
+                            </MenuItem>
+                        ))}
+                    </TextField>
+                </Box>
+                <Box mb={4}>
+                    <TextField
+                        select
+                        value={month}
+                        onChange={e => setMonth(e.target.value)}
+                        variant="outlined"
+                        label="신청 월"
+                        fullWidth
+                        size="small"
+                    >
+                        {routeMonth.map(data => (
+                            <MenuItem key={data.month} value={dayjs(data.month).format('YYYY-MM')}>
+                                {dayjs(data.month).format('YYYY년 MM월')}
+                            </MenuItem>
+                        ))}
+                    </TextField>
+                </Box>
 
-                                    <MenuItem
-                                        value={dayjs(new Date()).add(1, 'month').format('YYYY-MM')}
-                                    >
-                                        {dayjs(new Date()).add(1, 'month').format('YYYY년 MM월')}
-                                    </MenuItem>
-                                </TextField>
-                            }
-                            name="registerMonth"
-                            control={control}
-                            defaultValue={dayjs(new Date()).format('YYYY-MM')}
-                        />
-                    </Box>
-
-                    <Box mb={4}>
-                        <Controller
-                            as={
-                                <TextField
-                                    select
-                                    value={routeName}
-                                    onChange={e => setRouteName(e.target.value)}
-                                    variant="outlined"
-                                    label="노선 명"
-                                    fullWidth
-                                    size="small"
-                                >
-                                    {routeInfo.map(data => (
-                                        <MenuItem key={data.route} value={data.route}>
-                                            {data.route}노선
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                            }
-                            name="routeName"
-                            control={control}
-                            defaultValue={routeName}
-                        />
-                    </Box>
-                    <Box width="100%">
-                        <Button type="submit" className={classes.registerButton}>
-                            노선 신청하기
-                        </Button>
-                    </Box>
-                </form>
+                <Box width="100%">
+                    <Button onClick={registerSubmit} className={classes.registerButton}>
+                        노선 신청하기
+                    </Button>
+                </Box>
             </Box>
 
             <Snackbar

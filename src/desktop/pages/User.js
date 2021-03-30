@@ -34,10 +34,17 @@ const User = props => {
     const [selection, setSelection] = useState([]);
     const [registerDialog, setRegisterDialog] = useState(false); //등록 Dialog open 여부
     const [userRow, setUserRow] = useState([]);
+    const [search, setSearch] = useState({
+        name: null,
+        type: null,
+        userId: null,
+    });
 
     const { handleSubmit, control } = useForm();
 
-    const { data, refetch } = useQuery(GET_USERS);
+    const { loading, data, error, refetch } = useQuery(GET_USERS, {
+        fetchPolicy: 'no-cache',
+    });
     const [deleteUser] = useMutation(DELETE_USER, {
         onCompleted() {
             refetch();
@@ -46,7 +53,7 @@ const User = props => {
 
     const searchClick = data => {
         console.log(data);
-        refetch({
+        setSearch({
             [data.select]: data.search,
         });
     };
@@ -55,6 +62,14 @@ const User = props => {
         deleteUser({ variables: { userId: selection } });
         setSelection([]);
     };
+
+    useEffect(() => {
+        refetch({
+            name: search.name,
+            type: search.type,
+            userId: search.userId,
+        });
+    }, [search, refetch]);
 
     useEffect(() => {
         if (data) {
@@ -72,6 +87,10 @@ const User = props => {
             }
         }
     }, [data, history]);
+
+    if (error) {
+        console.log(error);
+    }
 
     return (
         <Box px={15} pt={5} minWidth="600px">
@@ -165,10 +184,12 @@ const User = props => {
                             columns={columns}
                             rows={userRow}
                             checkboxSelection
-                            hideFooter
+                            hideFooterSelectedRowCount
+                            autoPageSize
                             onSelectionModelChange={newSelection => {
                                 setSelection(newSelection.selectionModel);
                             }}
+                            loading={loading}
                         />
                     </Box>
                 </Paper>

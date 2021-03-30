@@ -22,7 +22,7 @@ const AdminHome = ({ history }) => {
 
     const { errors, handleSubmit, control } = useForm();
 
-    const [signin, { data }] = useMutation(SIGNIN);
+    const [signin, { data }] = useMutation(SIGNIN, { fetchPolicy: 'no-cache' });
 
     const signInSubmit = data => {
         signin({
@@ -36,6 +36,7 @@ const AdminHome = ({ history }) => {
     useEffect(() => {
         if (data) {
             const { success, message, data: token } = data.signin;
+            console.log(data);
             if (success) {
                 localStorage.setItem('accessToken', token.accessToken);
                 localStorage.setItem('refreshToken', token.refreshToken);

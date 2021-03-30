@@ -23,7 +23,7 @@ const Admin = () => {
 
     const [routeItems, setRouteItems] = useState([]);
 
-    const { data } = useQuery(GET_ROUTE_NAME);
+    const { loading, data } = useQuery(GET_ROUTE_NAME);
 
     useEffect(() => {
         if (data) {
@@ -44,6 +44,7 @@ const Admin = () => {
                     setOpenDrawer={setOpenDrawer}
                     setState={setState}
                     routeItems={routeItems}
+                    loading={loading}
                 />
 
                 <Box className={clsx(classes.mainBox, { [classes.mainBoxShift]: openDrawer })}>

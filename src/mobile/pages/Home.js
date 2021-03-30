@@ -89,10 +89,11 @@ const Home = () => {
         userId: '',
         type: '',
     });
+    const [userBusData, setUserBusData] = useState([]);
     const [routeInfo, setRouteInfo] = useState([]);
 
     const [getMyInfo, { data: myData }] = useLazyQuery(GET_MY_INFO, { fetchPolicy: 'no-cache' });
-    const { data: busData, refetch } = useQuery(GET_ROUTES_INFO, {
+    const { loading, data: busData, refetch } = useQuery(GET_ROUTES_INFO, {
         variables: { month: dayjs(new Date()).format('YYYY-MM') },
     });
 
@@ -111,8 +112,11 @@ const Home = () => {
     };
 
     const firstButtonClick = () => {
-        if (isLogin) setRegisterBusDialog(true);
-        else setLoginDialog(true);
+        if (isLogin) {
+            if (userBusData.length === 0) setRegisterBusDialog(true);
+            // eslint-disable-next-line no-undef
+            else setCancelBusDialog(true);
+        } else setLoginDialog(true);
     };
 
     const secondButtonClick = () => {
@@ -127,13 +131,15 @@ const Home = () => {
     useEffect(() => {
         if (myData) {
             if (myData.getMyInformation.success) {
-                const { name, userId, type } = myData.getMyInformation.data;
+                const { name, userId, type, routeInfo } = myData.getMyInformation.data;
                 setIsLogin(true);
                 setUserData({
                     name: name,
                     userId: userId,
                     type: type,
                 });
+                setUserBusData(routeInfo);
+                console.log(routeInfo);
             }
         }
 
@@ -220,8 +226,13 @@ const Home = () => {
                         className={clsx(classes.buttonCommon, classes.loginButton)}
                         variant="contained"
                         onClick={firstButtonClick}
+                        disabled={isLogin && loading}
                     >
-                        {isLogin ? '노선 신청하기' : '로그인'}
+                        {isLogin
+                            ? userBusData.length === 0
+                                ? '노선 신청하기'
+                                : '노선 취소하기'
+                            : '로그인'}
                     </Button>
                     <Button
                         className={clsx(classes.buttonCommon, classes.signUpButton)}
