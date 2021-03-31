@@ -189,7 +189,17 @@ const Home = () => {
                     </Box>
                     <Divider className={classes.boardDivider} />
 
-                    <Box height="80%"></Box>
+                    <Box height="80%" overflow="auto">
+                        <Box height="27%" mt={1}>
+                            공지 1
+                        </Box>
+                        <Box height="27%" mt={1}>
+                            공지 2
+                        </Box>
+                        <Box height="27%" mt={1}>
+                            공지 3
+                        </Box>
+                    </Box>
                 </Box>
                 <Box mb={1} height="20%" className={classes.buttonList}>
                     <Button
