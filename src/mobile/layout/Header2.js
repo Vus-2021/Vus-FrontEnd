@@ -9,16 +9,16 @@ const Header2 = props => {
     const classes = useStyles();
     return (
         <Box height={headerHeight} className={classes.headerBox}>
-            <Box width="33%">
+            <Box width="20%">
                 &nbsp;&nbsp;
                 <Backspace onClick={handleClose} />
             </Box>
-            <Box width="33%">
+            <Box width="60%">
                 <Typography align="center" className={classes.headerTitle}>
                     {headerText}
                 </Typography>
             </Box>
-            <Box width="33%"></Box>
+            <Box width="20%"></Box>
         </Box>
     );
 };

@@ -12,18 +12,22 @@ import {
     Button,
     FormHelperText,
     Snackbar,
+    Typography,
 } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
-import { useQuery } from '@apollo/react-hooks';
+import { useQuery, useMutation } from '@apollo/react-hooks';
 import { GET_USERS } from '../gql/route/query';
+import { SINGLE_UPLOAD } from '../gql/route/mutation';
 
 const CreateRoute = () => {
     const classes = RouteStyle();
-    const { control, handleSubmit, errors, reset } = useForm();
+    const { control, handleSubmit, errors, reset, watch } = useForm();
     const [drivers, setDrivers] = useState([]);
     const [openSnackbar, setSnackbar] = useState(false);
+    const [imageName, setImageName] = useState('노선 이미지 업로드');
 
     const { data } = useQuery(GET_USERS, { variables: { type: 'DRIVER' } });
+    const [singleUpload, { data: imageData }] = useMutation(SINGLE_UPLOAD);
 
     useEffect(() => {
         if (data) {
@@ -39,6 +43,8 @@ const CreateRoute = () => {
 
     const registerRoute = data => {
         console.log(data);
+        singleUpload({ variables: { file: data.image } });
+
         reset();
         setSnackbar(true);
     };
@@ -49,13 +55,29 @@ const CreateRoute = () => {
         if (type === 'isNumber') return '숫자만 입력해주세요.';
     };
 
+    const testImage = () => {
+        singleUpload({ variables: { file: watch('image') } });
+    };
+
+    useEffect(() => {
+        if (imageData) {
+            const { filename, mimetype, encoding, url } = imageData.singleUpload;
+            console.log({
+                filename: filename,
+                mimetype: mimetype,
+                encoding: encoding,
+                url: url,
+            });
+        }
+    }, [imageData]);
+
     return (
-        <Box display="flex" justifyContent="center" py={5}>
+        <Box display="flex" justifyContent="center" py={5} minHeight="600px">
             <Paper elevation={10} className={classes.registerPaper}>
-                <Box height="500px" width="380px">
+                <Box width="380px">
                     <MiniHeader headerText="노선 등록" />
                     <Box px={4} pt={6} pb={4}>
-                        <form onSubmit={handleSubmit(registerRoute)}>
+                        <form onSubmit={handleSubmit(registerRoute)} encType="multipart/form-data">
                             <Box height="80px">
                                 <Controller
                                     control={control}
@@ -157,6 +179,49 @@ const CreateRoute = () => {
                                     }
                                 />
                             </Box>
+                            <Box height="80px">
+                                <Controller
+                                    control={control}
+                                    defaultValue=""
+                                    name="image"
+                                    rules={{
+                                        required: true,
+                                    }}
+                                    render={props => (
+                                        <Box>
+                                            <input
+                                                accept="image/*"
+                                                id="contained-button-file"
+                                                type="file"
+                                                style={{ display: 'none' }}
+                                                onChange={e => {
+                                                    props.onChange(e.target.files[0]);
+                                                    console.log(e.target.files[0]);
+                                                    setImageName(e.target.files[0].name);
+                                                }}
+                                            />
+                                            <label htmlFor="contained-button-file">
+                                                <Button
+                                                    variant="outlined"
+                                                    component="span"
+                                                    fullWidth
+                                                    className={
+                                                        errors.image
+                                                            ? classes.errorButton
+                                                            : classes.imageButton
+                                                    }
+                                                >
+                                                    <Typography className={classes.imageText}>
+                                                        {errors.image
+                                                            ? '이미지를 업로드해주세요'
+                                                            : imageName}
+                                                    </Typography>
+                                                </Button>
+                                            </label>
+                                        </Box>
+                                    )}
+                                />
+                            </Box>
                             <Box width="100%">
                                 <Button
                                     type="submit"
@@ -168,6 +233,11 @@ const CreateRoute = () => {
                                 </Button>
                             </Box>
                         </form>
+                        <Box mt={1} display="flex" justifyContent="flex-end">
+                            <Button variant="contained" color="primary" onClick={testImage}>
+                                이미지 테스트
+                            </Button>
+                        </Box>
                     </Box>
                 </Box>
             </Paper>

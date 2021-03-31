@@ -8,3 +8,12 @@ export const APPLY_ROUTE = gql`
         }
     }
 `;
+
+export const CANCEL_ROUTE = gql`
+    mutation cancelRoute($busId: String!, $month: String!) {
+        cancelRoute(busId: $busId, month: $month) {
+            success
+            message
+        }
+    }
+`;

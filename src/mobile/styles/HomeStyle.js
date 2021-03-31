@@ -1,7 +1,7 @@
-import { createUseStyles } from 'react-jss';
+import { makeStyles } from '@material-ui/core/styles';
 import background from '../images/Background.png';
 
-const HomeStyle = createUseStyles({
+const HomeStyle = makeStyles(theme => ({
     mainBox: {
         backgroundImage: `url(${background})`,
         backgroundRepeat: 'no-repeat',
@@ -64,22 +64,40 @@ const HomeStyle = createUseStyles({
         backgroundColor: '#0EBB1F',
         color: 'white',
     },
-    moreBoard: {
-        display: 'flex',
-        justifyContent: 'flex-end',
+    busNotify: {
+        border: '1px solid',
+        borderRadius: '10px',
+        borderColor: '#FF0000',
+        backgroundColor: 'white',
+    },
+    notifyText: {
+        '&.MuiTypography-body1': {
+            fontSize: '15px',
+        },
     },
     board: {
         overflow: 'hidden',
         border: '1px solid',
         borderRadius: '15px',
-        backgroundColor: '#F6F6F6',
+        borderColor: '#FF0000',
+        backgroundColor: 'white',
     },
-    tabBox: {
-        overflow: 'auto',
+    boardTitle: {
+        '&.MuiTypography-body1': {
+            fontSize: '18px',
+            fontWeight: 600,
+        },
     },
-    titleBox: {
-        display: 'flex',
-        alignItems: 'center',
+    boardMore: {
+        '&.MuiTypography-body1': {
+            fontSize: '15px',
+            fontWeight: 450,
+        },
+    },
+    boardDivider: {
+        '&.MuiDivider-root': {
+            backgroundColor: 'black',
+        },
     },
     buttonList: {
         display: 'flex',
@@ -115,6 +133,6 @@ const HomeStyle = createUseStyles({
             backgroundColor: '#7D82FD',
         },
     },
-});
+}));
 
 export default HomeStyle;

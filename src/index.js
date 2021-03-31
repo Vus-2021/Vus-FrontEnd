@@ -6,11 +6,16 @@ import { BrowserRouter } from 'react-router-dom';
 import reportWebVitals from './reportWebVitals';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloClient } from 'apollo-client';
-import { createHttpLink } from 'apollo-link-http';
+// import { createHttpLink } from 'apollo-link-http';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { ApolloLink, concat } from 'apollo-boost';
+import { createUploadLink } from 'apollo-upload-client';
 
-const httpLink = createHttpLink({
+// const httpLink = createHttpLink({
+//     uri: 'http://172.26.50.42:4000',
+// });
+
+const uploadLink = createUploadLink({
     uri: 'http://172.26.50.42:4000',
 });
 
@@ -27,7 +32,7 @@ const authMiddleware = new ApolloLink((operation, forward) => {
 });
 
 const client = new ApolloClient({
-    link: concat(authMiddleware, httpLink),
+    link: concat(authMiddleware, uploadLink),
     cache: new InMemoryCache(),
 });
 

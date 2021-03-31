@@ -13,6 +13,23 @@ const RouteStyle = makeStyles(theme => ({
             color: 'white',
         },
     },
+    errorButton: {
+        color: '#f44336',
+        borderColor: '#f44336',
+        '&:hover': {
+            color: '#f44336',
+            borderColor: '#f44336',
+        },
+    },
+    imageButton: {
+        color: '#008AEE',
+        '&:hover': {
+            color: '#008AEE',
+        },
+    },
+    imageText: {
+        textTransform: 'none',
+    },
 }));
 
 export default RouteStyle;

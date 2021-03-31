@@ -11,12 +11,11 @@ import {
     Typography,
     CardContent,
     CardActionArea,
-    AppBar,
-    Tabs,
-    Tab,
+    Divider,
+    SvgIcon,
 } from '@material-ui/core';
 import { Header } from '../layout';
-import { AccountCircle, NotificationsNone, DeveloperBoard } from '@material-ui/icons';
+import { AccountCircle } from '@material-ui/icons';
 import GangNam from '../images/강남버스.png';
 import ByeongJeom from '../images/병점버스.png';
 import AnSan from '../images/안산버스.png';
@@ -51,35 +50,9 @@ const busImages = [
     },
 ];
 
-const boardDummyData = {
-    notice: [
-        {
-            title: '5월 1일부터 엑셀 신청은 받지 않습니다.',
-        },
-        {
-            title: '4월 13일 강남노선 미운영',
-        },
-        {
-            title: '신규 입사자 필독!',
-        },
-    ],
-    board: [
-        {
-            title: '안산노선 버스 정차 상세내용',
-        },
-        {
-            title: '강남노선 버스 정차 상세내용',
-        },
-        {
-            title: '망포노선 버스 정차 상세내용',
-        },
-    ],
-};
-
 const Home = () => {
     const classes = HomeStyle();
     const [isLogin, setIsLogin] = useState(false); //로그인 상태 여부
-    const [boardNum, setNumber] = useState(0);
     const [signUpDialog, setSignUpDialog] = useState(false); //회원가입 Dialog open 여부
     const [loginDialog, setLoginDialog] = useState(false); //로그인 Dialog open 여부
     const [registerBusDialog, setRegisterBusDialog] = useState(false); //버스신청 Dialog open 여부
@@ -92,7 +65,9 @@ const Home = () => {
     const [userBusData, setUserBusData] = useState([]);
     const [routeInfo, setRouteInfo] = useState([]);
 
-    const [getMyInfo, { data: myData }] = useLazyQuery(GET_MY_INFO, { fetchPolicy: 'no-cache' });
+    const [getMyInfo, { data: myData, refetch: userRefetch }] = useLazyQuery(GET_MY_INFO, {
+        fetchPolicy: 'no-cache',
+    });
     const { loading, data: busData, refetch } = useQuery(GET_ROUTES_INFO, {
         variables: { month: dayjs(new Date()).format('YYYY-MM') },
     });
@@ -113,9 +88,7 @@ const Home = () => {
 
     const firstButtonClick = () => {
         if (isLogin) {
-            if (userBusData.length === 0) setRegisterBusDialog(true);
-            // eslint-disable-next-line no-undef
-            else setCancelBusDialog(true);
+            setRegisterBusDialog(true);
         } else setLoginDialog(true);
     };
 
@@ -139,7 +112,6 @@ const Home = () => {
                     type: type,
                 });
                 setUserBusData(routeInfo);
-                console.log(routeInfo);
             }
         }
 
@@ -157,7 +129,6 @@ const Home = () => {
             const { success, message, data } = busData.getRoutesInfo;
             if (success) {
                 setRouteInfo(data);
-                console.log(data);
             } else console.log(message);
         }
     }, [busData]);
@@ -176,50 +147,49 @@ const Home = () => {
                     </Box>
                     {isLogin ? `환영합니다. ${userData.name} 님` : '로그인이 필요합니다.'}
                 </Box>
-                <Box mt={1} mb={1} height="3%" className={classes.getMyData}>
-                    <Button disabled={!isLogin}>
-                        <Box className={classes.buttonFont}>나의 신청현황 보기</Box>
-                    </Button>
-                </Box>
-                <Box mt={1} height="38%" className={classes.chooseBus}>
+                <Box mt={2} height="38%" className={classes.chooseBus}>
                     <BusList routeInfo={routeInfo} />
                 </Box>
-                <Box height="3%" className={classes.moreBoard}>
-                    <Button size="large">더보기</Button>
-                </Box>
-                <Box mb={1} height="27%" className={classes.board}>
-                    <Box>
-                        <AppBar color="primary" height="30%" position="static">
-                            <Tabs
-                                value={boardNum}
-                                onChange={(e, newValue) => setNumber(newValue)}
-                                aria-label="bus board tabs"
-                                centered
-                                variant="fullWidth"
-                            >
-                                <Tab
-                                    label={
-                                        <div>
-                                            <NotificationsNone
-                                                style={{ verticalAlign: 'middle' }}
-                                            />
-                                            &nbsp;&nbsp;공지사항
-                                        </div>
-                                    }
-                                />
-                                <Tab
-                                    label={
-                                        <div>
-                                            <DeveloperBoard style={{ verticalAlign: 'middle' }} />
-                                            &nbsp;&nbsp;게시판
-                                        </div>
-                                    }
-                                />
-                            </Tabs>
-                        </AppBar>
+                <Box
+                    mb={1}
+                    px={2}
+                    height="7%"
+                    minHeight="40px"
+                    className={classes.busNotify}
+                    display="flex"
+                >
+                    <Box mr={1} display="flex" alignItems="center">
+                        <BusAlert color="secondary" />
                     </Box>
-                    <TabPanel content={boardDummyData.notice} value={boardNum} index={0} />
-                    <TabPanel content={boardDummyData.board} value={boardNum} index={1} />
+                    <Box
+                        display="flex"
+                        overflow="auto"
+                        whiteSpace="nowrap"
+                        textOverflow="ellipsis"
+                        alignItems="center"
+                    >
+                        <Typography className={classes.notifyText}>
+                            강남발 버스가 15분 전{' '}
+                            <strong>성호아파트 후문 또래아동도서아울렛 앞</strong>
+                            에서 출발했습니다.
+                        </Typography>
+                    </Box>
+                </Box>
+                <Box mb={1} px={2} height="25%" className={classes.board}>
+                    <Box
+                        height="20%"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="space-between"
+                    >
+                        <Typography className={classes.boardTitle}>공지사항</Typography>
+                        <Button>
+                            <Typography className={classes.boardMore}>더 보기</Typography>
+                        </Button>
+                    </Box>
+                    <Divider className={classes.boardDivider} />
+
+                    <Box height="80%"></Box>
                 </Box>
                 <Box mb={1} height="20%" className={classes.buttonList}>
                     <Button
@@ -228,11 +198,7 @@ const Home = () => {
                         onClick={firstButtonClick}
                         disabled={isLogin && loading}
                     >
-                        {isLogin
-                            ? userBusData.length === 0
-                                ? '노선 신청하기'
-                                : '노선 취소하기'
-                            : '로그인'}
+                        {isLogin ? '노선 신청/취소' : '로그인'}
                     </Button>
                     <Button
                         className={clsx(classes.buttonCommon, classes.signUpButton)}
@@ -247,30 +213,12 @@ const Home = () => {
                         open={registerBusDialog}
                         onClose={handleRegisterBusClose}
                         routeInfo={routeInfo}
+                        userBusData={userBusData}
+                        userRefetch={userRefetch}
                     />
                 </Box>
             </Box>
         </div>
-    );
-};
-
-const TabPanel = props => {
-    const classes = HomeStyle();
-    const { content, value, index } = props;
-
-    const boardList = content.map((data, index) => (
-        <Box key={index} pl={2} height="33%" className={classes.titleBox}>
-            <Typography>{data.title}</Typography>
-        </Box>
-    ));
-    return (
-        <React.Fragment>
-            {value === index && (
-                <Box height="70%" className={classes.tabBox}>
-                    {boardList}
-                </Box>
-            )}
-        </React.Fragment>
     );
 };
 
@@ -280,33 +228,44 @@ const BusList = props => {
     const { routeInfo } = props;
     const busList = routeInfo.map((data, index) => (
         <GridListTile key={index}>
-            <Card elevation={5} className={classes.busCard}>
-                <CardActionArea
-                    className={classes.cardAction}
-                    onClick={() =>
-                        history.push({
-                            pathname: './businfo',
-                            state: { busName: busImages[index].name },
-                        })
-                    }
-                >
-                    <CardMedia component="img" src={busImages[index].image} title="BusImage" />
-                    <CardContent>
-                        <Typography className={classes.busInfo} align="center">
-                            {data.busNumber}
-                        </Typography>
-                        <Typography align="center">
-                            신청자: {data.month.registerCount} / {data.limitCount}
-                        </Typography>
-                    </CardContent>
-                </CardActionArea>
-            </Card>
+            <Box minHeight="150px" height="100%" overflow="auto">
+                <Card elevation={5} className={classes.busCard}>
+                    <CardActionArea
+                        className={classes.cardAction}
+                        onClick={() =>
+                            history.push({
+                                pathname: './businfo',
+                                state: { busName: busImages[index].name },
+                            })
+                        }
+                    >
+                        <CardMedia component="img" src={busImages[index].image} title="BusImage" />
+                        <CardContent>
+                            <Typography className={classes.busInfo} align="center">
+                                {data.busNumber}
+                            </Typography>
+                            <Typography align="center">
+                                신청자: {data.month.registerCount} / {data.limitCount}
+                            </Typography>
+                        </CardContent>
+                    </CardActionArea>
+                </Card>
+            </Box>
         </GridListTile>
     ));
     return (
         <GridList cellHeight="auto" className={classes.busList} cols={2}>
             {busList}
         </GridList>
+    );
+};
+
+const BusAlert = props => {
+    return (
+        <SvgIcon {...props}>
+            <path d="M0 0h24v24H0V0z" fill="none" />
+            <path d="M16 1a7 7 0 0 0-5.78 3.05l.02-.03C9.84 4 9.42 4 9 4c-4.42 0-8 .5-8 4v10c0 .88.39 1.67 1 2.22V22a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h8v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1.78c.61-.55 1-1.34 1-2.22v-3.08A7 7 0 0 0 16 1zM4.5 19a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM3 13V8h6c0 1.96.81 3.73 2.11 5H3zm10.5 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm2.5-6a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm-1-9h2v5h-2zm0 6h2v2h-2z" />
+        </SvgIcon>
     );
 };
 
