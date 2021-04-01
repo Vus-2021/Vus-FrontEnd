@@ -50,8 +50,7 @@ const HomeStyle = makeStyles(theme => ({
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#F6F6F6',
-        border: '1px solid',
+        border: '1.5px solid',
     },
     cardAction: {
         '&.MuiCardActionArea-root': {
@@ -60,9 +59,11 @@ const HomeStyle = makeStyles(theme => ({
     },
     busInfo: {
         border: '1px solid',
-        borderRadius: '30px',
-        backgroundColor: '#0EBB1F',
-        color: 'white',
+    },
+    busNumber: {
+        '&.MuiTypography-body1': {
+            fontWeight: 600,
+        },
     },
     busNotify: {
         border: '1px solid',
@@ -97,6 +98,17 @@ const HomeStyle = makeStyles(theme => ({
     boardDivider: {
         '&.MuiDivider-root': {
             backgroundColor: 'black',
+        },
+    },
+    noticeTitle: {
+        '&.MuiTypography-body1': {
+            fontSize: '16px',
+        },
+    },
+    noticeDate: {
+        '&.MuiTypography-body1': {
+            fontSize: '13px',
+            color: '#766766',
         },
     },
     buttonList: {
