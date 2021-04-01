@@ -21,7 +21,7 @@ import { SINGLE_UPLOAD } from '../gql/route/mutation';
 
 const CreateRoute = () => {
     const classes = RouteStyle();
-    const { control, handleSubmit, errors, reset, watch } = useForm();
+    const { control, handleSubmit, errors, reset, watch, setValue } = useForm();
     const [drivers, setDrivers] = useState([]);
     const [openSnackbar, setSnackbar] = useState(false);
     const [imageName, setImageName] = useState('노선 이미지 업로드');
@@ -46,6 +46,8 @@ const CreateRoute = () => {
         singleUpload({ variables: { file: data.image } });
 
         reset();
+        setValue('image', null);
+        setImageName('노선 이미지 업로드');
         setSnackbar(true);
     };
 

@@ -13,6 +13,8 @@ import {
     CardActionArea,
     Divider,
     SvgIcon,
+    CircularProgress,
+    Paper,
 } from '@material-ui/core';
 import { Header } from '../layout';
 import { AccountCircle } from '@material-ui/icons';
@@ -22,10 +24,11 @@ import AnSan from '../images/안산버스.png';
 import MangPo from '../images/망포버스.png';
 import SeongNam from '../images/성남버스.png';
 import clsx from 'clsx';
-import { GET_MY_INFO, GET_ROUTES_INFO } from '../gql/home/query';
+import { GET_MY_INFO, GET_ROUTES_INFO, GET_ADMIN_NOTICE } from '../gql/home/query';
 import { useLazyQuery, useQuery } from '@apollo/react-hooks';
 import * as dayjs from 'dayjs';
 import { useHistory } from 'react-router-dom';
+import { useMediaQuery } from '@material-ui/core';
 
 const busImages = [
     {
@@ -52,6 +55,8 @@ const busImages = [
 
 const Home = () => {
     const classes = HomeStyle();
+    const smallDevice = useMediaQuery('(max-height: 600px)');
+
     const [isLogin, setIsLogin] = useState(false); //로그인 상태 여부
     const [signUpDialog, setSignUpDialog] = useState(false); //회원가입 Dialog open 여부
     const [loginDialog, setLoginDialog] = useState(false); //로그인 Dialog open 여부
@@ -64,6 +69,7 @@ const Home = () => {
     });
     const [userBusData, setUserBusData] = useState([]);
     const [routeInfo, setRouteInfo] = useState([]);
+    const [notice, setNotice] = useState([]);
 
     const [getMyInfo, { data: myData, refetch: userRefetch }] = useLazyQuery(GET_MY_INFO, {
         fetchPolicy: 'no-cache',
@@ -71,6 +77,8 @@ const Home = () => {
     const { loading, data: busData, refetch } = useQuery(GET_ROUTES_INFO, {
         variables: { month: dayjs(new Date()).format('YYYY-MM') },
     });
+
+    const { loading: noticeLoading, data: noticeData } = useQuery(GET_ADMIN_NOTICE);
 
     const handleSignUpClose = value => {
         setSignUpDialog(false);
@@ -137,6 +145,15 @@ const Home = () => {
         if (localStorage) getMyInfo();
     }, [getMyInfo]);
 
+    useEffect(() => {
+        if (noticeData) {
+            const { success, message, data } = noticeData.getAdminNotice;
+            if (success) {
+                setNotice(data);
+            } else console.log(message);
+        }
+    }, [noticeData]);
+
     return (
         <div>
             <Header />
@@ -161,13 +178,7 @@ const Home = () => {
                     <Box mr={1} display="flex" alignItems="center">
                         <BusAlert color="secondary" />
                     </Box>
-                    <Box
-                        display="flex"
-                        overflow="auto"
-                        whiteSpace="nowrap"
-                        textOverflow="ellipsis"
-                        alignItems="center"
-                    >
+                    <Box display="flex" overflow="auto" whiteSpace="nowrap" alignItems="center">
                         <Typography className={classes.notifyText}>
                             강남발 버스가 15분 전{' '}
                             <strong>성호아파트 후문 또래아동도서아울렛 앞</strong>
@@ -175,9 +186,9 @@ const Home = () => {
                         </Typography>
                     </Box>
                 </Box>
-                <Box mb={1} px={2} height="25%" className={classes.board}>
+                <Box mb={1} px={2} height="25%" className={classes.board} minHeight="50px">
                     <Box
-                        height="20%"
+                        height="15%"
                         display="flex"
                         alignItems="center"
                         justifyContent="space-between"
@@ -189,16 +200,52 @@ const Home = () => {
                     </Box>
                     <Divider className={classes.boardDivider} />
 
-                    <Box height="80%" overflow="auto">
-                        <Box height="27%" mt={1}>
-                            공지 1
-                        </Box>
-                        <Box height="27%" mt={1}>
-                            공지 2
-                        </Box>
-                        <Box height="27%" mt={1}>
-                            공지 3
-                        </Box>
+                    <Box height="85%">
+                        {noticeLoading ? (
+                            <Box
+                                height="100%"
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="center"
+                            >
+                                <CircularProgress color="secondary" />
+                            </Box>
+                        ) : (
+                            notice.map((data, index) => (
+                                <React.Fragment key={data.notice + index}>
+                                    <Box
+                                        height="32%"
+                                        width="100%"
+                                        display="flex"
+                                        flexDirection="column"
+                                        alignItems="flex-start"
+                                        justifyContent="flex-start"
+                                        component={CardActionArea}
+                                        onClick={() => console.log(data.partitionKey)}
+                                    >
+                                        <Box
+                                            height={!smallDevice ? '60%' : '100%'}
+                                            display="flex"
+                                            alignItems="center"
+                                            width="100%"
+                                        >
+                                            <Typography noWrap className={classes.noticeTitle}>
+                                                {data.notice}
+                                            </Typography>
+                                        </Box>
+                                        {!smallDevice && (
+                                            <Box height="40%">
+                                                <Typography noWrap className={classes.noticeDate}>
+                                                    {data.createdAt}
+                                                </Typography>
+                                            </Box>
+                                        )}
+                                    </Box>
+
+                                    <Divider />
+                                </React.Fragment>
+                            ))
+                        )}
                     </Box>
                 </Box>
                 <Box mb={1} height="20%" className={classes.buttonList}>
@@ -249,14 +296,26 @@ const BusList = props => {
                             })
                         }
                     >
-                        <CardMedia component="img" src={busImages[index].image} title="BusImage" />
+                        <Paper elevation={3}>
+                            <CardMedia
+                                component="img"
+                                src={busImages[index].image}
+                                title="BusImage"
+                            />
+                        </Paper>
                         <CardContent>
-                            <Typography className={classes.busInfo} align="center">
-                                {data.busNumber}
-                            </Typography>
-                            <Typography align="center">
-                                신청자: {data.month.registerCount} / {data.limitCount}
-                            </Typography>
+                            <Box mb={0.3}>
+                                <Paper elevation={2} className={classes.busInfo}>
+                                    <Typography align="center" className={classes.busNumber}>
+                                        {data.busNumber}
+                                    </Typography>
+                                </Paper>
+                            </Box>
+                            <Box>
+                                <Typography align="center">
+                                    신청자: {data.month.registerCount} / {data.limitCount}
+                                </Typography>
+                            </Box>
                         </CardContent>
                     </CardActionArea>
                 </Card>
