@@ -10,6 +10,7 @@ export const GET_DETAIL_ROUTES = gql`
                 location
                 lat
                 long
+                imageUrl
             }
         }
     }

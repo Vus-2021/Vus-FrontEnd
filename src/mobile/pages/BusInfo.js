@@ -8,6 +8,8 @@ import {
     Paper,
     SvgIcon,
     CircularProgress,
+    Dialog,
+    TextField,
 } from '@material-ui/core';
 import {
     Timeline,
@@ -24,10 +26,12 @@ import BusInfoStyle from '../styles/BusInfoStyle';
 import BusAlert from '../components/BusAlert';
 import { useQuery } from '@apollo/react-hooks';
 import { GET_DETAIL_ROUTES } from '../gql/businfo/query';
+import SPRITE_IMAGE from '../images/MarkerImages.png';
+import ARRIVAL_IMAGE from '../images/ArrivalMarker.png';
 
 const BusInfo = ({ history, location }) => {
     const classes = BusInfoStyle();
-    const busName = location.state.busName + '노선';
+    const busName = location.state.busName;
     const [boardNum, setNumber] = useState(0);
     const [detailRoutes, setDetailRoutes] = useState([]);
 
@@ -35,7 +39,7 @@ const BusInfo = ({ history, location }) => {
         history.push('/');
     };
     const { loading, data } = useQuery(GET_DETAIL_ROUTES, {
-        variables: { route: location.state.busName },
+        variables: { route: busName },
     });
 
     useEffect(() => {
@@ -50,7 +54,7 @@ const BusInfo = ({ history, location }) => {
 
     return (
         <Box height="100%">
-            <Header2 handleClose={handleClose} headerText={busName} />
+            <Header2 handleClose={handleClose} headerText={`${busName}노선`} />
             <Box>
                 <AppBar color="transparent" position="static">
                     <Tabs
@@ -119,7 +123,16 @@ const BusInfo = ({ history, location }) => {
 const MapTabPanel = props => {
     const { detailRoutes } = props;
     const { kakao } = window;
+    const [openMarkerDialog, setMarkerDialog] = useState(false);
+    const [routeInfo, setRouteInfo] = useState({});
+
     useEffect(() => {
+        const sizeRate = 0.4; //이미지 크기비율
+        const MARKER_WIDTH = 78 * sizeRate, //마커 한개 가로 길이
+            MARKER_HEIGHT = 114 * sizeRate, //마커 한개 세로 길이
+            SPRITE_WIDTH = 390 * sizeRate, //마커 전체 가로 길이
+            SPRITE_HEIGHT = 458 * sizeRate; //마커 전체 세로 길이
+
         const container = document.getElementById('kakaoMap');
         const options = {
             center: new kakao.maps.LatLng(37.220825, 127.07547), //바텍 위치
@@ -127,18 +140,79 @@ const MapTabPanel = props => {
         };
         // eslint-disable-next-line no-unused-vars
         const map = new kakao.maps.Map(container, options);
-        // map.addOverlayMapTypeId(kakao.maps.MapTypeId.TRAFFIC);
-        detailRoutes.map(data => {
-            const { lat, long } = data;
-            let markerPosition = new kakao.maps.LatLng(lat, long);
-            let marker = new kakao.maps.Marker({
+        const bounds = new kakao.maps.LatLngBounds();
+
+        const spriteSize = new kakao.maps.Size(SPRITE_WIDTH, SPRITE_HEIGHT);
+        const markerSize = new kakao.maps.Size(MARKER_WIDTH, MARKER_HEIGHT);
+
+        for (let i = 0; i < detailRoutes.length; i++) {
+            const { lat, long } = detailRoutes[i];
+            const width = i % 5;
+            const height = parseInt(i / 5);
+
+            const markerPosition = new kakao.maps.LatLng(lat, long);
+            const spriteOrigin = new kakao.maps.Point(MARKER_WIDTH * width, MARKER_HEIGHT * height);
+
+            const markerImage = new kakao.maps.MarkerImage(
+                i === detailRoutes.length - 1 ? ARRIVAL_IMAGE : SPRITE_IMAGE,
+                markerSize,
+                i !== detailRoutes.length - 1 && {
+                    spriteOrigin: spriteOrigin,
+                    spriteSize: spriteSize,
+                },
+            );
+
+            const marker = new kakao.maps.Marker({
                 position: markerPosition,
+                image: markerImage,
             });
-            return marker.setMap(map);
-        });
+            marker.setMap(map);
+
+            kakao.maps.event.addListener(marker, 'click', () => {
+                setRouteInfo(detailRoutes[i]);
+                setMarkerDialog(true);
+            });
+
+            bounds.extend(markerPosition);
+        }
+        map.setBounds(bounds);
     }, [kakao, detailRoutes]);
 
-    return <Box id="kakaoMap" height="100%" width="100%"></Box>;
+    return (
+        <Box id="kakaoMap" height="100%" width="100%">
+            <Dialog
+                open={openMarkerDialog}
+                onClose={() => setMarkerDialog(false)}
+                onClick={() => setMarkerDialog(false)}
+                style={{ zIndex: 10000 }}
+            >
+                <Box px={2} py={1} display="flex">
+                    <Box color="secondary" width="75%" mr={1}>
+                        <TextField
+                            value={routeInfo.location}
+                            label="위치"
+                            size="small"
+                            variant="outlined"
+                            disabled
+                            fullWidth
+                            style={{ color: 'black' }}
+                        />
+                    </Box>
+                    <Box color="secondary" width="25%">
+                        <TextField
+                            value={routeInfo.boardingTime}
+                            label="탑승 시간"
+                            size="small"
+                            variant="outlined"
+                            disabled
+                        />
+                    </Box>
+                </Box>
+
+                <img src={routeInfo.imageUrl} alt="nothing" />
+            </Dialog>
+        </Box>
+    );
 };
 
 const RouteTabPanel = props => {
