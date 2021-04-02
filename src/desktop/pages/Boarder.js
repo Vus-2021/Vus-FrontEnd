@@ -321,7 +321,7 @@ const Boarder = props => {
             </Box>
             <Box mb={1}>
                 <Paper>
-                    <Box width="100%" height="500px">
+                    <Box width="100%" minHeight="500px" height="60vh">
                         <DataGrid
                             columns={columns}
                             rows={boardRow}

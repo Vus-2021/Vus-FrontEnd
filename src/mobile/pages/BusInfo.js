@@ -29,6 +29,8 @@ import { GET_DETAIL_ROUTES } from '../gql/businfo/query';
 import SPRITE_IMAGE from '../images/MarkerImages.png';
 import ARRIVAL_IMAGE from '../images/ArrivalMarker.png';
 
+const { kakao } = window;
+
 const BusInfo = ({ history, location }) => {
     const classes = BusInfoStyle();
     const busName = location.state.busName;
@@ -89,18 +91,11 @@ const BusInfo = ({ history, location }) => {
                 <Box
                     position={boardNum === 0 ? 'absolute' : 'static'}
                     width="100%"
-                    zIndex="9999"
+                    zIndex="5000"
                     display="flex"
                     justifyContent="center"
                 >
-                    <Box
-                        mt={1}
-                        py={0.5}
-                        px={2}
-                        width="70%"
-                        className={classes.busNotify}
-                        display="flex"
-                    >
+                    <Box mt={1} py={0.5} px={2} width="70%" className={classes.busNotify}>
                         <Box display="flex" alignItems="center" mr={1}>
                             <BusAlert color="secondary" />
                         </Box>
@@ -122,7 +117,6 @@ const BusInfo = ({ history, location }) => {
 
 const MapTabPanel = props => {
     const { detailRoutes } = props;
-    const { kakao } = window;
     const [openMarkerDialog, setMarkerDialog] = useState(false);
     const [routeInfo, setRouteInfo] = useState({});
 
@@ -176,7 +170,7 @@ const MapTabPanel = props => {
             bounds.extend(markerPosition);
         }
         map.setBounds(bounds);
-    }, [kakao, detailRoutes]);
+    }, [detailRoutes]);
 
     return (
         <Box id="kakaoMap" height="100%" width="100%">

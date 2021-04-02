@@ -14,14 +14,14 @@ const SignUpStyle = createUseStyles({
         '&.MuiButton-root': {
             borderRadius: 50,
             color: 'white',
-            backgroundColor: '#F69017',
+            backgroundColor: '#FD3434',
             width: '100%',
             textTransform: 'none',
             fontSize: '16px',
         },
         '&.MuiButton-root:hover': {
             color: 'white',
-            backgroundColor: '#F69017',
+            backgroundColor: '#FD3434',
         },
     },
 });

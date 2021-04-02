@@ -30,6 +30,25 @@ const RouteStyle = makeStyles(theme => ({
     imageText: {
         textTransform: 'none',
     },
+    searchField: {
+        backgroundColor: 'rgba(255,255,255,0.8)',
+    },
+    searchText: {
+        backgroundColor: 'white',
+        opacity: 1,
+    },
+    searchButton: {
+        height: '40px',
+        borderRadius: '5px',
+    },
+    placeName: {
+        fontSize: '16px',
+        fontWeight: '600',
+    },
+    addressName: {
+        fontSize: '13px',
+        fontWeight: '400',
+    },
 }));
 
 export default RouteStyle;

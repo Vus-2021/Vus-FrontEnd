@@ -12,25 +12,25 @@ const RegisterStyle = makeStyles(theme => ({
     registerButton: {
         borderRadius: 50,
         color: 'white',
-        backgroundColor: '#F69017',
+        backgroundColor: '#FD3434',
         width: '100%',
         textTransform: 'none',
         fontSize: '16px',
         '&:hover': {
             color: 'white',
-            backgroundColor: '#F69017',
+            backgroundColor: '#FD3434',
         },
     },
     cancelButton: {
         borderRadius: 50,
         color: 'white',
-        backgroundColor: '#FA0000',
+        backgroundColor: '#FD3434',
         width: '100%',
         textTransform: 'none',
         fontSize: '16px',
         '&:hover': {
             color: 'white',
-            backgroundColor: '#FA0000',
+            backgroundColor: '#FD3434',
         },
     },
 }));

@@ -283,6 +283,9 @@ const BusList = props => {
     const classes = HomeStyle();
     const history = useHistory();
     const { routeInfo } = props;
+
+    const smallDevice = useMediaQuery('(max-height: 600px)');
+
     const busList = routeInfo.map((data, index) => (
         <GridListTile key={index}>
             <Box minHeight="150px" height="100%" overflow="auto">
@@ -312,7 +315,10 @@ const BusList = props => {
                                 </Paper>
                             </Box>
                             <Box>
-                                <Typography align="center">
+                                <Typography
+                                    align="center"
+                                    className={smallDevice ? classes.countText : null}
+                                >
                                     신청자: {data.month.registerCount} / {data.limitCount}
                                 </Typography>
                             </Box>

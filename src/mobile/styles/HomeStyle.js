@@ -128,21 +128,26 @@ const HomeStyle = makeStyles(theme => ({
     loginButton: {
         '&.MuiButton-root': {
             color: 'white',
-            backgroundColor: '#F69017',
+            backgroundColor: '#FD3434',
         },
         '&.MuiButton-root:hover': {
             color: 'white',
-            backgroundColor: '#F69017',
+            backgroundColor: '#FD3434',
         },
     },
     signUpButton: {
         '&.MuiButton-root': {
             color: 'white',
-            backgroundColor: '#7D82FD',
+            backgroundColor: '#9640D9',
         },
         '&.MuiButton-root:hover': {
             color: 'white',
-            backgroundColor: '#7D82FD',
+            backgroundColor: '#9640D9',
+        },
+    },
+    countText: {
+        '&.MuiTypography-body1': {
+            fontSize: '15px',
         },
     },
 }));

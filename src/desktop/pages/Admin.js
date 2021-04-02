@@ -20,6 +20,7 @@ const Admin = () => {
         titleName: '사용자 관리',
         view: 'userDefault',
     });
+    const [routeName, setRouteName] = useState('');
 
     const [routeItems, setRouteItems] = useState([]);
 
@@ -43,6 +44,7 @@ const Admin = () => {
                     openDrawer={openDrawer}
                     setOpenDrawer={setOpenDrawer}
                     setState={setState}
+                    setRouteName={setRouteName}
                     routeItems={routeItems}
                     loading={loading}
                 />
@@ -52,7 +54,12 @@ const Admin = () => {
                         <Typography className={classes.titleText}>{state.titleName}</Typography>
                     </Box>
                     <Box className={classes.viewBox}>
-                        <SelectView view={state.view} setState={setState} routeItems={routeItems} />
+                        <SelectView
+                            view={state.view}
+                            setState={setState}
+                            routeItems={routeItems}
+                            routeName={routeName}
+                        />
                     </Box>
                 </Box>
             </div>
@@ -61,13 +68,13 @@ const Admin = () => {
 };
 
 const SelectView = props => {
-    const { view, routeItems } = props;
+    const { view, routeItems, routeName } = props;
 
     switch (view) {
         case 'userDefault':
             return <User />;
         case 'routeDefault':
-            return <Route />;
+            return <Route routeName={routeName} />;
         case 'routeCreate':
             return <CreateRoute />;
         case 'noticeDefault':

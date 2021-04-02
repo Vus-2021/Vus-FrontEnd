@@ -29,7 +29,15 @@ import {
 } from '@material-ui/icons';
 
 const Header = props => {
-    const { adminName, openDrawer, setOpenDrawer, setState, routeItems, loading } = props;
+    const {
+        adminName,
+        openDrawer,
+        setOpenDrawer,
+        setState,
+        routeItems,
+        setRouteName,
+        loading,
+    } = props;
     const classes = HeaderStyle();
 
     const menuClick = () => {
@@ -80,6 +88,7 @@ const Header = props => {
                         classes={classes}
                         routeItems={routeItems}
                         setState={setState}
+                        setRouteName={setRouteName}
                         loading={loading}
                     />
                 </Drawer>
@@ -90,7 +99,7 @@ const Header = props => {
 };
 
 const MenuItems = props => {
-    const { classes, routeItems, setState, loading } = props;
+    const { classes, routeItems, setState, setRouteName, loading } = props;
     const [open, setOpen] = useState(false);
 
     const menuItems = [
@@ -132,7 +141,8 @@ const MenuItems = props => {
     };
 
     const routeClick = routeName => {
-        setState({ titleName: `${routeName}노선`, view: routeName });
+        setState({ titleName: `${routeName}노선`, view: 'routeDefault' });
+        setRouteName(routeName);
     };
 
     return menuItems.map((data, index) => (

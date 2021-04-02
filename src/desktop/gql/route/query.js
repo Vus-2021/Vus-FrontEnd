@@ -15,3 +15,19 @@ export const GET_USERS = gql`
         }
     }
 `;
+
+export const GET_DETAIL_ROUTES = gql`
+    query getDetailRoutes($route: String!) {
+        getDetailRoutes(route: $route) {
+            success
+            message
+            data {
+                boardingTime
+                location
+                lat
+                long
+                imageUrl
+            }
+        }
+    }
+`;
