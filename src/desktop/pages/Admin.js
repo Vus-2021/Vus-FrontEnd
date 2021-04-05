@@ -18,13 +18,14 @@ const Admin = () => {
     const [openDrawer, setOpenDrawer] = useState(false);
     const [state, setState] = useState({
         titleName: '사용자 관리',
-        view: 'routeDefault',
+        view: 'userDefault',
     });
-    const [routeName, setRouteName] = useState('강남');
+    const [routeName, setRouteName] = useState('');
+    const [partitionKey, setPartitionKey] = useState('');
 
     const [routeItems, setRouteItems] = useState([]);
 
-    const { loading, data } = useQuery(GET_ROUTE_NAME);
+    const { loading, data, refetch } = useQuery(GET_ROUTE_NAME);
 
     useEffect(() => {
         if (data) {
@@ -45,6 +46,7 @@ const Admin = () => {
                     setOpenDrawer={setOpenDrawer}
                     setState={setState}
                     setRouteName={setRouteName}
+                    setPartitionKey={setPartitionKey}
                     routeItems={routeItems}
                     loading={loading}
                 />
@@ -59,6 +61,8 @@ const Admin = () => {
                             setState={setState}
                             routeItems={routeItems}
                             routeName={routeName}
+                            partitionKey={partitionKey}
+                            refetch={refetch}
                         />
                     </Box>
                 </Box>
@@ -68,15 +72,15 @@ const Admin = () => {
 };
 
 const SelectView = props => {
-    const { view, routeItems, routeName } = props;
+    const { view, routeItems, routeName, partitionKey, refetch } = props;
 
     switch (view) {
         case 'userDefault':
             return <User />;
         case 'routeDefault':
-            return <Route routeName={routeName} />;
+            return <Route routeName={routeName} partitionKey={partitionKey} />;
         case 'routeCreate':
-            return <CreateRoute />;
+            return <CreateRoute refetch={refetch} />;
         case 'noticeDefault':
             return <Notice />;
         case 'boarderDefault':

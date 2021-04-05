@@ -95,7 +95,14 @@ const BusInfo = ({ history, location }) => {
                     display="flex"
                     justifyContent="center"
                 >
-                    <Box mt={1} py={0.5} px={2} width="70%" className={classes.busNotify}>
+                    <Box
+                        mt={1}
+                        py={0.5}
+                        px={2}
+                        width="70%"
+                        className={classes.busNotify}
+                        display="flex"
+                    >
                         <Box display="flex" alignItems="center" mr={1}>
                             <BusAlert color="secondary" />
                         </Box>

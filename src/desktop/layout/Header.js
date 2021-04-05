@@ -36,6 +36,7 @@ const Header = props => {
         setState,
         routeItems,
         setRouteName,
+        setPartitionKey,
         loading,
     } = props;
     const classes = HeaderStyle();
@@ -89,6 +90,7 @@ const Header = props => {
                         routeItems={routeItems}
                         setState={setState}
                         setRouteName={setRouteName}
+                        setPartitionKey={setPartitionKey}
                         loading={loading}
                     />
                 </Drawer>
@@ -99,7 +101,7 @@ const Header = props => {
 };
 
 const MenuItems = props => {
-    const { classes, routeItems, setState, setRouteName, loading } = props;
+    const { classes, routeItems, setState, setRouteName, setPartitionKey, loading } = props;
     const [open, setOpen] = useState(false);
 
     const menuItems = [
@@ -140,9 +142,10 @@ const MenuItems = props => {
         }
     };
 
-    const routeClick = routeName => {
+    const routeClick = (routeName, partitionKey) => {
         setState({ titleName: `${routeName}노선`, view: 'routeDefault' });
         setRouteName(routeName);
+        setPartitionKey(partitionKey);
     };
 
     return menuItems.map((data, index) => (
@@ -185,7 +188,9 @@ const MenuItems = props => {
                             <List key={routeIndex} disablePadding>
                                 <ListItem
                                     button
-                                    onClick={() => routeClick(routeData.route)}
+                                    onClick={() =>
+                                        routeClick(routeData.route, routeData.partitionKey)
+                                    }
                                     className={classes.nested}
                                 >
                                     <ListItemIcon>{routeIndex + 1}.</ListItemIcon>

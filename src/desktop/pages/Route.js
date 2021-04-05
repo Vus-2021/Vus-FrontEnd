@@ -12,11 +12,21 @@ import {
     Collapse,
     ListItem,
     ListItemText,
+    FormControl,
+    InputLabel,
+    MenuItem,
+    FormHelperText,
+    Select,
 } from '@material-ui/core';
 import { Search, ExpandLess, ExpandMore } from '@material-ui/icons';
 import { useQuery, useMutation } from '@apollo/react-hooks';
-import { GET_DETAIL_ROUTES } from '../gql/route/query';
-import { UPDATE_DETAIL_ROUTE } from '../gql/route/mutation';
+import { GET_DETAIL_ROUTES, GET_USERS } from '../gql/route/query';
+import {
+    DELETE_ROUTE,
+    UPDATE_DETAIL_ROUTE,
+    CREATE_ROUTE_DETAIL,
+    DELETE_DETAIL_ROUTE,
+} from '../gql/route/mutation';
 import { useForm, Controller } from 'react-hook-form';
 
 import SPRITE_IMAGE from '../../mobile/images/MarkerImages.png';
@@ -27,24 +37,27 @@ import RouteStyle from '../styles/RouteStyle';
 const { kakao } = window;
 
 const Route = props => {
-    const { routeName } = props;
+    const { routeName, partitionKey } = props;
     const { control, handleSubmit } = useForm();
     const classes = RouteStyle();
 
     const map = useRef();
     const selectedMarker = useRef();
+    const createMarker = useRef();
 
     const [latlng, setLatLng] = useState({
         lat: '',
         lng: '',
     });
     const [route, setRoute] = useState({});
-    const [createDialog, setCreateDialog] = useState(false);
-    const [updateDialog, setUpdateDialog] = useState(false);
+    const [updateRouteDialog, setUpdateRouteDialog] = useState(false); //노선 수정 Dialog open 여부
+    const [createDialog, setCreateDialog] = useState(false); //정류장 등록 Dialog open 여부
+    const [updateDialog, setUpdateDialog] = useState(false); //정류장 수정/삭제 Dialog open 여부
     const [listData, setListData] = useState([]);
     const [openList, setOpenList] = useState(false);
 
     const { data, refetch } = useQuery(GET_DETAIL_ROUTES, { variables: { route: routeName } });
+    const [deleteRoute, { data: deleteData }] = useMutation(DELETE_ROUTE);
 
     const searchList = (data, status) => {
         if (status === kakao.maps.services.Status.OK) {
@@ -60,12 +73,8 @@ const Route = props => {
 
     const listClick = (lat, lng) => {
         const moveLatLng = new kakao.maps.LatLng(lat, lng);
-        const marker = new kakao.maps.Marker({
-            position: moveLatLng,
-        });
-        marker.setMap(map.current);
-        map.current.panTo(moveLatLng);
         map.current.setLevel(2);
+        map.current.panTo(moveLatLng);
     };
 
     const markerClick = (marker, route) => {
@@ -74,6 +83,43 @@ const Route = props => {
         setUpdateDialog(true);
     };
 
+    const mapClick = e => {
+        const latLng = e.latLng;
+        const moveLatLng = new kakao.maps.LatLng(latLng.getLat(), latLng.getLng());
+
+        map.current.panTo(moveLatLng);
+
+        createMarker.current.setPosition(latLng);
+        kakao.maps.event.addListener(createMarker.current, 'click', () => {
+            setLatLng({
+                lat: latLng.getLat(),
+                lng: latLng.getLng(),
+            });
+            setCreateDialog(true);
+        });
+    };
+
+    const updateRouteClick = () => {
+        setUpdateRouteDialog(true);
+    };
+
+    const deleteRouteClick = () => {
+        deleteRoute({
+            variables: {
+                partitionKey: partitionKey,
+            },
+        });
+    };
+
+    useEffect(() => {
+        if (deleteData) {
+            const { success, message } = deleteData.deleteRoute;
+            if (success) {
+                window.location.href = '/admin';
+            } else console.log(message);
+        }
+    }, [deleteData]);
+
     useEffect(() => {
         let sizeRate = 0.48; //이미지 크기비율
         const MARKER_WIDTH = 78 * sizeRate, //마커 한개 가로 길이
@@ -81,15 +127,17 @@ const Route = props => {
             SPRITE_WIDTH = 390 * sizeRate, //마커 전체 가로 길이
             SPRITE_HEIGHT = 458 * sizeRate; //마커 전체 세로 길이
 
-        const container = document.getElementById('kakaoMap');
-        const options = {
-            center: new kakao.maps.LatLng(37.220825, 127.07547), //바텍 위치
-            level: 8,
-        };
-
         if (data) {
             const { success, message, data: detailRoutes } = data.getDetailRoutes;
             if (success) {
+                const container = document.getElementById('kakaoMap');
+                const options = {
+                    center:
+                        detailRoutes.length > 0
+                            ? new kakao.maps.LatLng(100, 100)
+                            : new kakao.maps.LatLng(37.220825, 127.07547),
+                    level: 10,
+                };
                 map.current = new kakao.maps.Map(container, options);
                 const bounds = new kakao.maps.LatLngBounds();
 
@@ -159,6 +207,7 @@ const Route = props => {
                     });
 
                     marker.setMap(map.current);
+
                     kakao.maps.event.addListener(marker, 'click', () => {
                         infowindow.close();
                         markerClick(marker, detailRoutes[i]);
@@ -171,17 +220,16 @@ const Route = props => {
                     });
                     bounds.extend(markerPosition);
                 }
-
-                map.current.setBounds(bounds);
-                kakao.maps.event.addListener(map.current, 'click', e => {
-                    const latlng = e.latLng;
-                    setLatLng({
-                        lat: latlng.getLat(),
-                        lng: latlng.getLng(),
-                    });
-                    setCreateDialog(true);
+                createMarker.current = new kakao.maps.Marker({
+                    position: map.current.getCenter(),
                 });
-            } else console.log(message);
+                createMarker.current.setMap(map.current);
+
+                if (detailRoutes.length > 0) map.current.setBounds(bounds);
+                kakao.maps.event.addListener(map.current, 'click', e => mapClick(e));
+            } else {
+                console.log(message);
+            }
         }
     }, [data]);
 
@@ -190,24 +238,37 @@ const Route = props => {
             <Box id="kakaoMap" width="100%" height="98%">
                 <Box
                     position="absolute"
-                    zIndex="4000"
+                    zIndex={updateRouteDialog ? '0' : '4000'}
                     display="flex"
                     width="100%"
                     justifyContent="flex-end"
                     pt={0.5}
                 >
                     <Box mr={1}>
-                        <Button variant="contained" className={classes.reviseButton}>
+                        <Button
+                            variant="contained"
+                            className={classes.reviseButton}
+                            onClick={updateRouteClick}
+                        >
                             노선 수정
                         </Button>
                     </Box>
                     <Box mr={1}>
-                        <Button variant="contained" className={classes.deleteButton}>
+                        <Button
+                            variant="contained"
+                            className={classes.deleteButton}
+                            onClick={deleteRouteClick}
+                        >
                             노선 삭제
                         </Button>
                     </Box>
                 </Box>
-                <Box position="absolute" zIndex="5000" minWidth="200px" p={0.5}>
+                <Box
+                    position="absolute"
+                    zIndex={updateRouteDialog ? '0' : '5000'}
+                    minWidth="200px"
+                    p={0.5}
+                >
                     <Box p={1} className={classes.searchField}>
                         <form
                             onSubmit={handleSubmit(data => {
@@ -289,7 +350,14 @@ const Route = props => {
                         </Box>
                     </Box>
                 </Box>
-                <CreateDialog open={createDialog} onClose={setCreateDialog} latlng={latlng} />
+                <UpdateRouteDialog open={updateRouteDialog} onClose={setUpdateRouteDialog} />
+                <CreateDialog
+                    open={createDialog}
+                    onClose={setCreateDialog}
+                    latlng={latlng}
+                    routeName={routeName}
+                    refetch={refetch}
+                />
                 <UpdateDialog
                     open={updateDialog}
                     onClose={setUpdateDialog}
@@ -302,18 +370,244 @@ const Route = props => {
     );
 };
 
-const CreateDialog = props => {
-    // eslint-disable-next-line no-unused-vars
-    const { open, onClose, latlng } = props;
+const UpdateRouteDialog = props => {
+    const { open, onClose } = props;
+    const classes = RouteStyle();
+    const { control, handleSubmit, errors } = useForm();
+    const [drivers, setDrivers] = useState([]);
+
+    const { data } = useQuery(GET_USERS, { variables: { type: 'DRIVER' } });
 
     const handleClose = () => {
         onClose(false);
     };
 
+    const LimitCountHelperText = props => {
+        const { type } = props.errors;
+        if (type === 'required') return '수용 인원을 입력해주세요.';
+        if (type === 'isNumber') return '숫자만 입력해주세요.';
+    };
+
+    useEffect(() => {
+        if (data) {
+            const { success, message, data: driverData } = data.getUsers;
+            if (success) {
+                setDrivers(driverData);
+            } else {
+                console.log(message);
+            }
+        }
+    }, [data]);
+
+    return (
+        <Dialog open={open} onClose={handleClose}>
+            <MiniHeader handleClose={handleClose} headerText="노선 수정" />
+            <Box p={4}>
+                <form onSubmit={handleSubmit(data => console.log(data))}>
+                    <Box mb={2}>
+                        <Controller
+                            control={control}
+                            as={TextField}
+                            defaultValue=""
+                            name="route"
+                            label="노선 이름"
+                            fullWidth
+                            variant="outlined"
+                            size="small"
+                            error={errors.route ? true : false}
+                            rules={{ required: true }}
+                            helperText={errors.route ? '노선 이름을 입력해주세요.' : ' '}
+                        />
+                    </Box>
+                    <Box mb={2}>
+                        <Controller
+                            control={control}
+                            name="driver"
+                            defaultValue=""
+                            rules={{
+                                validate: {
+                                    required: value => value !== '',
+                                },
+                            }}
+                            error={errors.driver ? true : false}
+                            render={props => (
+                                <FormControl
+                                    fullWidth
+                                    size="small"
+                                    variant="outlined"
+                                    error={errors.driver ? true : false}
+                                >
+                                    <InputLabel id="bus-driver-select">버스기사 배정</InputLabel>
+                                    <Select
+                                        labelId="bus-driver-select"
+                                        label="버스기사 배정"
+                                        defaultValue={drivers.length > 0 ? drivers[0].userId : ''}
+                                        onChange={e => props.onChange(e.target.value)}
+                                    >
+                                        {drivers.map(driver => (
+                                            <MenuItem key={driver.userId} value={driver.userId}>
+                                                {driver.name}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                    <FormHelperText>
+                                        {errors.driver ? '버스 기사를 선택해주세요.' : ' '}
+                                    </FormHelperText>
+                                </FormControl>
+                            )}
+                        />
+                    </Box>
+                    <Box mb={2}>
+                        <Controller
+                            control={control}
+                            as={TextField}
+                            defaultValue=""
+                            name="busNumber"
+                            label="차량번호"
+                            fullWidth
+                            variant="outlined"
+                            size="small"
+                            error={errors.busNumber ? true : false}
+                            rules={{ required: true }}
+                            helperText={errors.busNumber ? '차량번호를 입력해주세요.' : ' '}
+                        />
+                    </Box>
+                    <Box mb={2}>
+                        <Controller
+                            control={control}
+                            as={TextField}
+                            defaultValue=""
+                            name="limitCount"
+                            label="최대 수용인원"
+                            fullWidth
+                            variant="outlined"
+                            size="small"
+                            error={errors.limitCount ? true : false}
+                            rules={{
+                                required: true,
+                                validate: { isNumber: value => !isNaN(value) },
+                            }}
+                            helperText={
+                                errors.limitCount ? (
+                                    <LimitCountHelperText errors={errors.limitCount} />
+                                ) : (
+                                    ' '
+                                )
+                            }
+                        />
+                    </Box>
+                    <Box display="flex" justifyContent="flex-end">
+                        <Button type="submit" className={classes.searchButton} variant="contained">
+                            노선 등록하기
+                        </Button>
+                    </Box>
+                </form>
+            </Box>
+        </Dialog>
+    );
+};
+
+const CreateDialog = props => {
+    const { open, onClose, routeName, latlng, refetch } = props;
+    const classes = RouteStyle();
+    const { control, handleSubmit, errors } = useForm();
+
+    const [createRouteDetail, { data }] = useMutation(CREATE_ROUTE_DETAIL, {
+        onCompleted() {
+            refetch();
+        },
+    });
+
+    const handleClose = () => {
+        onClose(false);
+    };
+
+    const BoardingTimeHelperText = props => {
+        const { type } = props.errors;
+        if (type === 'required') return '탑승시간을 입력해주세요.';
+        if (type === 'isForm') return '형식에 맞게 입력해주세요.[예) 09:45]';
+    };
+
+    const createRoute = data => {
+        createRouteDetail({
+            variables: {
+                route: routeName,
+                location: data.location,
+                lat: latlng.lat,
+                long: latlng.lng,
+                boardingTime: data.boardingTime,
+            },
+        });
+    };
+
+    useEffect(() => {
+        if (data) {
+            const { success, message } = data.createRouteDetail;
+            if (success) onClose(false);
+            else console.log(message);
+        }
+    }, [data, onClose]);
+
     return (
         <Dialog open={open} onClose={handleClose} style={{ zIndex: 6000 }}>
             <MiniHeader handleClose={handleClose} headerText="정류장 생성" />
-            <Box p={4}>123</Box>
+            <Box p={4}>
+                <form
+                    onSubmit={handleSubmit(data => createRoute(data))}
+                    encType="multipart/form-data"
+                >
+                    <Box mb={1}>
+                        <Controller
+                            control={control}
+                            name="location"
+                            defaultValue=""
+                            as={TextField}
+                            size="small"
+                            fullWidth
+                            rules={{
+                                required: true,
+                            }}
+                            error={errors.location ? true : false}
+                            label="정류장 이름"
+                            variant="outlined"
+                            helperText={errors.location ? '정류장 이름을 입력해주세요.' : ' '}
+                        />
+                    </Box>
+                    <Box mb={1}>
+                        <Controller
+                            control={control}
+                            name="boardingTime"
+                            defaultValue=""
+                            as={TextField}
+                            size="small"
+                            fullWidth
+                            rules={{
+                                required: true,
+                                validate: {
+                                    isForm: value =>
+                                        value.indexOf(':') !== -1 && value.length === 5,
+                                },
+                            }}
+                            error={errors.boardingTime ? true : false}
+                            label="탑승시간"
+                            variant="outlined"
+                            placeholder="HH:mm 형식으로 입력 [예) 09:45]"
+                            helperText={
+                                errors.boardingTime ? (
+                                    <BoardingTimeHelperText errors={errors.boardingTime} />
+                                ) : (
+                                    ' '
+                                )
+                            }
+                        />
+                    </Box>
+                    <Box display="flex" justifyContent="flex-end">
+                        <Button type="submit" variant="contained" className={classes.searchButton}>
+                            정류장 등록
+                        </Button>
+                    </Box>
+                </form>
+            </Box>
         </Dialog>
     );
 };
@@ -321,9 +615,16 @@ const CreateDialog = props => {
 const UpdateDialog = props => {
     // eslint-disable-next-line no-unused-vars
     const { open, onClose, marker, route, refetch } = props;
+    const classes = RouteStyle();
     const { control, handleSubmit, errors } = useForm();
 
     const [updateDetailRoute, { data }] = useMutation(UPDATE_DETAIL_ROUTE, {
+        onCompleted() {
+            refetch();
+        },
+    });
+
+    const [deleteDetailRoute, { data: deleteData }] = useMutation(DELETE_DETAIL_ROUTE, {
         onCompleted() {
             refetch();
         },
@@ -334,12 +635,15 @@ const UpdateDialog = props => {
     };
 
     const deleteRouteClick = () => {
+        deleteDetailRoute({
+            variables: {
+                partitionKey: route.partitionKey,
+            },
+        });
         marker.current.setMap(null);
-        onClose(false);
     };
 
     const reviseRouteClick = data => {
-        console.log(data);
         updateDetailRoute({
             variables: {
                 partitionKey: route.partitionKey,
@@ -360,6 +664,15 @@ const UpdateDialog = props => {
             } else console.log(message);
         }
     }, [data, onClose]);
+
+    useEffect(() => {
+        if (deleteData) {
+            const { success, message } = deleteData.deleteDetailRoute;
+            if (success) {
+                onClose(false);
+            } else console.log(message);
+        }
+    }, [deleteData, onClose]);
 
     return (
         <Dialog open={open} onClose={handleClose} style={{ zIndex: 6000 }}>
@@ -389,7 +702,7 @@ const UpdateDialog = props => {
                             as={TextField}
                             size="small"
                             fullWidth
-                            label="시간"
+                            label="탑승시간"
                             variant="outlined"
                             rules={{ required: true }}
                             error={errors.boardingTime ? true : false}
@@ -398,12 +711,21 @@ const UpdateDialog = props => {
                     </Box>
                     <Box display="flex" justifyContent="flex-end">
                         <Box mr={1}>
-                            <Button type="submit" variant="contained">
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                className={classes.reviseButton}
+                            >
                                 정류장 수정
                             </Button>
                         </Box>
                         <Box>
-                            <Button type="button" variant="contained" onClick={deleteRouteClick}>
+                            <Button
+                                type="button"
+                                variant="contained"
+                                className={classes.deleteButton}
+                                onClick={deleteRouteClick}
+                            >
                                 정류장 삭제
                             </Button>
                         </Box>
