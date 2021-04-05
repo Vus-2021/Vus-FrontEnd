@@ -40,6 +40,25 @@ const RouteStyle = makeStyles(theme => ({
     searchButton: {
         height: '40px',
         borderRadius: '5px',
+        backgroundColor: '#FA8700',
+        color: 'white',
+        '&:hover': {
+            backgroundColor: '#FA8700',
+        },
+    },
+    reviseButton: {
+        backgroundColor: '#0E8AE3',
+        color: 'white',
+        '&:hover': {
+            backgroundColor: '#0E8AE3',
+        },
+    },
+    deleteButton: {
+        backgroundColor: '#FF0000',
+        color: 'white',
+        '&:hover': {
+            backgroundColor: '#FF0000',
+        },
     },
     placeName: {
         fontSize: '16px',

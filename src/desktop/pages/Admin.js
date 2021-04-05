@@ -18,9 +18,9 @@ const Admin = () => {
     const [openDrawer, setOpenDrawer] = useState(false);
     const [state, setState] = useState({
         titleName: '사용자 관리',
-        view: 'userDefault',
+        view: 'routeDefault',
     });
-    const [routeName, setRouteName] = useState('');
+    const [routeName, setRouteName] = useState('강남');
 
     const [routeItems, setRouteItems] = useState([]);
 

@@ -9,7 +9,7 @@ const MiniHeader = props => {
     const classes = UseStyles();
     return (
         <Box height={headerHeight} className={classes.headerBox} width="380px">
-            <Box width="33%">
+            <Box width="20%">
                 {handleClose && (
                     <IconButton color="inherit" onClick={handleClose}>
                         &nbsp;&nbsp;
@@ -17,12 +17,12 @@ const MiniHeader = props => {
                     </IconButton>
                 )}
             </Box>
-            <Box width="33%">
+            <Box width="60%">
                 <Typography align="center" className={classes.headerTitle}>
                     {headerText}
                 </Typography>
             </Box>
-            <Box width="33%"></Box>
+            <Box width="20%"></Box>
         </Box>
     );
 };

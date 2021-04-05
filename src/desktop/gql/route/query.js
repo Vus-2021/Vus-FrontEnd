@@ -22,11 +22,13 @@ export const GET_DETAIL_ROUTES = gql`
             success
             message
             data {
+                partitionKey
                 boardingTime
                 location
                 lat
                 long
                 imageUrl
+                route
             }
         }
     }

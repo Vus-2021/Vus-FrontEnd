@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Box,
     Button,
@@ -8,10 +8,15 @@ import {
     Divider,
     ButtonBase,
     Typography,
+    List,
+    Collapse,
+    ListItem,
+    ListItemText,
 } from '@material-ui/core';
-import { Search } from '@material-ui/icons';
-import { useQuery } from '@apollo/react-hooks';
+import { Search, ExpandLess, ExpandMore } from '@material-ui/icons';
+import { useQuery, useMutation } from '@apollo/react-hooks';
 import { GET_DETAIL_ROUTES } from '../gql/route/query';
+import { UPDATE_DETAIL_ROUTE } from '../gql/route/mutation';
 import { useForm, Controller } from 'react-hook-form';
 
 import SPRITE_IMAGE from '../../mobile/images/MarkerImages.png';
@@ -26,29 +31,47 @@ const Route = props => {
     const { control, handleSubmit } = useForm();
     const classes = RouteStyle();
 
+    const map = useRef();
+    const selectedMarker = useRef();
+
     const [latlng, setLatLng] = useState({
         lat: '',
         lng: '',
     });
+    const [route, setRoute] = useState({});
     const [createDialog, setCreateDialog] = useState(false);
-    const [search, setSearch] = useState('');
+    const [updateDialog, setUpdateDialog] = useState(false);
     const [listData, setListData] = useState([]);
-    // eslint-disable-next-line no-unused-vars
-    const [moveTo, setMoveTo] = useState({
-        lat: '',
-        lng: '',
-    });
+    const [openList, setOpenList] = useState(false);
 
-    const { data } = useQuery(GET_DETAIL_ROUTES, { variables: { route: routeName } });
+    const { data, refetch } = useQuery(GET_DETAIL_ROUTES, { variables: { route: routeName } });
 
     const searchList = (data, status) => {
         if (status === kakao.maps.services.Status.OK) {
+            setOpenList(true);
             setListData(data);
-        } else alert('검색 결과가 없습니다.');
+        } else if (status === kakao.maps.services.Status.ZERO_RESULT) {
+            alert('검색 결과가 없습니다.');
+        } else if (status === kakao.maps.services.Status.ERROR) {
+            alert('검색 결과 중 오류가 발생했습니다.');
+            return;
+        }
     };
 
     const listClick = (lat, lng) => {
-        console.log(lat, lng);
+        const moveLatLng = new kakao.maps.LatLng(lat, lng);
+        const marker = new kakao.maps.Marker({
+            position: moveLatLng,
+        });
+        marker.setMap(map.current);
+        map.current.panTo(moveLatLng);
+        map.current.setLevel(2);
+    };
+
+    const markerClick = (marker, route) => {
+        selectedMarker.current = marker;
+        setRoute(route);
+        setUpdateDialog(true);
     };
 
     useEffect(() => {
@@ -67,7 +90,7 @@ const Route = props => {
         if (data) {
             const { success, message, data: detailRoutes } = data.getDetailRoutes;
             if (success) {
-                const map = new kakao.maps.Map(container, options);
+                map.current = new kakao.maps.Map(container, options);
                 const bounds = new kakao.maps.LatLngBounds();
 
                 const spriteSize = new kakao.maps.Size(SPRITE_WIDTH, SPRITE_HEIGHT);
@@ -96,14 +119,61 @@ const Route = props => {
                     const marker = new kakao.maps.Marker({
                         position: markerPosition,
                         image: markerImage,
+                        clickable: true,
                     });
-                    marker.setMap(map);
 
+                    const content =
+                        '<div class="MuiBox-root" style="background-color: white; width: 300px; margin: 7px; display: flex;">' +
+                        '<div class="MuiBox-root" style="width: 75%; margin-right:8px;">' +
+                        '<div class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth">' +
+                        '<label class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-marginDense MuiInputLabel-outlined MuiFormLabel-filled" data-shrink="true">정류장 이름</label>' +
+                        '<div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-marginDense MuiOutlinedInput-marginDense">' +
+                        '<input aria-invalid="false" type="text" class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense" value="' +
+                        detailRoutes[i].location +
+                        '">' +
+                        '<fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline" style="top: -5px; left: 0; right: 0; bottom:0; margin:0; padding: 0 8px; overflow: hidden; position: absolute; border-style: solid; border-width: 1px; border-radius: inherit; porinter-events: none;">' +
+                        '<legend style="transition: max-width: 100ms cubic-bezier(0.0,0,0.2,1) 50ms; width: auto; height:11px; display: block; padding: 0px; font-size: 0.75em; text-align: left; visibility: hidden;">' +
+                        '<span>정류장 이름</span>' +
+                        '</legend>' +
+                        '</fieldset>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>' +
+                        '<div class="MuiBox-root" style="width: 25%;">' +
+                        '<div class="MuiFormControl-root MuiTextField-root">' +
+                        '<label class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-marginDense MuiInputLabel-outlined MuiFormLabel-filled" data-shrink="true">시간</label>' +
+                        '<div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-marginDense MuiOutlinedInput-marginDense">' +
+                        '<input aria-invalid="false" type="text" class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense" value="' +
+                        detailRoutes[i].boardingTime +
+                        '">' +
+                        '<fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline" style="top: -5px; left: 0; right: 0; bottom:0; margin:0; padding: 0 8px; overflow: hidden; position: absolute; border-style: solid; border-width: 1px; border-radius: inherit; porinter-events: none;">' +
+                        '<legend style="transition: max-width: 100ms cubic-bezier(0.0,0,0.2,1) 50ms; width: auto; height:11px; display: block; padding: 0px; font-size: 0.75em; text-align: left; visibility: hidden;"><span>시간</span></legend>' +
+                        '</fieldset>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>';
+
+                    const infowindow = new kakao.maps.InfoWindow({
+                        content: content,
+                    });
+
+                    marker.setMap(map.current);
+                    kakao.maps.event.addListener(marker, 'click', () => {
+                        infowindow.close();
+                        markerClick(marker, detailRoutes[i]);
+                    });
+                    kakao.maps.event.addListener(marker, 'mouseover', () => {
+                        infowindow.open(map.current, marker);
+                    });
+                    kakao.maps.event.addListener(marker, 'mouseout', () => {
+                        infowindow.close();
+                    });
                     bounds.extend(markerPosition);
                 }
 
-                map.setBounds(bounds);
-                kakao.maps.event.addListener(map, 'click', e => {
+                map.current.setBounds(bounds);
+                kakao.maps.event.addListener(map.current, 'click', e => {
                     const latlng = e.latLng;
                     setLatLng({
                         lat: latlng.getLat(),
@@ -111,97 +181,122 @@ const Route = props => {
                     });
                     setCreateDialog(true);
                 });
-                if (search) {
-                    const ps = new kakao.maps.services.Places();
-                    ps.keywordSearch(search, searchList);
-                }
             } else console.log(message);
         }
-    }, [data, search]);
+    }, [data]);
 
     return (
-        <Box px={2} pt={0} minWidth="600px" height="95%">
-            <Box display="flex" justifyContent="flex-end" height="40px">
-                <Box mr={1}>
-                    <Button variant="contained">노선 수정</Button>
-                </Box>
-                <Box>
-                    <Button variant="contained">노선 삭제</Button>
-                </Box>
-            </Box>
-            <Box position="absolute" zIndex="5000" minWidth="200px" p={0.5}>
-                <Box p={1} className={classes.searchField}>
-                    <form onSubmit={handleSubmit(data => setSearch(data.search))}>
-                        <Box display="flex" flexDirection="row" alignItems="center">
-                            <Box width="230px" mr={1}>
-                                <Controller
-                                    name="search"
-                                    control={control}
-                                    as={TextField}
-                                    defaultValue=""
-                                    size="small"
-                                    variant="outlined"
-                                    label="주소로 검색"
-                                    InputProps={{
-                                        endAdornment: (
-                                            <InputAdornment position="end">
-                                                <Search />
-                                            </InputAdornment>
-                                        ),
-                                    }}
-                                    className={classes.searchText}
-                                />
-                            </Box>
-                            <Box>
-                                <Button
-                                    size="large"
-                                    type="submit"
-                                    variant="contained"
-                                    className={classes.searchButton}
-                                >
-                                    검색
-                                </Button>
-                            </Box>
-                        </Box>
-                    </form>
-                    <Box overflow="auto" maxHeight="500px">
-                        {listData.length > 0 &&
-                            listData.map(data => (
-                                <React.Fragment key={data.id}>
-                                    <Box
-                                        display="flex"
-                                        component={ButtonBase}
-                                        width="100%"
-                                        height="50px"
-                                        justifyContent="flex-start"
-                                        pl={2}
-                                        onClick={() => listClick(data.x, data.y)}
-                                    >
-                                        <Box
-                                            display="flex"
-                                            flexDirection="column"
-                                            alignItems="flex-start"
-                                        >
-                                            <Box>
-                                                <Typography className={classes.placeName}>
-                                                    {data.place_name}
-                                                </Typography>
-                                            </Box>
-                                            <Box>
-                                                <Typography className={classes.addressName}>
-                                                    {data.address_name}
-                                                </Typography>
-                                            </Box>
-                                        </Box>
-                                    </Box>
-                                    <Divider />
-                                </React.Fragment>
-                            ))}
+        <Box px={2} pt={0} minWidth="600px" width="95%" height="95%">
+            <Box id="kakaoMap" width="100%" height="98%">
+                <Box
+                    position="absolute"
+                    zIndex="4000"
+                    display="flex"
+                    width="100%"
+                    justifyContent="flex-end"
+                    pt={0.5}
+                >
+                    <Box mr={1}>
+                        <Button variant="contained" className={classes.reviseButton}>
+                            노선 수정
+                        </Button>
+                    </Box>
+                    <Box mr={1}>
+                        <Button variant="contained" className={classes.deleteButton}>
+                            노선 삭제
+                        </Button>
                     </Box>
                 </Box>
-            </Box>
-            <Box id="kakaoMap" width="100%" height="98%">
+                <Box position="absolute" zIndex="5000" minWidth="200px" p={0.5}>
+                    <Box p={1} className={classes.searchField}>
+                        <form
+                            onSubmit={handleSubmit(data => {
+                                if (data.search) {
+                                    const ps = new kakao.maps.services.Places();
+                                    ps.keywordSearch(data.search, searchList);
+                                }
+                            })}
+                        >
+                            <Box display="flex" flexDirection="row" alignItems="center">
+                                <Box width="230px" mr={1}>
+                                    <Controller
+                                        name="search"
+                                        control={control}
+                                        as={TextField}
+                                        defaultValue=""
+                                        size="small"
+                                        variant="outlined"
+                                        label="주소로 검색"
+                                        InputProps={{
+                                            endAdornment: (
+                                                <InputAdornment position="end">
+                                                    <Search />
+                                                </InputAdornment>
+                                            ),
+                                        }}
+                                        className={classes.searchText}
+                                    />
+                                </Box>
+                                <Box>
+                                    <Button
+                                        size="large"
+                                        type="submit"
+                                        variant="contained"
+                                        className={classes.searchButton}
+                                    >
+                                        검색
+                                    </Button>
+                                </Box>
+                                {listData.length > 0 && (
+                                    <Box
+                                        component={ButtonBase}
+                                        onClick={() => setOpenList(!openList)}
+                                    >
+                                        {openList ? <ExpandLess /> : <ExpandMore />}
+                                    </Box>
+                                )}
+                            </Box>
+                        </form>
+                        <Box overflow="auto" maxHeight="500px">
+                            <Collapse in={openList} timeout="auto" unmountOnExit>
+                                {listData.length > 0 &&
+                                    listData.map(data => (
+                                        <Box
+                                            component={ButtonBase}
+                                            onClick={() => listClick(data.y, data.x)}
+                                            key={data.id}
+                                            display="flex"
+                                            width="100%"
+                                            alignItems="flex-start"
+                                            flexDirection="column"
+                                        >
+                                            <List disablePadding>
+                                                <ListItem style={{ padding: '0 0 0 6px' }}>
+                                                    <ListItemText>
+                                                        <Typography className={classes.placeName}>
+                                                            {data.place_name}
+                                                        </Typography>
+                                                        <Typography className={classes.addressName}>
+                                                            {data.address_name}
+                                                        </Typography>
+                                                    </ListItemText>
+                                                </ListItem>
+                                            </List>
+                                            <Divider />
+                                        </Box>
+                                    ))}
+                            </Collapse>
+                        </Box>
+                    </Box>
+                </Box>
                 <CreateDialog open={createDialog} onClose={setCreateDialog} latlng={latlng} />
+                <UpdateDialog
+                    open={updateDialog}
+                    onClose={setUpdateDialog}
+                    marker={selectedMarker}
+                    route={route}
+                    refetch={refetch}
+                />
             </Box>
         </Box>
     );
@@ -216,9 +311,105 @@ const CreateDialog = props => {
     };
 
     return (
-        <Dialog open={open} onClose={handleClose}>
+        <Dialog open={open} onClose={handleClose} style={{ zIndex: 6000 }}>
             <MiniHeader handleClose={handleClose} headerText="정류장 생성" />
             <Box p={4}>123</Box>
+        </Dialog>
+    );
+};
+
+const UpdateDialog = props => {
+    // eslint-disable-next-line no-unused-vars
+    const { open, onClose, marker, route, refetch } = props;
+    const { control, handleSubmit, errors } = useForm();
+
+    const [updateDetailRoute, { data }] = useMutation(UPDATE_DETAIL_ROUTE, {
+        onCompleted() {
+            refetch();
+        },
+    });
+
+    const handleClose = () => {
+        onClose(false);
+    };
+
+    const deleteRouteClick = () => {
+        marker.current.setMap(null);
+        onClose(false);
+    };
+
+    const reviseRouteClick = data => {
+        console.log(data);
+        updateDetailRoute({
+            variables: {
+                partitionKey: route.partitionKey,
+                lat: route.lat,
+                long: route.long,
+                route: route.route,
+                boardingTime: data.boardingTime,
+                location: data.location,
+            },
+        });
+    };
+
+    useEffect(() => {
+        if (data) {
+            const { success, message } = data.updateDetailRoute;
+            if (success) {
+                onClose(false);
+            } else console.log(message);
+        }
+    }, [data, onClose]);
+
+    return (
+        <Dialog open={open} onClose={handleClose} style={{ zIndex: 6000 }}>
+            <MiniHeader handleClose={handleClose} headerText="정류장 수정/삭제" />
+            <Box p={4}>
+                <form onSubmit={handleSubmit(data => reviseRouteClick(data))}>
+                    <Box mb={1} width="100%">
+                        <Controller
+                            name="location"
+                            control={control}
+                            defaultValue={route.location}
+                            as={TextField}
+                            size="small"
+                            fullWidth
+                            label="정류장 이름"
+                            variant="outlined"
+                            rules={{ required: true }}
+                            error={errors.location ? true : false}
+                            helperText={errors.location ? '정류장 이름을 입력해주세요.' : ' '}
+                        />
+                    </Box>
+                    <Box mb={1} width="100%">
+                        <Controller
+                            name="boardingTime"
+                            control={control}
+                            defaultValue={route.boardingTime}
+                            as={TextField}
+                            size="small"
+                            fullWidth
+                            label="시간"
+                            variant="outlined"
+                            rules={{ required: true }}
+                            error={errors.boardingTime ? true : false}
+                            helperText={errors.boardingTime ? '시간을 입력해주세요.' : ' '}
+                        />
+                    </Box>
+                    <Box display="flex" justifyContent="flex-end">
+                        <Box mr={1}>
+                            <Button type="submit" variant="contained">
+                                정류장 수정
+                            </Button>
+                        </Box>
+                        <Box>
+                            <Button type="button" variant="contained" onClick={deleteRouteClick}>
+                                정류장 삭제
+                            </Button>
+                        </Box>
+                    </Box>
+                </form>
+            </Box>
         </Dialog>
     );
 };
