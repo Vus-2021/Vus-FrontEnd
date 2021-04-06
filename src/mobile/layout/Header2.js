@@ -8,7 +8,7 @@ const Header2 = props => {
     const headerHeight = height ? height : '5%';
     const classes = useStyles();
     return (
-        <Box height={headerHeight} className={classes.headerBox}>
+        <Box height={headerHeight} minHeight="30px" className={classes.headerBox}>
             <Box width="20%">
                 &nbsp;&nbsp;
                 <Backspace onClick={handleClose} />

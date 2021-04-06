@@ -53,7 +53,7 @@ const busImages = [
     },
 ];
 
-const Home = () => {
+const Home = ({ history }) => {
     const classes = HomeStyle();
     const smallDevice = useMediaQuery('(max-height: 600px)');
 
@@ -157,7 +157,7 @@ const Home = () => {
     return (
         <div>
             <Header />
-            <Box pl={3} pr={3} pt={2} pb={2} className={classes.mainBox}>
+            <Box px={3} py={2} className={classes.mainBox}>
                 <Box height="4%" className={classes.requireLogin}>
                     <Box mr={1}>
                         <AccountCircle fontSize="large" />
@@ -194,7 +194,11 @@ const Home = () => {
                         justifyContent="space-between"
                     >
                         <Typography className={classes.boardTitle}>공지사항</Typography>
-                        <Button>
+                        <Button
+                            onClick={() => {
+                                history.push('/notice');
+                            }}
+                        >
                             <Typography className={classes.boardMore}>더 보기</Typography>
                         </Button>
                     </Box>
@@ -221,7 +225,12 @@ const Home = () => {
                                         alignItems="flex-start"
                                         justifyContent="flex-start"
                                         component={CardActionArea}
-                                        onClick={() => console.log(data.partitionKey)}
+                                        onClick={() =>
+                                            history.push({
+                                                pathname: '/notice',
+                                                state: { partitionKey: data.partitionKey },
+                                            })
+                                        }
                                     >
                                         <Box
                                             height={!smallDevice ? '60%' : '100%'}

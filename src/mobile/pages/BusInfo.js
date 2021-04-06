@@ -228,7 +228,7 @@ const RouteTabPanel = props => {
                         <CircularProgress />
                     </Box>
                 ) : (
-                    <Box height="90%" overflow="auto">
+                    <Box height="70vh" overflow="auto">
                         <Timeline className={classes.timeLine}>
                             {detailRoutes.map((data, index) => (
                                 <TimelineItem key={data.location}>

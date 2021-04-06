@@ -42,7 +42,6 @@ const Route = props => {
     const classes = RouteStyle();
 
     const map = useRef();
-    const selectedMarker = useRef();
     const createMarker = useRef();
 
     const [latlng, setLatLng] = useState({
@@ -78,7 +77,6 @@ const Route = props => {
     };
 
     const markerClick = (marker, route) => {
-        selectedMarker.current = marker;
         setRoute(route);
         setUpdateDialog(true);
     };
@@ -234,8 +232,8 @@ const Route = props => {
     }, [data]);
 
     return (
-        <Box px={2} pt={0} minWidth="600px" width="95%" height="95%">
-            <Box id="kakaoMap" width="100%" height="98%">
+        <Box px={2} pt={1} minWidth="600px" width="95%" height="98%">
+            <Box id="kakaoMap" width="100%" height="100%">
                 <Box
                     position="absolute"
                     zIndex={updateRouteDialog ? '0' : '4000'}
@@ -361,7 +359,6 @@ const Route = props => {
                 <UpdateDialog
                     open={updateDialog}
                     onClose={setUpdateDialog}
-                    marker={selectedMarker}
                     route={route}
                     refetch={refetch}
                 />
@@ -580,7 +577,6 @@ const CreateDialog = props => {
                             defaultValue=""
                             as={TextField}
                             size="small"
-                            fullWidth
                             rules={{
                                 required: true,
                                 validate: {
@@ -588,6 +584,7 @@ const CreateDialog = props => {
                                         value.indexOf(':') !== -1 && value.length === 5,
                                 },
                             }}
+                            fullWidth
                             error={errors.boardingTime ? true : false}
                             label="탑승시간"
                             variant="outlined"
