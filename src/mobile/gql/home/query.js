@@ -36,14 +36,15 @@ export const GET_ROUTES_INFO = gql`
                     registerCount
                     month
                 }
+                imageUrl
             }
         }
     }
 `;
 
 export const GET_ADMIN_NOTICE = gql`
-    query getAdminNotice($notice: String, $name: String, $content: String) {
-        getAdminNotice(notice: $notice, name: $name, content: $content) {
+    query getAdminNotice($limit: Int) {
+        getAdminNotice(limit: $limit) {
             success
             message
             data {

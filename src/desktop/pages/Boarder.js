@@ -68,6 +68,7 @@ const Boarder = props => {
         route: routeItems[0].route,
         month: '',
         state: '',
+        isCancellation: null,
     }); //  분류 기준(대기자, 노선, 월별)
     const [search, setSearch] = useState({
         name: null,
@@ -77,8 +78,14 @@ const Boarder = props => {
     const [monthSelect, setMonthSelect] = useState([]); //getRouteByMonth의 데이터를 담을 state
     const [openDialog, setOpenDialog] = useState(false); // 월 추가 Dialog의 open여부
 
-    const { loading, data, error, refetch } = useQuery(GET_BUS_APPLICANT, {
-        variables: { route: standard.route, month: standard.month, state: null },
+    const { loading, data, refetch } = useQuery(GET_BUS_APPLICANT, {
+        variables: {
+            route: standard.route,
+            month: standard.month,
+            state: null,
+            isCancellation: null,
+        },
+        fetchPolicy: 'no-cache',
     });
 
     const { loading: monthLoading, data: monthData, refetch: refetchMonth } = useQuery(
@@ -92,22 +99,27 @@ const Boarder = props => {
     const boardList = [
         {
             state: null,
+            isCancellation: null,
             listName: '전체',
         },
         {
             state: 'fullfilled',
+            isCancellation: false,
             listName: '당첨자',
         },
         {
             state: 'reject',
+            isCancellation: false,
             listName: '미당첨자',
         },
         {
             state: 'pending',
+            isCancellation: false,
             listName: '대기자',
         },
         {
-            state: 'cancel',
+            state: null,
+            isCancellation: true,
             listName: '취소자',
         },
     ];
@@ -130,8 +142,8 @@ const Boarder = props => {
     };
 
     const changeBoardType = index => {
-        const { state } = boardList[index];
-        setStandard({ ...standard, state: state });
+        const { state, isCancellation } = boardList[index];
+        setStandard({ ...standard, state: state, isCancellation: isCancellation });
         setBoardType(index);
     };
 
@@ -161,6 +173,7 @@ const Boarder = props => {
             name: search.name,
             userId: search.userId,
             type: search.type,
+            isCancellation: standard.isCancellation,
         });
     }, [standard, search, refetch]);
 
@@ -170,17 +183,14 @@ const Boarder = props => {
             const { success, message, data } = monthData.getRouteByMonth;
             if (success) {
                 setMonthSelect(data);
-                if (data[0].month) setStandard(standard => ({ ...standard, month: data[0].month }));
+                if (data.length > 0 && data[0].month)
+                    setStandard(standard => ({ ...standard, month: data[data.length - 1].month }));
             } else console.log(message);
         }
         return () => {
             setMonthSelect([]);
         };
     }, [monthData]);
-
-    if (error) {
-        console.log(error);
-    }
 
     return (
         <Box px={15} pb={2} minWidth="600px">
@@ -205,7 +215,6 @@ const Boarder = props => {
                                         {data.listName}
                                     </Typography>
                                 }
-                                disabled={index === 4} //취소자는 공사중.
                             />
                         ))}
                     </Tabs>
@@ -236,7 +245,11 @@ const Boarder = props => {
                     <Box mr={2} width="106px">
                         <FormControl variant="outlined" size="small" fullWidth>
                             <InputLabel>월 선택</InputLabel>
-                            <Select onChange={monthChange} label="월 선택" value={standard.month}>
+                            <Select
+                                onChange={monthChange}
+                                label="월 선택"
+                                value={monthSelect.length > 0 ? standard.month : ''}
+                            >
                                 {monthSelect.map(data => (
                                     <MenuItem
                                         key={data.month}
@@ -363,7 +376,9 @@ const AddMonthDialog = props => {
     const classes = BoarderStyle();
 
     const lastMonth =
-        monthSelect.length === 0 ? dayjs(new Date()) : monthSelect[monthSelect.length - 1].month;
+        monthSelect.length === 0
+            ? dayjs(new Date()).subtract(1, 'month')
+            : monthSelect[monthSelect.length - 1].month;
     const newMonth = dayjs(lastMonth).add(1, 'month').format('YYYY-MM');
 
     const [addMonthlyRoute] = useMutation(ADD_MONTHLY_ROUTE, {

@@ -210,7 +210,7 @@ const MapTabPanel = props => {
                     </Box>
                 </Box>
 
-                <img src={routeInfo.imageUrl} alt="nothing" />
+                {routeInfo.imageUrl && <img src={routeInfo.imageUrl} alt="nothing" />}
             </Dialog>
         </Box>
     );

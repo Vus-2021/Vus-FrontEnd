@@ -18,40 +18,12 @@ import {
 import BusAlert from '../components/BusAlert';
 import { Header } from '../layout';
 import { AccountCircle } from '@material-ui/icons';
-import GangNam from '../images/강남버스.png';
-import ByeongJeom from '../images/병점버스.png';
-import AnSan from '../images/안산버스.png';
-import MangPo from '../images/망포버스.png';
-import SeongNam from '../images/성남버스.png';
 import clsx from 'clsx';
 import { GET_MY_INFO, GET_ROUTES_INFO, GET_ADMIN_NOTICE } from '../gql/home/query';
 import { useLazyQuery, useQuery } from '@apollo/react-hooks';
 import * as dayjs from 'dayjs';
 import { useHistory } from 'react-router-dom';
 import { useMediaQuery } from '@material-ui/core';
-
-const busImages = [
-    {
-        name: '강남',
-        image: GangNam,
-    },
-    {
-        name: '망포',
-        image: MangPo,
-    },
-    {
-        name: '병점',
-        image: ByeongJeom,
-    },
-    {
-        name: '성남',
-        image: SeongNam,
-    },
-    {
-        name: '안산',
-        image: AnSan,
-    },
-];
 
 const Home = ({ history }) => {
     const classes = HomeStyle();
@@ -78,7 +50,10 @@ const Home = ({ history }) => {
         variables: { month: dayjs(new Date()).format('YYYY-MM') },
     });
 
-    const { loading: noticeLoading, data: noticeData } = useQuery(GET_ADMIN_NOTICE);
+    const { loading: noticeLoading, data: noticeData } = useQuery(GET_ADMIN_NOTICE, {
+        fetchPolicy: 'no-cache',
+        variables: { limit: 3 },
+    });
 
     const handleSignUpClose = value => {
         setSignUpDialog(false);
@@ -245,7 +220,9 @@ const Home = ({ history }) => {
                                         {!smallDevice && (
                                             <Box height="40%">
                                                 <Typography noWrap className={classes.noticeDate}>
-                                                    {data.createdAt}
+                                                    {dayjs(data.createdAt).format(
+                                                        'YYYY-MM-DD HH:mm',
+                                                    )}
                                                 </Typography>
                                             </Box>
                                         )}
@@ -304,16 +281,12 @@ const BusList = props => {
                         onClick={() =>
                             history.push({
                                 pathname: './businfo',
-                                state: { busName: busImages[index].name },
+                                state: { busName: data.route },
                             })
                         }
                     >
                         <Paper elevation={3}>
-                            <CardMedia
-                                component="img"
-                                src={busImages[index].image}
-                                title="BusImage"
-                            />
+                            <CardMedia component="img" src={data.imageUrl} title="BusImage" />
                         </Paper>
                         <CardContent>
                             <Box mb={0.3}>

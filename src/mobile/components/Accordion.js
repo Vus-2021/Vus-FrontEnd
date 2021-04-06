@@ -6,13 +6,14 @@ const Accordion = withStyles({
         border: '1px solid rgba(0, 0, 0, .125)',
         boxShadow: 'none',
         '&:not(:last-child)': {
-            borderBottom: 0,
+            borderBottom: '1px solid rgba(0, 0, 0, .125)',
         },
         '&:before': {
             display: 'none',
         },
         '&$expanded': {
-            margin: 'auto',
+            marginTop: '0',
+            marginBotton: '5px',
         },
     },
     expanded: {},

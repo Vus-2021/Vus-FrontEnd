@@ -19,6 +19,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { GET_ADMIN_NOTICE } from '../gql/notice/query';
 import { useQuery } from '@apollo/react-hooks';
 import { useHistory, useLocation } from 'react-router-dom';
+import * as dayjs from 'dayjs';
 
 const Notice = props => {
     const history = useHistory();
@@ -63,7 +64,7 @@ const Notice = props => {
     useEffect(() => {
         refetch({
             notice: search.notice,
-            author: search.author,
+            name: search.author,
             content: search.content,
         });
     }, [search, refetch]);
@@ -162,15 +163,27 @@ const Notice = props => {
                         >
                             <CircularProgress color="secondary" />
                         </Box>
+                    ) : notice.length === 0 ? (
+                        <Box
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
+                            height="100%"
+                        >
+                            검색 결과가 없습니다.
+                        </Box>
                     ) : (
-                        notice.map(data => (
+                        notice.map((data, index) => (
                             <Accordion
                                 key={data.partitionKey}
                                 square
                                 expanded={expanded === data.partitionKey}
                                 onChange={accordionChange(data.partitionKey)}
                             >
-                                <AccordionSummary expandIcon={<ExpandMore />}>
+                                <AccordionSummary
+                                    expandIcon={<ExpandMore />}
+                                    style={{ backgroundColor: index % 2 === 1 && '#FFF2F2' }}
+                                >
                                     <Box
                                         display="flex"
                                         flexDirection="column"
@@ -187,7 +200,7 @@ const Notice = props => {
                                             width="100%"
                                         >
                                             <Typography className={classes.noticeCreatedAt}>
-                                                작성일: {data.createdAt}
+                                                작성일: {dayjs(data.createdAt).format('YYYY-MM-DD')}
                                             </Typography>
                                             <Typography className={classes.noticeAuthor}>
                                                 작성자: {data.author}
@@ -204,7 +217,7 @@ const Notice = props => {
                                     >
                                         <Box mb={2}>
                                             <Typography className={classes.noticeUpdatedAt}>
-                                                수정일: {data.updatedAt}
+                                                수정일: {dayjs(data.updatedAt).format('YYYY-MM-DD')}
                                             </Typography>
                                             <Divider />
                                         </Box>

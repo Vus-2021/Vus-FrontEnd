@@ -1,28 +1,42 @@
 import gql from 'graphql-tag';
 
-export const SINGLE_UPLOAD = gql`
-    mutation singleUpload($file: Upload!) {
-        singleUpload(file: $file) {
-            filename
-            mimetype
-            encoding
-            url
-        }
-    }
-`;
-
 export const CREATE_ROUTE = gql`
     mutation createRoute(
         $route: String!
         $busNumber: String!
         $limitCount: Int!
         $driver: driver!
+        $file: Upload
     ) {
         createRoute(
             route: $route
             busNumber: $busNumber
             limitCount: $limitCount
             driver: $driver
+            file: $file
+        ) {
+            success
+            message
+        }
+    }
+`;
+
+export const UPDATE_ROUTE = gql`
+    mutation updateRoute(
+        $partitionKey: String!
+        $route: String
+        $busNumber: String
+        $limitCount: Int
+        $driver: driver
+        $file: Upload
+    ) {
+        updateRoute(
+            partitionKey: $partitionKey
+            route: $route
+            busNumber: $busNumber
+            limitCount: $limitCount
+            driver: $driver
+            file: $file
         ) {
             success
             message

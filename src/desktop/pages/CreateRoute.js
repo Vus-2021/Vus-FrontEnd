@@ -17,7 +17,7 @@ import {
 import { Alert } from '@material-ui/lab';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import { GET_USERS } from '../gql/route/query';
-import { SINGLE_UPLOAD, CREATE_ROUTE } from '../gql/route/mutation';
+import { CREATE_ROUTE } from '../gql/route/mutation';
 
 const CreateRoute = props => {
     const { refetch } = props;
@@ -27,8 +27,10 @@ const CreateRoute = props => {
     const [openSnackbar, setSnackbar] = useState(false);
     const [imageName, setImageName] = useState('노선 이미지 업로드');
 
-    const { data } = useQuery(GET_USERS, { variables: { type: 'DRIVER' } });
-    const [singleUpload, { data: imageData }] = useMutation(SINGLE_UPLOAD);
+    const { data } = useQuery(GET_USERS, {
+        variables: { type: 'DRIVER' },
+        fetchPolicy: 'no-cache',
+    });
     const [createRoute, { data: createData }] = useMutation(CREATE_ROUTE, {
         fetchPolicy: 'no-cache',
         onCompleted() {
@@ -37,14 +39,14 @@ const CreateRoute = props => {
     });
 
     const registerRoute = data => {
-        console.log(data);
-        singleUpload({ variables: { file: data.image } });
+        const driverData = data.driver.split('+');
         createRoute({
             variables: {
                 route: data.route,
                 busNumber: data.busNumber,
                 limitCount: parseInt(data.limitCount),
-                driver: { name: data.driver },
+                driver: { name: driverData[0], phone: driverData[1], userId: driverData[2] },
+                file: data.image,
             },
         });
     };
@@ -78,18 +80,6 @@ const CreateRoute = props => {
             } else console.log(message);
         }
     }, [createData, reset, setValue]);
-
-    useEffect(() => {
-        if (imageData) {
-            const { filename, mimetype, encoding, url } = imageData.singleUpload;
-            console.log({
-                filename: filename,
-                mimetype: mimetype,
-                encoding: encoding,
-                url: url,
-            });
-        }
-    }, [imageData]);
 
     return (
         <Box display="flex" justifyContent="center" py={5} minHeight="600px">
@@ -143,7 +133,7 @@ const CreateRoute = props => {
                                                 {drivers.map(driver => (
                                                     <MenuItem
                                                         key={driver.userId}
-                                                        value={driver.userId}
+                                                        value={`${driver.name}+${driver.phoneNumber}+${driver.userId}`}
                                                     >
                                                         {driver.name}
                                                     </MenuItem>
@@ -212,7 +202,6 @@ const CreateRoute = props => {
                                                 style={{ display: 'none' }}
                                                 onChange={e => {
                                                     props.onChange(e.target.files[0]);
-                                                    console.log(e.target.files[0]);
                                                     setImageName(e.target.files[0].name);
                                                 }}
                                             />

@@ -8,6 +8,7 @@ export const GET_BUS_APPLICANT = gql`
         $name: String
         $userId: String
         $type: UserType
+        $isCancellation: Boolean
     ) {
         getBusApplicant(
             route: $route
@@ -16,6 +17,7 @@ export const GET_BUS_APPLICANT = gql`
             name: $name
             userId: $userId
             type: $type
+            isCancellation: $isCancellation
         ) {
             success
             message

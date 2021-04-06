@@ -33,3 +33,23 @@ export const GET_DETAIL_ROUTES = gql`
         }
     }
 `;
+
+export const GET_ROUTES_INFO = gql`
+    query getRoutesInfo($route: String) {
+        getRoutesInfo(route: $route) {
+            success
+            message
+            data {
+                partitionKey
+                busNumber
+                limitCount
+                route
+                driver {
+                    phone
+                    name
+                    userId
+                }
+            }
+        }
+    }
+`;

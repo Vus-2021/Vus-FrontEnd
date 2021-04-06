@@ -20,8 +20,9 @@ import {
 } from '@material-ui/core';
 import { Search, ExpandLess, ExpandMore } from '@material-ui/icons';
 import { useQuery, useMutation } from '@apollo/react-hooks';
-import { GET_DETAIL_ROUTES, GET_USERS } from '../gql/route/query';
+import { GET_DETAIL_ROUTES, GET_USERS, GET_ROUTES_INFO } from '../gql/route/query';
 import {
+    UPDATE_ROUTE,
     DELETE_ROUTE,
     UPDATE_DETAIL_ROUTE,
     CREATE_ROUTE_DETAIL,
@@ -348,7 +349,11 @@ const Route = props => {
                         </Box>
                     </Box>
                 </Box>
-                <UpdateRouteDialog open={updateRouteDialog} onClose={setUpdateRouteDialog} />
+                <UpdateRouteDialog
+                    open={updateRouteDialog}
+                    onClose={setUpdateRouteDialog}
+                    routeName={routeName}
+                />
                 <CreateDialog
                     open={createDialog}
                     onClose={setCreateDialog}
@@ -368,12 +373,25 @@ const Route = props => {
 };
 
 const UpdateRouteDialog = props => {
-    const { open, onClose } = props;
+    const { open, onClose, routeName } = props;
     const classes = RouteStyle();
     const { control, handleSubmit, errors } = useForm();
     const [drivers, setDrivers] = useState([]);
+    const [routeInfo, setRouteInfo] = useState({});
 
-    const { data } = useQuery(GET_USERS, { variables: { type: 'DRIVER' } });
+    const { data } = useQuery(GET_USERS, {
+        variables: { type: 'DRIVER' },
+        fetchPolicy: 'no-cache',
+    });
+    const { data: routeData, refetch: refetchRoute } = useQuery(GET_ROUTES_INFO, {
+        variables: { route: routeName },
+        fetchPolicy: 'no-cache',
+    });
+    const [updateRoute, { data: updateData }] = useMutation(UPDATE_ROUTE, {
+        onCompleted() {
+            refetchRoute({ route: routeName });
+        },
+    });
 
     const handleClose = () => {
         onClose(false);
@@ -383,6 +401,19 @@ const UpdateRouteDialog = props => {
         const { type } = props.errors;
         if (type === 'required') return '수용 인원을 입력해주세요.';
         if (type === 'isNumber') return '숫자만 입력해주세요.';
+    };
+
+    const updateClick = data => {
+        const driverData = data.driver.split('+');
+        updateRoute({
+            variables: {
+                partitionKey: routeInfo.partitionKey,
+                route: data.route,
+                busNumber: data.busNumber,
+                limitCount: data.limitCount,
+                driver: { name: driverData[0], phone: driverData[1], userId: driverData[2] },
+            },
+        });
     };
 
     useEffect(() => {
@@ -396,109 +427,144 @@ const UpdateRouteDialog = props => {
         }
     }, [data]);
 
+    useEffect(() => {
+        if (routeData) {
+            const { success, message, data } = routeData.getRoutesInfo;
+            if (success) {
+                setRouteInfo(data[0]);
+            } else console.log(message);
+        }
+    }, [routeData]);
+
+    useEffect(() => {
+        if (updateData) {
+            const { success, message } = updateData.updateRoute;
+            if (success) {
+                onClose(false);
+            } else console.log(message);
+        }
+    }, [updateData, onClose]);
+
     return (
         <Dialog open={open} onClose={handleClose}>
             <MiniHeader handleClose={handleClose} headerText="노선 수정" />
             <Box p={4}>
-                <form onSubmit={handleSubmit(data => console.log(data))}>
-                    <Box mb={2}>
-                        <Controller
-                            control={control}
-                            as={TextField}
-                            defaultValue=""
-                            name="route"
-                            label="노선 이름"
-                            fullWidth
-                            variant="outlined"
-                            size="small"
-                            error={errors.route ? true : false}
-                            rules={{ required: true }}
-                            helperText={errors.route ? '노선 이름을 입력해주세요.' : ' '}
-                        />
-                    </Box>
-                    <Box mb={2}>
-                        <Controller
-                            control={control}
-                            name="driver"
-                            defaultValue=""
-                            rules={{
-                                validate: {
-                                    required: value => value !== '',
-                                },
-                            }}
-                            error={errors.driver ? true : false}
-                            render={props => (
-                                <FormControl
-                                    fullWidth
-                                    size="small"
-                                    variant="outlined"
-                                    error={errors.driver ? true : false}
-                                >
-                                    <InputLabel id="bus-driver-select">버스기사 배정</InputLabel>
-                                    <Select
-                                        labelId="bus-driver-select"
-                                        label="버스기사 배정"
-                                        defaultValue={drivers.length > 0 ? drivers[0].userId : ''}
-                                        onChange={e => props.onChange(e.target.value)}
+                {routeInfo && (
+                    <form onSubmit={handleSubmit(data => updateClick(data))}>
+                        <Box mb={2}>
+                            <Controller
+                                control={control}
+                                as={TextField}
+                                defaultValue={routeInfo.route}
+                                name="route"
+                                label="노선 이름"
+                                fullWidth
+                                variant="outlined"
+                                size="small"
+                                error={errors.route ? true : false}
+                                rules={{ required: true }}
+                                helperText={errors.route ? '노선 이름을 입력해주세요.' : ' '}
+                            />
+                        </Box>
+                        <Box mb={2}>
+                            <Controller
+                                control={control}
+                                name="driver"
+                                defaultValue={
+                                    routeInfo.driver
+                                        ? `${routeInfo.driver.name}+${routeInfo.driver.phone}+${routeInfo.driver.userId}`
+                                        : ''
+                                }
+                                rules={{
+                                    validate: {
+                                        required: value => value !== '',
+                                    },
+                                }}
+                                error={errors.driver ? true : false}
+                                render={props => (
+                                    <FormControl
+                                        fullWidth
+                                        size="small"
+                                        variant="outlined"
+                                        error={errors.driver ? true : false}
                                     >
-                                        {drivers.map(driver => (
-                                            <MenuItem key={driver.userId} value={driver.userId}>
-                                                {driver.name}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                    <FormHelperText>
-                                        {errors.driver ? '버스 기사를 선택해주세요.' : ' '}
-                                    </FormHelperText>
-                                </FormControl>
-                            )}
-                        />
-                    </Box>
-                    <Box mb={2}>
-                        <Controller
-                            control={control}
-                            as={TextField}
-                            defaultValue=""
-                            name="busNumber"
-                            label="차량번호"
-                            fullWidth
-                            variant="outlined"
-                            size="small"
-                            error={errors.busNumber ? true : false}
-                            rules={{ required: true }}
-                            helperText={errors.busNumber ? '차량번호를 입력해주세요.' : ' '}
-                        />
-                    </Box>
-                    <Box mb={2}>
-                        <Controller
-                            control={control}
-                            as={TextField}
-                            defaultValue=""
-                            name="limitCount"
-                            label="최대 수용인원"
-                            fullWidth
-                            variant="outlined"
-                            size="small"
-                            error={errors.limitCount ? true : false}
-                            rules={{
-                                required: true,
-                                validate: { isNumber: value => !isNaN(value) },
-                            }}
-                            helperText={
-                                errors.limitCount ? (
-                                    <LimitCountHelperText errors={errors.limitCount} />
-                                ) : (
-                                    ' '
-                                )
-                            }
-                        />
-                    </Box>
-                    <Box display="flex" justifyContent="flex-end">
-                        <Button type="submit" className={classes.searchButton} variant="contained">
-                            노선 등록하기
-                        </Button>
-                    </Box>
-                </form>
+                                        <InputLabel id="bus-driver-select">
+                                            버스기사 배정
+                                        </InputLabel>
+                                        <Select
+                                            labelId="bus-driver-select"
+                                            label="버스기사 배정"
+                                            defaultValue={
+                                                drivers.length > 0 ? routeInfo.driver.phone : ''
+                                            }
+                                            onChange={e => props.onChange(e.target.value)}
+                                        >
+                                            {drivers.map(driver => (
+                                                <MenuItem
+                                                    key={driver.userId}
+                                                    value={`${driver.name}+${driver.phoneNumber}+${driver.userId}`}
+                                                >
+                                                    {driver.name}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                        <FormHelperText>
+                                            {errors.driver ? '버스 기사를 선택해주세요.' : ' '}
+                                        </FormHelperText>
+                                    </FormControl>
+                                )}
+                            />
+                        </Box>
+                        <Box mb={2}>
+                            <Controller
+                                control={control}
+                                as={TextField}
+                                defaultValue={routeInfo.busNumber}
+                                name="busNumber"
+                                label="차량번호"
+                                fullWidth
+                                variant="outlined"
+                                size="small"
+                                error={errors.busNumber ? true : false}
+                                rules={{ required: true }}
+                                helperText={errors.busNumber ? '차량번호를 입력해주세요.' : ' '}
+                            />
+                        </Box>
+                        <Box mb={2}>
+                            <Controller
+                                control={control}
+                                as={TextField}
+                                defaultValue={routeInfo.limitCount}
+                                name="limitCount"
+                                label="최대 수용인원"
+                                fullWidth
+                                variant="outlined"
+                                size="small"
+                                error={errors.limitCount ? true : false}
+                                rules={{
+                                    required: true,
+                                    validate: { isNumber: value => !isNaN(value) },
+                                }}
+                                helperText={
+                                    errors.limitCount ? (
+                                        <LimitCountHelperText errors={errors.limitCount} />
+                                    ) : (
+                                        ' '
+                                    )
+                                }
+                            />
+                        </Box>
+                        <Box display="flex" justifyContent="flex-end">
+                            <Button
+                                type="submit"
+                                className={classes.searchButton}
+                                variant="contained"
+                            >
+                                노선 등록하기
+                            </Button>
+                        </Box>
+                    </form>
+                )}
             </Box>
         </Dialog>
     );
