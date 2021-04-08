@@ -28,6 +28,8 @@ export const GET_BUS_APPLICANT = gql`
                 type
                 phoneNumber
                 previousMonthState
+                state
+                registerDate
             }
         }
     }

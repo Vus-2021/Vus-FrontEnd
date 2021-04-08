@@ -20,7 +20,7 @@ import { DataGrid } from '@material-ui/data-grid';
 import { useForm, Controller } from 'react-hook-form';
 import BoarderStyle from '../styles/BoarderStyle';
 import { GET_BUS_APPLICANT, GET_ROUTE_BY_MONTH } from '../gql/boarder/query';
-import { ADD_MONTHLY_ROUTE } from '../gql/boarder/mutation';
+import { ADD_MONTHLY_ROUTE, RESET_MONTH_ROUTE } from '../gql/boarder/mutation';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import * as dayjs from 'dayjs';
 import MiniHeader from '../layout/MiniHeader';
@@ -35,23 +35,44 @@ const columns = [
         field: 'previousMonthState',
         headerName: '전월 선별',
         width: 120,
-        renderCell: params => <ChipStyle type={params.value} />,
+        renderCell: params => <ChipStyle state={params.value} />,
+    },
+    {
+        field: 'state',
+        headerName: '현월 선별',
+        width: 120,
+        renderCell: params => <ChipStyle state={params.value} />,
     },
 ];
 
 const ChipStyle = props => {
     const classes = BoarderStyle();
-    const { type } = props;
+    const { state } = props;
+
+    let chipStyle, chipText;
+    switch (state) {
+        case 'fulfilled':
+            chipStyle = classes.chipYes;
+            chipText = '당첨';
+            break;
+        case 'rejected':
+            chipStyle = classes.chipNo;
+            chipText = '미당첨';
+            break;
+        case 'pending':
+            chipStyle = classes.chipWait;
+            chipText = '대기';
+            break;
+        default:
+            chipStyle = classes.chipEmpty;
+            chipText = '미신청';
+    }
 
     return (
         <Chip
-            className={type === 'apply' ? classes.chipYes : classes.chipNo}
+            className={chipStyle}
             size="small"
-            label={
-                <Typography className={classes.chipText}>
-                    {type === 'apply' ? '당첨' : '미당첨'}
-                </Typography>
-            }
+            label={<Typography className={classes.chipText}>{chipText}</Typography>}
         />
     );
 };
@@ -76,7 +97,9 @@ const Boarder = props => {
         type: null,
     }); //검색 기준(이름, 아이디, 소속)
     const [monthSelect, setMonthSelect] = useState([]); //getRouteByMonth의 데이터를 담을 state
-    const [openDialog, setOpenDialog] = useState(false); // 월 추가 Dialog의 open여부
+    const [openAddDialog, setOpenAddDialog] = useState(false); // 월 추가 Dialog의 open여부
+    const [openReallyDialog, setOpenReallyDialog] = useState(false); //탑승객 초기화 Dialog의 open여부
+    const [page, setPage] = useState(0);
 
     const { loading, data, refetch } = useQuery(GET_BUS_APPLICANT, {
         variables: {
@@ -103,7 +126,7 @@ const Boarder = props => {
             listName: '전체',
         },
         {
-            state: 'fullfilled',
+            state: 'fulfilled',
             isCancellation: false,
             listName: '당첨자',
         },
@@ -125,12 +148,14 @@ const Boarder = props => {
     ];
 
     const searchClick = data => {
+        setPage(0);
         setSearch({
             [data.select]: data.search,
         });
     };
 
     const routeChange = e => {
+        setPage(0);
         const partitionKey = e.target.value.split('+')[0];
         const routeName = e.target.value.split('+')[1];
         setStandard({ ...standard, partitionKey: partitionKey, route: routeName });
@@ -138,11 +163,15 @@ const Boarder = props => {
     };
 
     const monthChange = e => {
-        if (e.target.value !== 'add') setStandard({ ...standard, month: e.target.value });
+        if (e.target.value !== 'add') {
+            setPage(0);
+            setStandard({ ...standard, month: e.target.value });
+        }
     };
 
     const changeBoardType = index => {
         const { state, isCancellation } = boardList[index];
+        setPage(0);
         setStandard({ ...standard, state: state, isCancellation: isCancellation });
         setBoardType(index);
     };
@@ -258,7 +287,7 @@ const Boarder = props => {
                                         {dayjs(data.month).format('YYYY-MM')}
                                     </MenuItem>
                                 ))}
-                                <MenuItem value="add" onClick={() => setOpenDialog(true)}>
+                                <MenuItem value="add" onClick={() => setOpenAddDialog(true)}>
                                     <Add />
                                     추가
                                 </MenuItem>
@@ -341,33 +370,130 @@ const Boarder = props => {
                             hideFooterSelectedRowCount
                             autoPageSize
                             loading={loading || monthLoading}
+                            onPageChange={params => setPage(params.page)}
+                            page={page}
                         />
                     </Box>
                 </Paper>
             </Box>
-            {boardType === 3 && (
-                <Box display="flex" justifyContent="flex-end" mb={2}>
-                    <Box mr={1}>
-                        <Button variant="contained" className={classes.decideButton}>
-                            대기자 선별
-                        </Button>
-                    </Box>
+
+            <Box display="flex" justifyContent="flex-end" mb={2}>
+                {boardType === 0 && (
                     <Box>
-                        <Button variant="contained" className={classes.resetButton}>
-                            대기자 초기화
+                        <Button
+                            variant="contained"
+                            className={classes.resetAllButton}
+                            onClick={() => setOpenReallyDialog(true)}
+                        >
+                            탑승객 전체 초기화
                         </Button>
                     </Box>
-                </Box>
-            )}
+                )}
+                {boardType === 3 && (
+                    <React.Fragment>
+                        <Box mr={1}>
+                            <Button variant="contained" className={classes.decideButton}>
+                                대기자 선별
+                            </Button>
+                        </Box>
+                        <Box>
+                            <Button variant="contained" className={classes.resetButton}>
+                                대기자 초기화
+                            </Button>
+                        </Box>
+                    </React.Fragment>
+                )}
+            </Box>
+
             <AddMonthDialog
-                open={openDialog}
-                onClose={setOpenDialog}
+                open={openAddDialog}
+                onClose={setOpenAddDialog}
                 monthSelect={monthSelect}
                 refetchMonth={refetchMonth}
                 currentRoute={standard.route}
                 currentKey={standard.partitionKey}
             />
+            <ReallyResetDialog
+                open={openReallyDialog}
+                onClose={setOpenReallyDialog}
+                refetch={refetch}
+                standard={standard}
+                setPage={setPage}
+            />
         </Box>
+    );
+};
+
+const ReallyResetDialog = props => {
+    const { open, onClose, refetch, standard, setPage } = props;
+    const classes = BoarderStyle();
+
+    const [resetMonthRoute, { data: resetData }] = useMutation(RESET_MONTH_ROUTE, {
+        onCompleted() {
+            refetch();
+            onClose(false);
+        },
+    });
+
+    const resetAll = () => {
+        resetMonthRoute({
+            variables: {
+                month: standard.month,
+                route: standard.route,
+                busId: standard.partitionKey,
+            },
+        });
+        setPage(0);
+    };
+
+    useEffect(() => {
+        if (resetData) {
+            const { success, message } = resetData.resetMonthRoute;
+            if (success);
+            else console.log(message);
+        }
+    }, [resetData]);
+
+    return (
+        <Dialog open={open} onClose={() => onClose(false)} fullWidth maxWidth="xs">
+            <Box px={3} py={2}>
+                <Box mb={2}>
+                    <Typography className={classes.warningTitle}>
+                        {standard.route}노선 탑승객 초기화
+                    </Typography>
+                </Box>
+                <Box mb={3}>
+                    <Typography className={classes.warningText}>
+                        <strong>{dayjs(standard.month).format('YYYY년 MM월')}</strong>의 모든 신청
+                        정보가 사라집니다.
+                        <br />
+                        정말 초기화 하시겠습니까?
+                    </Typography>
+                </Box>
+                <Box display="flex" justifyContent="flex-end">
+                    <Box mr={2} width="50%">
+                        <Button
+                            variant="contained"
+                            onClick={resetAll}
+                            className={classes.resetButton}
+                            fullWidth
+                        >
+                            초기화
+                        </Button>
+                    </Box>
+                    <Box width="50%">
+                        <Button
+                            variant="contained"
+                            onClick={() => onClose(false)}
+                            className={classes.decideButton}
+                            fullWidth
+                        >
+                            취소
+                        </Button>
+                    </Box>
+                </Box>
+            </Box>
+        </Dialog>
     );
 };
 

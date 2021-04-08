@@ -4,7 +4,7 @@ import MuiAccordionDetails from '@material-ui/core/AccordionDetails';
 const AccordionSummary = withStyles(theme => ({
     root: {
         paddingX: theme.spacing(2),
-        backgroundColor: 'white',
+        backgroundColor: '#FFE3E3',
     },
 }))(MuiAccordionDetails);
 

@@ -47,9 +47,9 @@ const LogIn = props => {
         if (data && open) {
             const { success, data: token } = data.signin;
             if (success) {
-                onClose(true);
                 localStorage.setItem('accessToken', token.accessToken);
                 localStorage.setItem('refreshToken', token.refreshToken);
+                onClose(true);
             } else {
                 setSnackbar(true);
             }

@@ -155,6 +155,8 @@ const RouteCancel = () => {
                             onSelectionModelChange={newSelection => {
                                 setSelection(newSelection.selectionModel);
                             }}
+                            onPageChange={params => setPage(params.page)}
+                            page={page}
                         />
                     </Box>
                 </Paper>

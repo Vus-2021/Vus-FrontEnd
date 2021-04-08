@@ -6,7 +6,6 @@ import {
     AppBar,
     Typography,
     Paper,
-    SvgIcon,
     CircularProgress,
     Dialog,
     TextField,
@@ -21,6 +20,7 @@ import {
     TimelineOppositeContent,
 } from '@material-ui/lab';
 import { Map, PinDrop, Send, DirectionsBus } from '@material-ui/icons';
+import ArrowDown from '../components/ArrowDown';
 import Header2 from '../layout/Header2';
 import BusInfoStyle from '../styles/BusInfoStyle';
 import BusAlert from '../components/BusAlert';
@@ -38,7 +38,7 @@ const BusInfo = ({ history, location }) => {
     const [detailRoutes, setDetailRoutes] = useState([]);
 
     const handleClose = () => {
-        history.push('/');
+        history.goBack();
     };
     const { loading, data } = useQuery(GET_DETAIL_ROUTES, {
         variables: { route: busName },
@@ -272,14 +272,6 @@ const RouteTabPanel = props => {
                 )}
             </Paper>
         </Box>
-    );
-};
-
-const ArrowDown = props => {
-    return (
-        <SvgIcon {...props}>
-            <path d="M2.82 6L12 15.16L21.18 6L24 8.82L12 20.82L0 8.82L2.82 6Z" />
-        </SvgIcon>
     );
 };
 

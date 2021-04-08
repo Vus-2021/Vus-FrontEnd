@@ -8,3 +8,12 @@ export const ADD_MONTHLY_ROUTE = gql`
         }
     }
 `;
+
+export const RESET_MONTH_ROUTE = gql`
+    mutation resetMonthRoute($month: String!, $route: String!, $busId: String!) {
+        resetMonthRoute(month: $month, route: $route, busId: $busId) {
+            success
+            message
+        }
+    }
+`;

@@ -68,6 +68,10 @@ const RouteStyle = makeStyles(theme => ({
         fontSize: '13px',
         fontWeight: '400',
     },
+    deleteRouteTitle: {
+        fontSize: '22px',
+        fontWeight: '600',
+    },
 }));
 
 export default RouteStyle;

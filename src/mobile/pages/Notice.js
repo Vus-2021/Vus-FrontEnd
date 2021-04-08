@@ -182,7 +182,7 @@ const Notice = props => {
                             >
                                 <AccordionSummary
                                     expandIcon={<ExpandMore />}
-                                    style={{ backgroundColor: index % 2 === 1 && '#FFF2F2' }}
+                                    style={{ backgroundColor: index % 2 === 1 && '#F0F0F0' }}
                                 >
                                     <Box
                                         display="flex"
@@ -190,7 +190,13 @@ const Notice = props => {
                                         justifyContent="flex-start"
                                         width="100%"
                                     >
-                                        <Typography className={classes.noticeTitle}>
+                                        <Typography
+                                            className={classes.noticeTitle}
+                                            style={{
+                                                fontWeight:
+                                                    expanded === data.partitionKey ? 700 : 400,
+                                            }}
+                                        >
                                             {data.notice}
                                         </Typography>
                                         <Box

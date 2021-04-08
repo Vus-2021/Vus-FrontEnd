@@ -17,6 +17,14 @@ const ApplicantStyle = makeStyles(theme => ({
         fontSize: '16px',
         padding: 0,
     },
+    resetAllButton: {
+        width: '100%',
+        backgroundColor: '#FDB600',
+        color: 'black',
+        '&:hover': {
+            backgroundColor: '#FDB600',
+        },
+    },
     decideButton: {
         width: '100%',
         backgroundColor: '#008AEE',
@@ -41,6 +49,14 @@ const ApplicantStyle = makeStyles(theme => ({
         backgroundColor: '#FF3A3A',
         height: '23px',
     },
+    chipWait: {
+        backgroundColor: '#FDB600',
+        height: '23px',
+    },
+    chipEmpty: {
+        backgroundColor: '#A5A8A2',
+        height: '23px',
+    },
     chipText: {
         fontSize: '15px',
         fontWeight: '600',
@@ -55,6 +71,14 @@ const ApplicantStyle = makeStyles(theme => ({
         '&:hover': {
             backgroundColor: '#FA8700',
         },
+    },
+    warningTitle: {
+        fontSize: '23px',
+        fontWeight: 600,
+    },
+    warningText: {
+        fontSize: '18px',
+        fontWeight: 400,
     },
 }));
 

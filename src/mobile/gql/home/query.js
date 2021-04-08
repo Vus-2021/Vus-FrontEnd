@@ -10,7 +10,7 @@ export const GET_MY_INFO = gql`
                 userId
                 type
                 routeInfo {
-                    routes
+                    route
                     month
                     busId
                 }
@@ -51,6 +51,20 @@ export const GET_ADMIN_NOTICE = gql`
                 createdAt
                 notice
                 partitionKey
+            }
+        }
+    }
+`;
+
+export const GET_DETAIL_ROUTES = gql`
+    query getDetailRoutes($route: String!) {
+        getDetailRoutes(route: $route) {
+            success
+            message
+            data {
+                partitionKey
+                boardingTime
+                location
             }
         }
     }

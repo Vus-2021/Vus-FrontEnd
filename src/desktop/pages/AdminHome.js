@@ -47,6 +47,10 @@ const AdminHome = ({ history }) => {
         }
     }, [data, history]);
 
+    if (localStorage.getItem('accessToken')) {
+        window.location.href = '/admin';
+    }
+
     return (
         <React.Fragment>
             <div className={classes.rootBox}>

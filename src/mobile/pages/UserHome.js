@@ -25,7 +25,7 @@ import * as dayjs from 'dayjs';
 import { useHistory } from 'react-router-dom';
 import { useMediaQuery } from '@material-ui/core';
 
-const Home = ({ history }) => {
+const UserHome = ({ history }) => {
     const classes = HomeStyle();
     const smallDevice = useMediaQuery('(max-height: 600px)');
 
@@ -317,4 +317,4 @@ const BusList = props => {
     );
 };
 
-export default Home;
+export default UserHome;

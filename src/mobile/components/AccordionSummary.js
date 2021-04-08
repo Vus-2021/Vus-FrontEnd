@@ -3,7 +3,7 @@ import MuiAccordionSummary from '@material-ui/core/AccordionSummary';
 
 const AccordionSummary = withStyles({
     root: {
-        backgroundColor: '#FFDCDC',
+        backgroundColor: 'white',
         borderBottom: '1px solid rgba(0, 0, 0, .125)',
         marginBottom: -1,
         minHeight: 56,

@@ -39,6 +39,7 @@ const User = props => {
         type: null,
         userId: null,
     });
+    const [page, setPage] = useState(0);
 
     const { handleSubmit, control } = useForm();
 
@@ -56,11 +57,13 @@ const User = props => {
         setSearch({
             [data.select]: data.search,
         });
+        setPage(0);
     };
 
     const deleteUserClick = () => {
         deleteUser({ variables: { userId: selection } });
         setSelection([]);
+        setPage(0);
     };
 
     useEffect(() => {
@@ -189,6 +192,8 @@ const User = props => {
                             onSelectionModelChange={newSelection => {
                                 setSelection(newSelection.selectionModel);
                             }}
+                            onPageChange={params => setPage(params.page)}
+                            page={page}
                             loading={loading}
                         />
                     </Box>

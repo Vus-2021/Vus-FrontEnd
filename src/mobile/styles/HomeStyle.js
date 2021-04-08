@@ -150,6 +150,7 @@ const HomeStyle = makeStyles(theme => ({
             fontSize: '15px',
         },
     },
+    routeButton: {},
 }));
 
 export default HomeStyle;

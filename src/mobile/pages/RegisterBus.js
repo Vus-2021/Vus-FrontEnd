@@ -225,7 +225,7 @@ const Register = props => {
 const Cancel = props => {
     const { userBusData, userRefetch, setSnackbar } = props;
     const classes = RegisterStyle();
-    const routeName = userBusData.length === 0 ? '' : userBusData[0].routes;
+    const routeName = userBusData.length === 0 ? '' : userBusData[0].route;
     const [month, setMonth] = useState(userBusData.length === 0 ? '' : userBusData[0].month);
 
     const [cancelRoute, { data }] = useMutation(CANCEL_ROUTE, {

@@ -41,6 +41,7 @@ const Notice = () => {
         author: null,
         content: null,
     });
+    const [page, setPage] = useState(0);
 
     const { handleSubmit, control } = useForm();
 
@@ -57,6 +58,7 @@ const Notice = () => {
     });
 
     const searchClick = data => {
+        setPage(0);
         setSearch({
             [data.select]: data.search,
         });
@@ -65,6 +67,7 @@ const Notice = () => {
     const deleteUserClick = () => {
         deleteNotice({ variables: { partitionKey: selection } });
         setSelection([]);
+        setPage(0);
     };
 
     const handleCellClick = pk => {
@@ -202,6 +205,8 @@ const Notice = () => {
                                 const { field, id } = cellClick;
                                 if (field !== '__check__') handleCellClick(id);
                             }}
+                            onPageChange={params => setPage(params.page)}
+                            page={page}
                             loading={loading}
                         />
                     </Box>

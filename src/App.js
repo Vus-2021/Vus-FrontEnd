@@ -1,6 +1,6 @@
 import React from 'react';
 import { Switch, Route } from 'react-router-dom';
-import { Home, BusInfo, Notice } from './mobile/pages';
+import { UserHome, DriverHome, BusInfo, Notice } from './mobile/pages';
 import { AdminHome, Admin, Error } from './desktop/pages';
 import { useMediaQuery } from 'react-responsive';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
@@ -15,7 +15,8 @@ const App = () => {
         <MuiPickersUtilsProvider utils={DayjsUtils}>
             {isMobile ? (
                 <Switch>
-                    <Route path="/" component={Home} exact />
+                    <Route path="/" component={UserHome} exact />
+                    <Route path="/driver" component={DriverHome} />
                     <Route path="/notice" component={Notice} />
                     <Route path="/businfo" component={BusInfo} />
                 </Switch>
