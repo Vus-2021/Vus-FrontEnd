@@ -55,7 +55,7 @@ const ChipStyle = props => {
             chipStyle = classes.chipYes;
             chipText = '당첨';
             break;
-        case 'rejected':
+        case 'reject':
             chipStyle = classes.chipNo;
             chipText = '미당첨';
             break;

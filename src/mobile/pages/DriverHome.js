@@ -14,9 +14,11 @@ import {
 } from '@material-ui/lab';
 import { AccountCircle, DirectionsBus, Error, Send } from '@material-ui/icons';
 import ArrowDown from '../components/ArrowDown';
-import { useQuery, useLazyQuery } from '@apollo/react-hooks';
-import { GET_MY_INFO, GET_DETAIL_ROUTES } from '../gql/home/query';
+import { useQuery, useLazyQuery, useMutation } from '@apollo/react-hooks';
+import { GET_MY_INFO, GET_DETAIL_ROUTES, GET_BUS_LOCATION } from '../gql/home/query';
+import { CREATE_DRIVER_LOCATION } from '../gql/home/mutation';
 import clsx from 'clsx';
+import { useHistory } from 'react-router-dom';
 
 const DriverHome = ({ history }) => {
     const classes = DriverHomeStyle();
@@ -30,14 +32,14 @@ const DriverHome = ({ history }) => {
     });
 
     const [getDetailRoutes, { data: detailRouteData }] = useLazyQuery(GET_DETAIL_ROUTES);
+    const [getBusLocation, { data: busLocationData }] = useLazyQuery(GET_BUS_LOCATION);
+    const [createDriverLocation, { data: createLocationData }] = useMutation(
+        CREATE_DRIVER_LOCATION,
+    );
 
     const logoutClick = () => {
         localStorage.clear();
-        window.location.href = '/driver';
-    };
-
-    const goHome = () => {
-        history.push('/');
+        window.location.reload();
     };
 
     const handleLogInClose = value => {
@@ -47,18 +49,54 @@ const DriverHome = ({ history }) => {
         }
     };
 
+    const nextButtonClick = next => {
+        setWhere(next);
+        createDriverLocation({
+            variables: {
+                input: {
+                    preKey: next === 0 ? null : detailRoutes[next - 1].partitionKey,
+                    destinationKey:
+                        next === detailRoutes.length ? null : detailRoutes[next].partitionKey,
+                    locationIndex: next === detailRoutes.length ? -1 : next,
+                },
+            },
+        });
+    };
+
+    const prevButtonClick = prev => {
+        setWhere(prev);
+        createDriverLocation({
+            variables: {
+                input: {
+                    preKey:
+                        prev + 1 === detailRoutes.length
+                            ? null
+                            : detailRoutes[prev + 1].partitionKey,
+                    destinationKey: prev === -1 ? null : detailRoutes[prev].partitionKey,
+                    locationIndex: prev,
+                },
+            },
+        });
+    };
+
     useEffect(() => {
         if (localStorage.getItem('accessToken')) {
             if (myData) {
                 const { success, message, data } = myData.getMyInformation;
                 if (success) {
                     setUserData(data);
-                    if (data.routeInfo[0])
-                        getDetailRoutes({ variables: { route: data.routeInfo[0].route } });
+                    if (data.routeInfo[0]) {
+                        getDetailRoutes({
+                            variables: { route: data.routeInfo[0].route },
+                        });
+                        getBusLocation({
+                            variables: { route: data.routeInfo[0].route, currentLocation: true },
+                        });
+                    }
                 } else console.log(message);
             }
         }
-    }, [myData, getDetailRoutes]);
+    }, [myData, getDetailRoutes, getBusLocation]);
 
     useEffect(() => {
         if (detailRouteData) {
@@ -69,34 +107,30 @@ const DriverHome = ({ history }) => {
         }
     }, [detailRouteData]);
 
+    useEffect(() => {
+        if (busLocationData) {
+            const { success, message, data } = busLocationData.getDetailRoutes;
+            console.log(data);
+            if (success && data[0]) {
+                setWhere(data[0].locationIndex);
+            } else console.log(message);
+        }
+    }, [busLocationData]);
+
+    useEffect(() => {
+        if (createLocationData) {
+            const { success, message } = createLocationData.createDriverLocation;
+            if (!success) console.log(message);
+        }
+    }, [createLocationData]);
+
     return (
         <div>
             <Header />
             <Box px={3} py={2} className={classes.mainBox}>
                 {userData.type === 'DRIVER' || userData.type == null ? (
                     userData.type == null ? (
-                        <Box
-                            display="flex"
-                            flexDirection="column"
-                            justifyContent="center"
-                            alignItems="center"
-                            height="80%"
-                        >
-                            <Box mb={2} display="flex" alignItems="center">
-                                <Typography>버스 기사용 페이지입니다.</Typography>
-                            </Box>
-                            <Box width="70%">
-                                <Button
-                                    variant="contained"
-                                    size="large"
-                                    className={classes.loginButton}
-                                    fullWidth
-                                    onClick={() => setOpenLogin(true)}
-                                >
-                                    로그인
-                                </Button>
-                            </Box>
-                        </Box>
+                        <BeforeLogin setOpenLogin={setOpenLogin} />
                     ) : (
                         <React.Fragment>
                             <Box height="4%" className={classes.requireLogin} mb={1.5}>
@@ -173,7 +207,7 @@ const DriverHome = ({ history }) => {
                                         variant="contained"
                                         className={clsx(classes.prevButton, classes.registerButton)}
                                         disabled={where < 0}
-                                        onClick={() => setWhere(where - 1)}
+                                        onClick={() => prevButtonClick(where - 1)}
                                     >
                                         <Typography className={classes.buttonText}>이전</Typography>
                                     </Button>
@@ -182,7 +216,7 @@ const DriverHome = ({ history }) => {
                                     <Button
                                         variant="contained"
                                         className={clsx(classes.nextButton, classes.signUpButton)}
-                                        onClick={() => setWhere(where + 1)}
+                                        onClick={() => nextButtonClick(where + 1)}
                                         disabled={where === detailRoutes.length}
                                     >
                                         <Typography className={classes.buttonText}>
@@ -198,33 +232,70 @@ const DriverHome = ({ history }) => {
                         </React.Fragment>
                     )
                 ) : (
-                    <Box
-                        display="flex"
-                        flexDirection="column"
-                        justifyContent="center"
-                        alignItems="center"
-                        height="80%"
-                    >
-                        <Box mb={2} display="flex" alignItems="center">
-                            <Error />
-                            &nbsp; 권한이 없습니다.
-                        </Box>
-                        <Box width="70%">
-                            <Button
-                                variant="contained"
-                                size="large"
-                                fullWidth
-                                className={classes.signUpButton}
-                                onClick={goHome}
-                            >
-                                홈페이지로 돌아가기
-                            </Button>
-                        </Box>
-                    </Box>
+                    <NotAuthorized />
                 )}
             </Box>
             <LogInDialog open={openLogin} onClose={handleLogInClose} />
         </div>
+    );
+};
+
+const BeforeLogin = props => {
+    const { setOpenLogin } = props;
+    const classes = DriverHomeStyle();
+    return (
+        <Box
+            display="flex"
+            flexDirection="column"
+            justifyContent="center"
+            alignItems="center"
+            height="80%"
+        >
+            <Box mb={2} display="flex" alignItems="center">
+                <Typography>버스 기사용 페이지입니다.</Typography>
+            </Box>
+            <Box width="70%">
+                <Button
+                    variant="contained"
+                    size="large"
+                    className={classes.loginButton}
+                    fullWidth
+                    onClick={() => setOpenLogin(true)}
+                >
+                    로그인
+                </Button>
+            </Box>
+        </Box>
+    );
+};
+
+const NotAuthorized = () => {
+    const classes = DriverHomeStyle();
+    const history = useHistory();
+    return (
+        <Box
+            display="flex"
+            flexDirection="column"
+            justifyContent="center"
+            alignItems="center"
+            height="80%"
+        >
+            <Box mb={2} display="flex" alignItems="center">
+                <Error />
+                &nbsp; 권한이 없습니다.
+            </Box>
+            <Box width="70%">
+                <Button
+                    variant="contained"
+                    size="large"
+                    fullWidth
+                    className={classes.signUpButton}
+                    onClick={() => history.push('/')}
+                >
+                    홈페이지로 돌아가기
+                </Button>
+            </Box>
+        </Box>
     );
 };
 

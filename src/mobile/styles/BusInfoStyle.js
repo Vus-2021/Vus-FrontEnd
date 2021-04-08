@@ -32,8 +32,8 @@ const BusInfoStyle = makeStyles(theme => ({
         width: '100%',
     },
     busLocation: {
-        height: '30%',
-        position: 'relative',
+        height: '80%',
+        color: '#FF6666',
     },
 }));
 

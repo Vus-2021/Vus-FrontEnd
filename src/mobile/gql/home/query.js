@@ -69,3 +69,16 @@ export const GET_DETAIL_ROUTES = gql`
         }
     }
 `;
+
+export const GET_BUS_LOCATION = gql`
+    query getBusLocation($route: String!, $currentLocation: Boolean) {
+        getDetailRoutes(route: $route, currentLocation: $currentLocation) {
+            success
+            message
+            data {
+                currentLocation
+                locationIndex
+            }
+        }
+    }
+`;

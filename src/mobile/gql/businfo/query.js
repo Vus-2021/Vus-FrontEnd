@@ -15,3 +15,17 @@ export const GET_DETAIL_ROUTES = gql`
         }
     }
 `;
+
+export const GET_DRIVER_NOTICE = gql`
+    query getDriverNotice($route: String) {
+        getDriverNotice(route: $route) {
+            success
+            message
+            data {
+                updatedAt
+                route
+                location
+            }
+        }
+    }
+`;

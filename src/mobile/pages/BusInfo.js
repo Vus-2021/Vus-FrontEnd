@@ -25,9 +25,10 @@ import Header2 from '../layout/Header2';
 import BusInfoStyle from '../styles/BusInfoStyle';
 import BusAlert from '../components/BusAlert';
 import { useQuery } from '@apollo/react-hooks';
-import { GET_DETAIL_ROUTES } from '../gql/businfo/query';
+import { GET_DETAIL_ROUTES, GET_DRIVER_NOTICE } from '../gql/businfo/query';
 import SPRITE_IMAGE from '../images/MarkerImages.png';
 import ARRIVAL_IMAGE from '../images/ArrivalMarker.png';
+import * as dayjs from 'dayjs';
 
 const { kakao } = window;
 
@@ -36,6 +37,8 @@ const BusInfo = ({ history, location }) => {
     const busName = location.state.busName;
     const [boardNum, setNumber] = useState(0);
     const [detailRoutes, setDetailRoutes] = useState([]);
+    const [busNotice, setBusNotice] = useState({});
+    const [departFrom, setDepartFrom] = useState(0);
 
     const handleClose = () => {
         history.goBack();
@@ -43,6 +46,25 @@ const BusInfo = ({ history, location }) => {
     const { loading, data } = useQuery(GET_DETAIL_ROUTES, {
         variables: { route: busName },
     });
+
+    const { data: driverData } = useQuery(GET_DRIVER_NOTICE, {
+        variables: { route: busName },
+    });
+
+    const currentMin = dayjs().minute() + dayjs().hour() * 60;
+
+    useEffect(() => {
+        if (driverData) {
+            const { success, message, data } = driverData.getDriverNotice;
+            if (success && data[0]) {
+                const time = data[0].updatedAt.split(':');
+                setBusNotice(data[0]);
+                const BusMin = parseInt(time[0]) * 60 + parseInt(time[1]);
+
+                setDepartFrom(currentMin - BusMin);
+            } else console.log(message);
+        }
+    }, [driverData, currentMin]);
 
     useEffect(() => {
         if (data) {
@@ -99,7 +121,7 @@ const BusInfo = ({ history, location }) => {
                         mt={1}
                         py={0.5}
                         px={2}
-                        width="70%"
+                        maxWidth="70%"
                         className={classes.busNotify}
                         display="flex"
                     >
@@ -108,15 +130,19 @@ const BusInfo = ({ history, location }) => {
                         </Box>
                         <Box display="flex" alignItems="center">
                             <Typography className={classes.notifyText}>
-                                버스가 15분 전{' '}
-                                <strong>성호아파트 후문 또래아동도서아울렛 앞</strong>
-                                에서 출발했습니다.
+                                <BusNoticeForm busNotice={busNotice} departFrom={departFrom} />
                             </Typography>
                         </Box>
                     </Box>
                 </Box>
                 {boardNum === 0 && <MapTabPanel detailRoutes={detailRoutes} loading={loading} />}
-                {boardNum === 1 && <RouteTabPanel detailRoutes={detailRoutes} loading={loading} />}
+                {boardNum === 1 && (
+                    <RouteTabPanel
+                        detailRoutes={detailRoutes}
+                        loading={loading}
+                        location={busNotice.location}
+                    />
+                )}
             </Box>
         </Box>
     );
@@ -217,7 +243,7 @@ const MapTabPanel = props => {
 };
 
 const RouteTabPanel = props => {
-    const { detailRoutes, loading } = props;
+    const { detailRoutes, loading, location } = props;
     const classes = BusInfoStyle();
 
     return (
@@ -248,7 +274,7 @@ const RouteTabPanel = props => {
                                         </TimelineDot>
                                         {index !== detailRoutes.length - 1 && (
                                             <TimelineConnector>
-                                                {index === 2 && (
+                                                {data.location === location && (
                                                     <DirectionsBus
                                                         className={classes.busLocation}
                                                     />
@@ -272,6 +298,21 @@ const RouteTabPanel = props => {
                 )}
             </Paper>
         </Box>
+    );
+};
+
+const BusNoticeForm = props => {
+    const { busNotice, departFrom } = props;
+
+    return busNotice.location !== 'null' ? (
+        <React.Fragment>
+            {busNotice.route}발 버스가 {departFrom > 1 ? `${departFrom}분 전에 ` : '방금 전에 '}
+            <strong>{busNotice.location}</strong>에서 출발했습니다.
+        </React.Fragment>
+    ) : dayjs().hour() > 8 ? (
+        <strong>금일 {busNotice.route}버스 운행이 종료되었습니다.</strong>
+    ) : (
+        <strong>버스가 아직 출발하지 않았습니다.</strong>
     );
 };
 
