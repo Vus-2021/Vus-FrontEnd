@@ -10,15 +10,19 @@ import {
     FormControl,
     Paper,
 } from '@material-ui/core';
-import { DataGrid } from '@material-ui/data-grid';
+import { DataGrid, GridToolbarContainer } from '@material-ui/data-grid';
 import { DeleteForever, Search } from '@material-ui/icons';
+import { ExcelUpload, ExcelDownload } from '../components';
 import UserStyle from '../styles/UserStyle';
 import { useForm, Controller } from 'react-hook-form';
 import RegisterDialog from './Register';
+import ExcelDialog from './Excel';
 import { GET_USERS } from '../gql/user/query';
 import { DELETE_USER } from '../gql/user/mutation';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import { useHistory } from 'react-router-dom';
+import XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 const columns = [
     { field: 'name', headerName: '이름', width: 130 },
@@ -28,7 +32,7 @@ const columns = [
     { field: 'registerDate', headerName: '입사일', width: 200 },
 ];
 
-const User = props => {
+const User = () => {
     const classes = UserStyle();
     const history = useHistory();
     const [selection, setSelection] = useState([]);
@@ -39,11 +43,12 @@ const User = props => {
         type: null,
         userId: null,
     });
+    const [excelName, setExcelName] = useState('바텍 통근버스_사용자 정보');
     const [page, setPage] = useState(0);
 
     const { handleSubmit, control } = useForm();
 
-    const { loading, data, error, refetch } = useQuery(GET_USERS, {
+    const { loading, data, refetch } = useQuery(GET_USERS, {
         fetchPolicy: 'no-cache',
     });
     const [deleteUser] = useMutation(DELETE_USER, {
@@ -53,10 +58,10 @@ const User = props => {
     });
 
     const searchClick = data => {
-        console.log(data);
         setSearch({
             [data.select]: data.search,
         });
+        setExcelName(`${excelName}_[${data.select}-${data.search}]`);
         setPage(0);
     };
 
@@ -91,30 +96,9 @@ const User = props => {
         }
     }, [data, history]);
 
-    if (error) {
-        console.log(error);
-    }
-
     return (
-        <Box px={15} pt={5} minWidth="600px">
+        <Box px={15} pt={2} minWidth="600px">
             <Box className={classes.mainBox} mb={1}>
-                <Box className={classes.searchBox}>
-                    <Box mr={2}>
-                        <Button
-                            size="small"
-                            variant="contained"
-                            color="secondary"
-                            className={classes.buttonDelete}
-                            disabled={selection.length === 0}
-                            onClick={deleteUserClick}
-                        >
-                            <DeleteForever /> <Typography>&nbsp;삭제</Typography>
-                        </Button>
-                    </Box>
-                    <Box>
-                        <Typography>{selection.length}개 선택됨</Typography>
-                    </Box>
-                </Box>
                 <Box>
                     <form onSubmit={handleSubmit(searchClick)}>
                         <Box className={classes.searchBox}>
@@ -182,7 +166,7 @@ const User = props => {
             </Box>
             <Box mb={1}>
                 <Paper>
-                    <Box width="100%" minHeight="500px" height="65vh">
+                    <Box width="100%" minHeight="500px" height="70vh">
                         <DataGrid
                             columns={columns}
                             rows={userRow}
@@ -195,11 +179,22 @@ const User = props => {
                             onPageChange={params => setPage(params.page)}
                             page={page}
                             loading={loading}
+                            components={{
+                                Toolbar: CustomToolbar,
+                            }}
+                            componentsProps={{
+                                toolbar: {
+                                    selection: selection,
+                                    deleteUserClick: deleteUserClick,
+                                    userRow: userRow,
+                                    excelName: excelName,
+                                },
+                            }}
                         />
                     </Box>
                 </Paper>
             </Box>
-            <Box className={classes.registerBox}>
+            <Box display="flex" justifyContent="flex-end">
                 <Button
                     variant="contained"
                     className={classes.registerButton}
@@ -211,6 +206,92 @@ const User = props => {
             </Box>
             <RegisterDialog open={registerDialog} onClose={setRegisterDialog} refetch={refetch} />
         </Box>
+    );
+};
+
+const CustomToolbar = props => {
+    const { selection, deleteUserClick, userRow, excelName } = props;
+    const classes = UserStyle();
+    const [excelDialog, setExcelDialog] = useState(false); //엑셀 Dialog open 여부
+
+    const s2ab = s => {
+        const buf = new ArrayBuffer(s.length);
+        const views = new Uint8Array(buf);
+        for (let i = 0; i < s.length; i++) {
+            views[i] = s.charCodeAt(i) & 0xff;
+        }
+        return buf;
+    };
+
+    const downloadClick = () => {
+        const wb = XLSX.utils.book_new();
+        const wsData = [['이름', '소속', '아이디(사원번호)', '휴대폰번호', '입사일']];
+        userRow.forEach(row => {
+            const content = [row.name, row.type, row.userId, row.phoneNumber, row.registerDate];
+            wsData.push(content);
+        });
+        wb.Props = {
+            Title: 'Vatech-Bus',
+            Subject: 'Commuter bus',
+            Author: 'Minsik Um',
+            Manager: 'Manager',
+            Company: 'Vatech',
+            Keywords: 'Vatech',
+            CreatedDate: new Date(),
+        };
+
+        wb.SheetNames.push('sheet 1');
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        wb.Sheets['sheet 1'] = ws;
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+        saveAs(new Blob([s2ab(wbout)], { type: 'application/octet-stream' }), excelName + '.xlsx');
+    };
+
+    return (
+        <GridToolbarContainer className={classes.customToolBar}>
+            <Box className={classes.searchBox}>
+                <Box mr={2} display="flex" alignItems="center">
+                    <Button
+                        size="small"
+                        variant="contained"
+                        color="secondary"
+                        className={classes.buttonDelete}
+                        disabled={selection.length === 0}
+                        onClick={deleteUserClick}
+                    >
+                        <DeleteForever /> <Typography>&nbsp;삭제</Typography>
+                    </Button>
+                </Box>
+                <Box>
+                    <Typography>{selection.length}개 선택됨</Typography>
+                </Box>
+            </Box>
+            <Box display="flex" alignItems="center">
+                <Box mr={1}>
+                    <Button
+                        variant="outlined"
+                        onClick={() => setExcelDialog(true)}
+                        className={classes.excelButton}
+                        size="small"
+                    >
+                        <ExcelUpload fontSize="small" />
+                        <Typography>업로드</Typography>
+                    </Button>
+                </Box>
+                <Box>
+                    <Button
+                        variant="outlined"
+                        onClick={downloadClick}
+                        className={classes.excelButton}
+                        size="small"
+                    >
+                        <ExcelDownload fontSize="small" />
+                        <Typography>다운로드</Typography>
+                    </Button>
+                </Box>
+            </Box>
+            <ExcelDialog open={excelDialog} onClose={setExcelDialog} />
+        </GridToolbarContainer>
     );
 };
 

@@ -39,6 +39,7 @@ const BusInfo = ({ history, location }) => {
     const [detailRoutes, setDetailRoutes] = useState([]);
     const [busNotice, setBusNotice] = useState({});
     const [departFrom, setDepartFrom] = useState(0);
+    const [currentMin, setCurrentMin] = useState(dayjs().minute() + dayjs().hour() * 60);
 
     const handleClose = () => {
         history.goBack();
@@ -51,19 +52,22 @@ const BusInfo = ({ history, location }) => {
         variables: { route: busName },
     });
 
-    const currentMin = dayjs().minute() + dayjs().hour() * 60;
-
     useEffect(() => {
+        const tick = () => {
+            return setTimeout(() => setCurrentMin(currentMin + 60), 60000);
+        };
+
         if (driverData) {
             const { success, message, data } = driverData.getDriverNotice;
             if (success && data[0]) {
                 const time = data[0].updatedAt.split(':');
                 setBusNotice(data[0]);
                 const BusMin = parseInt(time[0]) * 60 + parseInt(time[1]);
-
+                tick();
                 setDepartFrom(currentMin - BusMin);
             } else console.log(message);
         }
+        return () => clearTimeout(tick);
     }, [driverData, currentMin]);
 
     useEffect(() => {

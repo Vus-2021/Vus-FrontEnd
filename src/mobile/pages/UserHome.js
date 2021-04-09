@@ -189,7 +189,7 @@ const UserHome = ({ history }) => {
                             >
                                 <CircularProgress color="secondary" />
                             </Box>
-                        ) : (
+                        ) : notice.length > 0 ? (
                             notice.map((data, index) => (
                                 <React.Fragment key={data.notice + index}>
                                     <Box
@@ -231,6 +231,15 @@ const UserHome = ({ history }) => {
                                     <Divider />
                                 </React.Fragment>
                             ))
+                        ) : (
+                            <Box
+                                height="100%"
+                                display="flex"
+                                justifyContent="center"
+                                alignItems="center"
+                            >
+                                등록된 공지가 없습니다.
+                            </Box>
                         )}
                     </Box>
                 </Box>

@@ -3,10 +3,11 @@ import { makeStyles } from '@material-ui/core/styles';
 const UserStyle = makeStyles(theme => ({
     mainBox: {
         display: 'flex',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-end',
         alignItems: 'flex-end',
     },
     buttonDelete: {
+        height: '30px',
         backgroundColor: '#F63434',
         '&:hover': {
             backgroundColor: '#F63434',
@@ -25,9 +26,8 @@ const UserStyle = makeStyles(theme => ({
         fontSize: '16px',
         padding: 0,
     },
-    registerBox: {
-        display: 'flex',
-        justifyContent: 'flex-end',
+    excelButton: {
+        height: '30px',
     },
     registerButton: {
         color: 'white',
@@ -37,6 +37,11 @@ const UserStyle = makeStyles(theme => ({
             color: 'white',
             backgroundColor: '#0078CE',
         },
+    },
+    customToolBar: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        height: '30px',
     },
 }));
 
