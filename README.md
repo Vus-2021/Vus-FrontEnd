@@ -16,7 +16,8 @@
 >> - 일반적인 로그인 페이지로 관리자만 접근 가능.  
 >> - 비밀번호 보기 기능을 구현.  
 >> <details><summary><strong>실제 페이지 보기</strong></summary>
->> <div markdown="1">123</div></details>  
+>> <div markdown="1"><img width="1200" src=https://user-images.githubusercontent.com/46717432/114361231-db41bd00-9bb0-11eb-9dc7-16b5fba2743c.png>
+</div></details>  
 
 
 > <strong>B. 사용자 관리 페이지</strong>
@@ -24,25 +25,32 @@
 >> - 사용자(관리자, 버스기사, 유저) 회원가입 가능(아이디 중복확인, 비밀번호 보기).  
 >> - 다중선택으로 사용자를 선별 삭제.  
 >> - 검색 기능으로 유저를 찾음.  
->> - 엑셀 업로드 및 다운로드를 구현.  
->> <details><summary><strong>실제 페이지 보기</strong></summary></details>  
->> <div markdown="1">123</div></details>  
+>> - 엑셀 업로드 및 다운로드를 구현. 
+>> <details><summary><strong>실제 페이지 보기</strong></summary>
+>> <div markdown="1"><img width="1200" src=https://user-images.githubusercontent.com/46717432/114361361-01fff380-9bb1-11eb-9666-5989c6ba497b.png>
+</div></details>   
+
 
 > <strong>C. 노선 관리 페이지</strong>
 >> - 노선 생성, 수정, 삭제 가능.(이미지 등록 가능)  
 >> - 각 노선별로 정류장을 생성, 수정, 삭제.
 >> - 주소 검색기능으로 위치를 한번에 접근.  
 >> - 마커로 정류장의 위치를 확인.  
->> <details><summary><strong>실제 페이지 보기</strong></summary></details>  
->> <div markdown="1">123</div></details>  
+>> <details><summary><strong>실제 페이지 보기</strong></summary>
+>> <div markdown="1"><img width="1200" src=https://user-images.githubusercontent.com/46717432/114361524-2d82de00-9bb1-11eb-8452-1b60baebeff2.png>
+>> <br/><img width="1200" src=https://user-images.githubusercontent.com/46717432/114362167-011b9180-9bb2-11eb-817c-be888ec8918a.png>   
+>> <br/><img width="1200" src=https://user-images.githubusercontent.com/46717432/114362054-dc271e80-9bb1-11eb-883a-293c19dd5f7d.png> </div></details>  
+
 
 > <strong>D. 공지 관리 페이지</strong>
 >> - 공지 생성 가능.  
 >> - 개별 선택으로 공지를 수정.  
 >> - 다중 선택으로 공지를 삭제.  
 >> - 검색 기능으로 공지를 찾음.  
->> <details><summary><strong>실제 페이지 보기</strong></summary></details>  
->> <div markdown="1">123</div></details>  
+>> <details><summary><strong>실제 페이지 보기</strong></summary>
+>> <div markdown="1"><img width="1200" src=https://user-images.githubusercontent.com/46717432/114362247-17295200-9bb2-11eb-8540-128de992343e.png>
+</div></details>     
+
 
 > <strong>E. 탑승객 관리 페이지</strong>
 >> - 전체, 당첨자, 미당첨자, 대기자, 취소자로 구분하여 탑승객을 구별.  
@@ -50,8 +58,10 @@
 >> - 탑승객 전체 초기화 버튼으로 탑승객 정보를 모두 삭제 가능.  
 >> - 탑승객 선별 버튼으로 해당 월 탑승객을 자동 선별. 
 >> - 검색 기능으로 탑승객을 찾음.  
->> <details><summary><strong>실제 페이지 보기</strong></summary></details>  
->> <div markdown="1">123</div></details>  
+>> <details><summary><strong>실제 페이지 보기</strong></summary>
+>> <div markdown="1"><img width="1200" src=https://user-images.githubusercontent.com/46717432/114362519-61aace80-9bb2-11eb-9501-7e07dc0fd058.png>
+>> <br/><img width="1200" src=https://user-images.githubusercontent.com/46717432/114362527-640d2880-9bb2-11eb-90dd-8a197a03fd37.png> </div></details>    
+
 
 ### 2. 유저 페이지
 ### 3. 버스기사 페이지
