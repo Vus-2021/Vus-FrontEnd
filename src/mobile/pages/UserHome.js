@@ -367,7 +367,7 @@ const BusNoticeForm = () => {
     }, [departMin, currentMin]);
 
     return (
-        <BusSwipeableViews axis="y" resistance interval={3500} containerStyle={{ height: '40px' }}>
+        <BusSwipeableViews axis="y" resistance interval={4000} containerStyle={{ height: '40px' }}>
             {busNotice.length > 0 ? (
                 busNotice.map((notice, index) => (
                     <Box
@@ -403,7 +403,7 @@ const NoticeDetail = props => {
 
     return notice.location !== 'null' ? (
         <React.Fragment>
-            <strong>{notice.route}</strong>발 버스가{' '}
+            <strong>{notice.route}</strong>버스가{' '}
             {departFrom[index] >= 1 ? `${departFrom[index]}분 전에 ` : '방금 전에 '}
             <strong>{notice.location}</strong>에서 출발했습니다.
         </React.Fragment>

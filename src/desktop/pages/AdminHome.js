@@ -55,7 +55,12 @@ const AdminHome = ({ history }) => {
         <React.Fragment>
             <div className={classes.rootBox}>
                 <Header />
-                <Box className={classes.mainBox} width="100%" pt={9}>
+                <Box
+                    className={classes.mainBox}
+                    width="100%"
+                    display="flex"
+                    justifyContent="center"
+                >
                     <Paper elevation={12} className={classes.loginPaper}>
                         <Box pl={3} pr={3} pt={5} width="350px" height="500px">
                             <form onSubmit={handleSubmit(signInSubmit)}>

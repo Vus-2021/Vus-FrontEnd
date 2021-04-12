@@ -286,15 +286,29 @@ const NotAuthorized = () => {
                 <Error />
                 &nbsp; 권한이 없습니다.
             </Box>
+            <Box width="70%" mb={1}>
+                <Button
+                    variant="contained"
+                    size="large"
+                    fullWidth
+                    className={classes.loginButton}
+                    onClick={() => history.push('/')}
+                >
+                    홈페이지로 돌아가기
+                </Button>
+            </Box>
             <Box width="70%">
                 <Button
                     variant="contained"
                     size="large"
                     fullWidth
                     className={classes.signUpButton}
-                    onClick={() => history.push('/')}
+                    onClick={() => {
+                        localStorage.clear();
+                        window.location.href = '/driver';
+                    }}
                 >
-                    홈페이지로 돌아가기
+                    로그아웃
                 </Button>
             </Box>
         </Box>

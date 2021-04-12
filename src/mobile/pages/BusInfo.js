@@ -311,7 +311,7 @@ const BusNoticeForm = props => {
 
     return busNotice.location !== 'null' ? (
         <React.Fragment>
-            {busNotice.route}발 버스가 {departFrom >= 1 ? `${departFrom}분 전에 ` : '방금 전에 '}
+            {busNotice.route}버스가 {departFrom >= 1 ? `${departFrom}분 전에 ` : '방금 전에 '}
             <strong>{busNotice.location}</strong>에서 출발했습니다.
         </React.Fragment>
     ) : dayjs().hour() > 8 ? (
