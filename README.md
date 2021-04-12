@@ -1,4 +1,4 @@
-# V-us (Vatech 통근버스) 앱
+# 🚌 V-us (Vatech 통근버스) 앱 🚌
 ## I. Contributor
 #### • 엄민식: FrontEnd
 #### • 최영훈: BackEnd
