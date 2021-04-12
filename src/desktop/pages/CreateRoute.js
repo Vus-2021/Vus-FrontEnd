@@ -26,6 +26,7 @@ const CreateRoute = props => {
     const [drivers, setDrivers] = useState([]);
     const [openSnackbar, setSnackbar] = useState(false);
     const [imageName, setImageName] = useState('노선 이미지 업로드');
+    const [imgPreview, setImgPreview] = useState('');
 
     const { data } = useQuery(GET_USERS, {
         variables: { type: 'DRIVER' },
@@ -82,13 +83,13 @@ const CreateRoute = props => {
     }, [createData, reset, setValue]);
 
     return (
-        <Box display="flex" justifyContent="center" py={5} minHeight="600px">
+        <Box display="flex" justifyContent="center" py={5} minHeight="530px">
             <Paper elevation={10} className={classes.registerPaper}>
                 <Box width="380px">
                     <MiniHeader headerText="노선 등록" />
                     <Box px={4} pt={6} pb={4}>
                         <form onSubmit={handleSubmit(registerRoute)} encType="multipart/form-data">
-                            <Box height="80px">
+                            <Box mb={1}>
                                 <Controller
                                     control={control}
                                     as={TextField}
@@ -103,7 +104,7 @@ const CreateRoute = props => {
                                     helperText={errors.route ? '노선 이름을 입력해주세요.' : ' '}
                                 />
                             </Box>
-                            <Box height="80px">
+                            <Box mb={1}>
                                 <Controller
                                     control={control}
                                     name="driver"
@@ -146,7 +147,7 @@ const CreateRoute = props => {
                                     )}
                                 />
                             </Box>
-                            <Box height="80px">
+                            <Box mb={1}>
                                 <Controller
                                     control={control}
                                     as={TextField}
@@ -161,7 +162,7 @@ const CreateRoute = props => {
                                     helperText={errors.busNumber ? '차량번호를 입력해주세요.' : ' '}
                                 />
                             </Box>
-                            <Box height="80px">
+                            <Box mb={1}>
                                 <Controller
                                     control={control}
                                     as={TextField}
@@ -185,7 +186,7 @@ const CreateRoute = props => {
                                     }
                                 />
                             </Box>
-                            <Box height="80px">
+                            <Box mb={4}>
                                 <Controller
                                     control={control}
                                     defaultValue=""
@@ -196,13 +197,18 @@ const CreateRoute = props => {
                                     render={props => (
                                         <Box>
                                             <input
-                                                accept="image/*"
+                                                accept="image/png, image/gif, image/jpeg"
                                                 id="contained-button-file"
                                                 type="file"
                                                 style={{ display: 'none' }}
                                                 onChange={e => {
-                                                    props.onChange(e.target.files[0]);
-                                                    setImageName(e.target.files[0].name);
+                                                    const file = e.target.files[0];
+                                                    const reader = new FileReader();
+                                                    props.onChange(file);
+                                                    setImageName(file.name);
+                                                    reader.onloadend = () =>
+                                                        setImgPreview(reader.result);
+                                                    reader.readAsDataURL(file);
                                                 }}
                                             />
                                             <label htmlFor="contained-button-file">
@@ -216,11 +222,24 @@ const CreateRoute = props => {
                                                             : classes.imageButton
                                                     }
                                                 >
-                                                    <Typography className={classes.imageText}>
-                                                        {errors.image
-                                                            ? '이미지를 업로드해주세요'
-                                                            : imageName}
-                                                    </Typography>
+                                                    <Box
+                                                        display="flex"
+                                                        flexDirection="column"
+                                                        alignItems="center"
+                                                    >
+                                                        <Typography className={classes.imageText}>
+                                                            {errors.image
+                                                                ? '이미지를 업로드해주세요'
+                                                                : imageName}
+                                                        </Typography>
+                                                        {imgPreview !== '' && (
+                                                            <img
+                                                                src={imgPreview}
+                                                                width="140px"
+                                                                alt="nothing"
+                                                            />
+                                                        )}
+                                                    </Box>
                                                 </Button>
                                             </label>
                                         </Box>

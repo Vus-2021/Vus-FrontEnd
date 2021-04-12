@@ -49,6 +49,7 @@ export const GET_ROUTES_INFO = gql`
                     name
                     userId
                 }
+                imageUrl
             }
         }
     }

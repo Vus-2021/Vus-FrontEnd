@@ -30,6 +30,8 @@ const UpdateRouteDialog = props => {
     const { control, handleSubmit, errors } = useForm();
     const [drivers, setDrivers] = useState([]);
     const [routeInfo, setRouteInfo] = useState({});
+    const [imageName, setImageName] = useState('노선 이미지 업로드');
+    const [changedImage, setChangedImage] = useState('');
 
     const { data } = useQuery(GET_USERS, {
         variables: { type: 'DRIVER' },
@@ -47,6 +49,9 @@ const UpdateRouteDialog = props => {
 
     const handleClose = () => {
         onClose(false);
+
+        setChangedImage('');
+        setImageName('노선 이미지 업로드');
     };
 
     const LimitCountHelperText = props => {
@@ -62,8 +67,9 @@ const UpdateRouteDialog = props => {
                 partitionKey: routeInfo.partitionKey,
                 route: data.route,
                 busNumber: data.busNumber,
-                limitCount: data.limitCount,
+                limitCount: parseInt(data.limitCount),
                 driver: { name: driverData[0], phone: driverData[1], userId: driverData[2] },
+                file: changedImage !== '' ? data.image : null,
             },
         });
     };
@@ -102,7 +108,10 @@ const UpdateRouteDialog = props => {
             <MiniHeader handleClose={handleClose} headerText="노선 수정" />
             <Box p={4}>
                 {routeInfo.driver && (
-                    <form onSubmit={handleSubmit(data => updateClick(data))}>
+                    <form
+                        onSubmit={handleSubmit(data => updateClick(data))}
+                        encType="multipart/form-data"
+                    >
                         <Box mb={2}>
                             <Controller
                                 control={control}
@@ -200,6 +209,59 @@ const UpdateRouteDialog = props => {
                                 }
                             />
                         </Box>
+                        <Box mb={2}>
+                            <Controller
+                                control={control}
+                                defaultValue=""
+                                name="image"
+                                render={props => (
+                                    <Box>
+                                        <input
+                                            accept="image/png, image/gif, image/jpeg"
+                                            id="contained-button-file"
+                                            type="file"
+                                            style={{ display: 'none' }}
+                                            onChange={e => {
+                                                const file = e.target.files[0];
+                                                const reader = new FileReader();
+                                                props.onChange(file);
+                                                setImageName(file.name);
+                                                reader.onloadend = () =>
+                                                    setChangedImage(reader.result);
+                                                reader.readAsDataURL(file);
+                                            }}
+                                        />
+                                        <label htmlFor="contained-button-file">
+                                            <Button
+                                                variant="outlined"
+                                                component="span"
+                                                fullWidth
+                                                className={classes.imageButton}
+                                            >
+                                                <Box
+                                                    display="flex"
+                                                    flexDirection="column"
+                                                    alignItems="center"
+                                                >
+                                                    <Typography className={classes.imageText}>
+                                                        {imageName}
+                                                    </Typography>
+                                                    <img
+                                                        src={
+                                                            changedImage === ''
+                                                                ? routeInfo.imageUrl
+                                                                : changedImage
+                                                        }
+                                                        width="140px"
+                                                        alt="nothing"
+                                                    />
+                                                </Box>
+                                            </Button>
+                                        </label>
+                                    </Box>
+                                )}
+                            />
+                        </Box>
                         <Box display="flex" justifyContent="flex-end">
                             <Button
                                 type="submit"
@@ -282,6 +344,9 @@ const CreateDialog = props => {
     const classes = RouteStyle();
     const { control, handleSubmit, errors } = useForm();
 
+    const [imageName, setImageName] = useState('노선 이미지 업로드');
+    const [imgPreview, setImgPreview] = useState('');
+
     const [createRouteDetail, { data }] = useMutation(CREATE_ROUTE_DETAIL, {
         onCompleted() {
             refetch();
@@ -290,6 +355,8 @@ const CreateDialog = props => {
 
     const handleClose = () => {
         onClose(false);
+        setImgPreview('');
+        setImageName('노선 이미지 업로드');
     };
 
     const BoardingTimeHelperText = props => {
@@ -306,6 +373,7 @@ const CreateDialog = props => {
                 lat: latlng.lat,
                 long: latlng.lng,
                 boardingTime: data.boardingTime,
+                file: imgPreview !== '' ? data.image : null,
             },
         });
     };
@@ -371,6 +439,65 @@ const CreateDialog = props => {
                             }
                         />
                     </Box>
+                    <Box mb={1}>
+                        <Controller
+                            control={control}
+                            defaultValue=""
+                            name="image"
+                            rules={{
+                                required: true,
+                            }}
+                            render={props => (
+                                <Box>
+                                    <input
+                                        accept="image/png, image/gif, image/jpeg"
+                                        id="contained-button-file"
+                                        type="file"
+                                        style={{ display: 'none' }}
+                                        onChange={e => {
+                                            const file = e.target.files[0];
+                                            const reader = new FileReader();
+                                            props.onChange(file);
+                                            setImageName(file.name);
+                                            reader.onloadend = () => setImgPreview(reader.result);
+                                            reader.readAsDataURL(file);
+                                        }}
+                                    />
+                                    <label htmlFor="contained-button-file">
+                                        <Button
+                                            variant="outlined"
+                                            component="span"
+                                            fullWidth
+                                            className={
+                                                errors.image
+                                                    ? classes.errorButton
+                                                    : classes.imageButton
+                                            }
+                                        >
+                                            <Box
+                                                display="flex"
+                                                flexDirection="column"
+                                                alignItems="center"
+                                            >
+                                                <Typography className={classes.imageText}>
+                                                    {errors.image
+                                                        ? '이미지를 업로드해주세요'
+                                                        : imageName}
+                                                </Typography>
+                                                {imgPreview !== '' && (
+                                                    <img
+                                                        src={imgPreview}
+                                                        width="280px"
+                                                        alt="nothing"
+                                                    />
+                                                )}
+                                            </Box>
+                                        </Button>
+                                    </label>
+                                </Box>
+                            )}
+                        />
+                    </Box>
                     <Box display="flex" justifyContent="flex-end">
                         <Button type="submit" variant="contained" className={classes.searchButton}>
                             정류장 등록
@@ -388,6 +515,9 @@ const UpdateDialog = props => {
     const classes = RouteStyle();
     const { control, handleSubmit, errors } = useForm();
 
+    const [imageName, setImageName] = useState('노선 이미지 업로드');
+    const [changedImage, setChangedImage] = useState('');
+
     const [updateDetailRoute, { data }] = useMutation(UPDATE_DETAIL_ROUTE, {
         onCompleted() {
             refetch();
@@ -402,6 +532,8 @@ const UpdateDialog = props => {
 
     const handleClose = () => {
         onClose(false);
+        setChangedImage('');
+        setImageName('노선 이미지 업로드');
     };
 
     const deleteRouteClick = () => {
@@ -422,6 +554,7 @@ const UpdateDialog = props => {
                 route: route.route,
                 boardingTime: data.boardingTime,
                 location: data.location,
+                file: changedImage !== '' ? data.image : null,
             },
         });
     };
@@ -477,6 +610,58 @@ const UpdateDialog = props => {
                             rules={{ required: true }}
                             error={errors.boardingTime ? true : false}
                             helperText={errors.boardingTime ? '시간을 입력해주세요.' : ' '}
+                        />
+                    </Box>
+                    <Box mb={1} width="100%">
+                        <Controller
+                            control={control}
+                            defaultValue=""
+                            name="image"
+                            render={props => (
+                                <Box>
+                                    <input
+                                        accept="image/png, image/gif, image/jpeg"
+                                        id="contained-button-file"
+                                        type="file"
+                                        style={{ display: 'none' }}
+                                        onChange={e => {
+                                            const file = e.target.files[0];
+                                            const reader = new FileReader();
+                                            props.onChange(file);
+                                            setImageName(file.name);
+                                            reader.onloadend = () => setChangedImage(reader.result);
+                                            reader.readAsDataURL(file);
+                                        }}
+                                    />
+                                    <label htmlFor="contained-button-file">
+                                        <Button
+                                            variant="outlined"
+                                            component="span"
+                                            fullWidth
+                                            className={classes.imageButton}
+                                        >
+                                            <Box
+                                                display="flex"
+                                                flexDirection="column"
+                                                alignItems="center"
+                                            >
+                                                <Typography className={classes.imageText}>
+                                                    {imageName}
+                                                </Typography>
+                                                <img
+                                                    src={
+                                                        changedImage === ''
+                                                            ? route.imageUrl
+                                                            : changedImage
+                                                    }
+                                                    width="280px"
+                                                    alt="nothing"
+                                                />
+                                            </Box>
+                                        </Button>
+                                    </label>
+                                </Box>
+                            )}
                         />
                     </Box>
                     <Box display="flex" justifyContent="flex-end">

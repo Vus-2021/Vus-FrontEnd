@@ -61,6 +61,7 @@ export const UPDATE_DETAIL_ROUTE = gql`
         $long: Float!
         $location: String!
         $route: String!
+        $file: Upload
     ) {
         updateDetailRoute(
             partitionKey: $partitionKey
@@ -69,6 +70,7 @@ export const UPDATE_DETAIL_ROUTE = gql`
             long: $long
             location: $location
             route: $route
+            file: $file
         ) {
             success
             message

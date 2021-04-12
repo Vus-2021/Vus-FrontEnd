@@ -252,7 +252,9 @@ const BeforeLogin = props => {
             height="80%"
         >
             <Box mb={2} display="flex" alignItems="center">
-                <Typography>버스 기사용 페이지입니다.</Typography>
+                <Typography>
+                    <strong>버스 기사용</strong> 페이지입니다.
+                </Typography>
             </Box>
             <Box width="70%">
                 <Button

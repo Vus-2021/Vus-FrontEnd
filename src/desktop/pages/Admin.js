@@ -58,7 +58,6 @@ const Admin = () => {
                     <Box className={classes.viewBox}>
                         <SelectView
                             view={state.view}
-                            setState={setState}
                             routeItems={routeItems}
                             routeName={routeName}
                             partitionKey={partitionKey}

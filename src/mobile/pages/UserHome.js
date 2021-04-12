@@ -23,7 +23,6 @@ import {
     GET_MY_INFO,
     GET_ROUTES_INFO,
     GET_ADMIN_NOTICE,
-    // eslint-disable-next-line no-unused-vars
     GET_DRIVER_NOTICE,
 } from '../gql/home/query';
 import { useLazyQuery, useQuery } from '@apollo/react-hooks';
@@ -348,6 +347,7 @@ const BusNoticeForm = () => {
                 setDepartMin(busArr);
             } else console.log(message);
         }
+        return () => setDepartMin([]);
     }, [data]);
 
     useEffect(() => {
