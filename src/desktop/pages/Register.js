@@ -11,7 +11,13 @@ import {
     InputAdornment,
     IconButton,
     Snackbar,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    FormHelperText,
 } from '@material-ui/core';
+import { DatePicker } from '@material-ui/pickers';
 import { VisibilityOff, Visibility } from '@material-ui/icons';
 import { Alert } from '@material-ui/lab';
 import MiniHeader from '../layout/MiniHeader';
@@ -22,10 +28,45 @@ import { SIGNUP_USER } from '../gql/register/mutation';
 import { useLazyQuery, useMutation } from '@apollo/react-hooks';
 import * as dayjs from 'dayjs';
 
+const companyType = [
+    {
+        name: '바텍',
+        initial: 'VT',
+    },
+    {
+        name: '바텍이우홀딩스',
+        initial: 'VH',
+    },
+    {
+        name: '이우소프트',
+        initial: 'ES',
+    },
+    {
+        name: '레이언스',
+        initial: 'RY',
+    },
+    {
+        name: '우리엔',
+        initial: 'WR',
+    },
+    {
+        name: '바텍엠시스',
+        initial: 'VM',
+    },
+    {
+        name: '바텍이엔지',
+        initial: 'VE',
+    },
+    {
+        name: '바텍에스앤씨',
+        initial: 'VS',
+    },
+];
+
 const Register = props => {
     const classes = RegisterStyle();
     const { open, onClose, refetch } = props;
-    const { handleSubmit, control, errors, getValues, setError, clearErrors } = useForm();
+    const { handleSubmit, control, errors, getValues, setError, clearErrors, watch } = useForm();
 
     const [boardNum, setNumber] = useState(0);
     const [showPwd, setShowPwd] = useState(false); //비밀번호 입력 가시화
@@ -41,19 +82,34 @@ const Register = props => {
     });
 
     const registerUser = data => {
-        const type = boardNum === 0 ? 'ADMIN' : 'DRIVER';
-        signupUser({
-            variables: {
-                input: {
-                    userId: data.userId,
-                    password: data.password,
-                    name: data.name,
-                    phoneNumber: data.phoneNumber,
-                    type: type,
-                    registerDate: dayjs(new Date()).format('YYYY-MM-DD'),
+        if (boardNum !== 2) {
+            const type = boardNum === 0 ? 'ADMIN' : 'DRIVER';
+            signupUser({
+                variables: {
+                    input: {
+                        userId: data.userId,
+                        password: data.password,
+                        name: data.name,
+                        phoneNumber: data.phoneNumber,
+                        type: type,
+                        registerDate: dayjs(new Date()).format('YYYY-MM-DD'),
+                    },
                 },
-            },
-        });
+            });
+        } else {
+            signupUser({
+                variables: {
+                    input: {
+                        userId: data.userId,
+                        password: data.password,
+                        name: data.name,
+                        phoneNumber: data.phoneNumber,
+                        type: data.type,
+                        registerDate: data.registerDate,
+                    },
+                },
+            });
+        }
         setSnackbar(true);
     };
 
@@ -133,12 +189,16 @@ const Register = props => {
                             classes={{ root: classes.tab }}
                             label={<Typography className={classes.tabText}>버스기사</Typography>}
                         />
+                        <Tab
+                            classes={{ root: classes.tab }}
+                            label={<Typography className={classes.tabText}>사용자</Typography>}
+                        />
                     </Tabs>
                 </Box>
 
                 <Box mb={2}>
                     <form onSubmit={handleSubmit(registerUser)}>
-                        <Box height="80px" style={{ display: 'flex' }}>
+                        <Box height="70px" style={{ display: 'flex' }}>
                             <Box height="100%" width="70%" mr={1}>
                                 <Controller
                                     as={TextField}
@@ -180,7 +240,7 @@ const Register = props => {
                                 </Button>
                             </Box>
                         </Box>
-                        <Box height="80px" width="100%">
+                        <Box height="70px" width="100%">
                             <Controller
                                 as={TextField}
                                 defaultValue=""
@@ -210,7 +270,7 @@ const Register = props => {
                                 }}
                             />
                         </Box>
-                        <Box height="80px" width="100%">
+                        <Box height="70px" width="100%">
                             <Controller
                                 as={TextField}
                                 defaultValue=""
@@ -228,7 +288,7 @@ const Register = props => {
                                 label={boardNum === 0 ? '이름(소속)' : '이름'}
                             />
                         </Box>
-                        <Box height="80px" width="100%">
+                        <Box height="70px" width="100%">
                             <Controller
                                 as={TextField}
                                 defaultValue=""
@@ -257,6 +317,78 @@ const Register = props => {
                                 label="휴대폰 번호"
                             />
                         </Box>
+                        {boardNum === 2 && (
+                            <React.Fragment>
+                                <Box height="70px" width="100%">
+                                    <Controller
+                                        control={control}
+                                        name="type"
+                                        defaultValue=""
+                                        rules={{
+                                            validate: {
+                                                required: value => value !== '',
+                                            },
+                                        }}
+                                        error={errors.type ? true : false}
+                                        render={props => (
+                                            <FormControl
+                                                fullWidth
+                                                size="small"
+                                                variant="outlined"
+                                                error={errors.type ? true : false}
+                                            >
+                                                <InputLabel id="company-type-select">
+                                                    소속
+                                                </InputLabel>
+                                                <Select
+                                                    labelId="company-type-select"
+                                                    label="소속"
+                                                    defaultValue=""
+                                                    onChange={e => props.onChange(e.target.value)}
+                                                >
+                                                    {companyType.map(type => (
+                                                        <MenuItem
+                                                            key={type.initial}
+                                                            value={type.initial}
+                                                        >
+                                                            {type.name}({type.initial})
+                                                        </MenuItem>
+                                                    ))}
+                                                </Select>
+                                                <FormHelperText>
+                                                    {errors.type ? '소속을 선택해주세요.' : ' '}
+                                                </FormHelperText>
+                                            </FormControl>
+                                        )}
+                                    />
+                                </Box>
+                                <Box height="70px" width="100%">
+                                    <Controller
+                                        name="registerDate"
+                                        control={control}
+                                        defaultValue={dayjs().format('YYYY-MM-DD')}
+                                        render={props => (
+                                            <DatePicker
+                                                autoOk
+                                                openTo="year"
+                                                format="YYYY-MM-DD"
+                                                value={watch('registerDate')}
+                                                onChange={e =>
+                                                    props.onChange(dayjs(e).format('YYYY-MM-DD'))
+                                                }
+                                                label="입사일"
+                                                inputVariant="outlined"
+                                                size="small"
+                                                fullWidth
+                                                maxDate={new Date()}
+                                                views={['year', 'month', 'date']}
+                                                helperText={' '}
+                                            />
+                                        )}
+                                    />
+                                </Box>
+                            </React.Fragment>
+                        )}
                         <Box height="50px" width="100%">
                             <Button
                                 variant="contained"

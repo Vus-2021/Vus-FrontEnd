@@ -166,7 +166,7 @@ const User = () => {
             </Box>
             <Box mb={1}>
                 <Paper>
-                    <Box width="100%" minHeight="500px" height="70vh">
+                    <Box width="100%" minHeight="500px" height="65vh">
                         <DataGrid
                             columns={columns}
                             rows={userRow}
@@ -201,7 +201,7 @@ const User = () => {
                     color="primary"
                     onClick={() => setRegisterDialog(true)}
                 >
-                    <Typography>관리자/버스기사 등록</Typography>
+                    <Typography>사용자 등록</Typography>
                 </Button>
             </Box>
             <RegisterDialog open={registerDialog} onClose={setRegisterDialog} refetch={refetch} />

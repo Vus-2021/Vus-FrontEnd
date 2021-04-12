@@ -63,7 +63,6 @@ const SignUp = props => {
     const [showPwd, setShowPwd] = useState(false); //비밀번호 입력 가시화
     const [openSnackbar, setSnackbar] = useState(false); //등록완료 후 사용자에게 alert
     const [typeSelect, setTypeSelect] = useState('VT');
-    const [date, setDate] = useState(dayjs(new Date()).format('YYYY-MM-DD'));
 
     const [tmpUserId, setTmpUserId] = useState('');
 
@@ -124,7 +123,7 @@ const SignUp = props => {
                     name: data.name,
                     phoneNumber: data.phoneNumber,
                     type: data.type,
-                    registerDate: date,
+                    registerDate: data.registerDate,
                 },
             },
         });
@@ -338,14 +337,14 @@ const SignUp = props => {
                         <Controller
                             name="registerDate"
                             control={control}
-                            defaultValue={date}
-                            render={() => (
+                            defaultValue={dayjs().format('YYYY-MM-DD')}
+                            render={props => (
                                 <DatePicker
                                     autoOk
                                     openTo="year"
                                     format="YYYY-MM-DD"
-                                    value={date}
-                                    onChange={date => setDate(dayjs(date).format('YYYY-MM-DD'))}
+                                    value={watch('registerDate')}
+                                    onChange={e => props.onChange(dayjs(e).format('YYYY-MM-DD'))}
                                     label="입사일"
                                     inputVariant="outlined"
                                     size="small"

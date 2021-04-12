@@ -34,6 +34,7 @@
     "react-responsive": "^8.2.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
+    "react-swipeable-views": "^0.13.9",
     "web-vitals": "^1.1.0",
     "xlsx": "^0.16.9"
   },

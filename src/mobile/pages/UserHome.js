@@ -19,11 +19,21 @@ import BusAlert from '../components/BusAlert';
 import { Header } from '../layout';
 import { AccountCircle } from '@material-ui/icons';
 import clsx from 'clsx';
-import { GET_MY_INFO, GET_ROUTES_INFO, GET_ADMIN_NOTICE } from '../gql/home/query';
+import {
+    GET_MY_INFO,
+    GET_ROUTES_INFO,
+    GET_ADMIN_NOTICE,
+    // eslint-disable-next-line no-unused-vars
+    GET_DRIVER_NOTICE,
+} from '../gql/home/query';
 import { useLazyQuery, useQuery } from '@apollo/react-hooks';
 import * as dayjs from 'dayjs';
 import { useHistory } from 'react-router-dom';
 import { useMediaQuery } from '@material-ui/core';
+import SwipeableViews from 'react-swipeable-views';
+import { autoPlay } from 'react-swipeable-views-utils';
+
+const BusSwipeableViews = autoPlay(SwipeableViews);
 
 const UserHome = ({ history }) => {
     const classes = HomeStyle();
@@ -142,23 +152,12 @@ const UserHome = ({ history }) => {
                 <Box mt={2} height="38%" className={classes.chooseBus}>
                     <BusList routeInfo={routeInfo} />
                 </Box>
-                <Box
-                    mb={1}
-                    px={2}
-                    height="7%"
-                    minHeight="40px"
-                    className={classes.busNotify}
-                    display="flex"
-                >
+                <Box mb={1} px={2} height="40px" className={classes.busNotify} display="flex">
                     <Box mr={1} display="flex" alignItems="center">
                         <BusAlert color="secondary" />
                     </Box>
                     <Box display="flex" overflow="auto" whiteSpace="nowrap" alignItems="center">
-                        <Typography className={classes.notifyText}>
-                            강남발 버스가 15분 전{' '}
-                            <strong>성호아파트 후문 또래아동도서아울렛 앞</strong>
-                            에서 출발했습니다.
-                        </Typography>
+                        <BusNoticeForm />
                     </Box>
                 </Box>
                 <Box mb={1} px={2} height="25%" className={classes.board} minHeight="50px">
@@ -326,4 +325,92 @@ const BusList = props => {
     );
 };
 
+const BusNoticeForm = () => {
+    const classes = HomeStyle();
+
+    const [departMin, setDepartMin] = useState([]);
+    const [currentMin, setCurrentMin] = useState(dayjs().minute() + dayjs().hour() * 60);
+    const [departFrom, setDepartFrom] = useState([]);
+    const [busNotice, setBusNotice] = useState([]);
+
+    const { data } = useQuery(GET_DRIVER_NOTICE, { fetchPolicy: 'no-cache' });
+
+    useEffect(() => {
+        if (data) {
+            const { success, message, data: busDataList } = data.getDriverNotice;
+            if (success) {
+                const busArr = [];
+                setBusNotice(busDataList);
+                busDataList.forEach(busData => {
+                    const time = busData.updatedAt.split(':');
+                    busArr.push(parseInt(time[0]) * 60 + parseInt(time[1]));
+                });
+                setDepartMin(busArr);
+            } else console.log(message);
+        }
+    }, [data]);
+
+    useEffect(() => {
+        const tick = () => {
+            return setTimeout(() => setCurrentMin(currentMin + 1), 60000);
+        };
+        if (departMin.length > 0) {
+            const timeArr = [];
+            tick();
+            departMin.forEach(busMin => {
+                timeArr.push(currentMin - busMin);
+            });
+            setDepartFrom(timeArr);
+        }
+
+        return () => clearTimeout(tick);
+    }, [departMin, currentMin]);
+
+    return (
+        <BusSwipeableViews axis="y" resistance interval={3500} containerStyle={{ height: '40px' }}>
+            {busNotice.length > 0 ? (
+                busNotice.map((notice, index) => (
+                    <Box
+                        display="flex"
+                        overflow="auto"
+                        whiteSpace="nowrap"
+                        alignItems="center"
+                        height="40px"
+                        key={notice.route}
+                    >
+                        <Typography className={classes.notifyText}>
+                            <NoticeDetail notice={notice} index={index} departFrom={departFrom} />
+                        </Typography>
+                    </Box>
+                ))
+            ) : (
+                <Box
+                    display="flex"
+                    overflow="auto"
+                    whiteSpace="nowrap"
+                    alignItems="center"
+                    height="40px"
+                >
+                    노선이 없거나 오류가 발생했습니다.
+                </Box>
+            )}
+        </BusSwipeableViews>
+    );
+};
+
+const NoticeDetail = props => {
+    const { notice, index, departFrom } = props;
+
+    return notice.location !== 'null' ? (
+        <React.Fragment>
+            <strong>{notice.route}</strong>발 버스가{' '}
+            {departFrom[index] >= 1 ? `${departFrom[index]}분 전에 ` : '방금 전에 '}
+            <strong>{notice.location}</strong>에서 출발했습니다.
+        </React.Fragment>
+    ) : dayjs().hour() > 8 ? (
+        <strong>금일 {notice.route}버스 운행이 종료되었습니다.</strong>
+    ) : (
+        <strong>버스가 아직 출발하지 않았습니다.</strong>
+    );
+};
 export default UserHome;

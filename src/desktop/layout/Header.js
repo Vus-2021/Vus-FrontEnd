@@ -14,6 +14,7 @@ import {
     ListItemText,
     Divider,
     Collapse,
+    ButtonBase,
 } from '@material-ui/core';
 import {
     Menu,
@@ -27,6 +28,7 @@ import {
     ExpandMore,
     PlaylistAdd,
 } from '@material-ui/icons';
+import { useHistory } from 'react-router-dom';
 
 const Header = props => {
     const {
@@ -39,10 +41,16 @@ const Header = props => {
         setPartitionKey,
         loading,
     } = props;
+    const history = useHistory();
     const classes = HeaderStyle();
 
     const menuClick = () => {
         setOpenDrawer(!openDrawer);
+    };
+
+    const logoutClick = () => {
+        localStorage.clear();
+        history.push('/');
     };
 
     return (
@@ -64,12 +72,18 @@ const Header = props => {
                     </Box>
 
                     {adminName && (
-                        <Box style={{ display: 'flex', alignItems: 'center' }}>
-                            <Typography className={classes.adminId}>
-                                {adminName} 관리자님 &nbsp;
-                            </Typography>
-                            <AccountCircle fontSize="large" />
-                        </Box>
+                        <React.Fragment>
+                            <Box mr={3} display="flex" alignItems="center">
+                                <Typography className={classes.adminId}>
+                                    {adminName} 관리자님 &nbsp;
+                                </Typography>
+                                <AccountCircle fontSize="large" />
+                            </Box>
+
+                            <Box component={ButtonBase} onClick={logoutClick}>
+                                <Typography className={classes.adminId}>로그아웃</Typography>
+                            </Box>
+                        </React.Fragment>
                     )}
                 </Toolbar>
             </AppBar>

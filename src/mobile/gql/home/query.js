@@ -82,3 +82,17 @@ export const GET_BUS_LOCATION = gql`
         }
     }
 `;
+
+export const GET_DRIVER_NOTICE = gql`
+    query {
+        getDriverNotice {
+            message
+            success
+            data {
+                updatedAt
+                route
+                location
+            }
+        }
+    }
+`;

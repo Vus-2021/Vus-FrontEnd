@@ -39,7 +39,7 @@ const BusInfo = ({ history, location }) => {
     const [detailRoutes, setDetailRoutes] = useState([]);
     const [busNotice, setBusNotice] = useState({});
     const [departFrom, setDepartFrom] = useState(0);
-    const [currentMin, setCurrentMin] = useState(dayjs().minute() + dayjs().hour() * 60);
+    const [currentMin, setCurrentMin] = useState(dayjs().minute() + dayjs().hour() * 60 - 1);
 
     const handleClose = () => {
         history.goBack();
@@ -50,11 +50,12 @@ const BusInfo = ({ history, location }) => {
 
     const { data: driverData } = useQuery(GET_DRIVER_NOTICE, {
         variables: { route: busName },
+        fetchPolicy: 'no-cache',
     });
 
     useEffect(() => {
         const tick = () => {
-            return setTimeout(() => setCurrentMin(currentMin + 60), 60000);
+            return setTimeout(() => setCurrentMin(currentMin + 1), 60000);
         };
 
         if (driverData) {
@@ -310,7 +311,7 @@ const BusNoticeForm = props => {
 
     return busNotice.location !== 'null' ? (
         <React.Fragment>
-            {busNotice.route}발 버스가 {departFrom > 1 ? `${departFrom}분 전에 ` : '방금 전에 '}
+            {busNotice.route}발 버스가 {departFrom >= 1 ? `${departFrom}분 전에 ` : '방금 전에 '}
             <strong>{busNotice.location}</strong>에서 출발했습니다.
         </React.Fragment>
     ) : dayjs().hour() > 8 ? (
