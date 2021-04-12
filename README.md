@@ -63,6 +63,13 @@
 
 
 ### 2. 유저 페이지
+> <strong>A. 홈페이지</strong>
+>> - 노선별 현황, 노선 공지, 관리자 공지, 회원가입, 로그인 가능.  
+>> - 노선 공지는 autoPlay로 구현.  
+>> <details><summary><strong>실제 페이지 보기</strong></summary>
+>> <div markdown="1"><img width="400" src=https://user-images.githubusercontent.com/46717432/114363579-7f2c6800-9bb3-11eb-95cd-69e65fcf17f1.png></div></details>  
+
+
 ### 3. 버스기사 페이지
 
 ## 프로젝트 파일 구조
