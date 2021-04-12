@@ -17,7 +17,6 @@
 >> - 비밀번호 보기 기능을 구현.  
 >> <details><summary><strong>실제 페이지 보기</strong></summary>
 >> <div markdown="1"><img width="1200" src=https://user-images.githubusercontent.com/46717432/114361231-db41bd00-9bb0-11eb-9dc7-16b5fba2743c.png>
-</div></details>  
 
 
 > <strong>B. 사용자 관리 페이지</strong>
@@ -28,7 +27,7 @@
 >> - 엑셀 업로드 및 다운로드를 구현. 
 >> <details><summary><strong>실제 페이지 보기</strong></summary>
 >> <div markdown="1"><img width="1200" src=https://user-images.githubusercontent.com/46717432/114361361-01fff380-9bb1-11eb-9666-5989c6ba497b.png>
-</div></details>   
+>> <br/><img width="1200" src=https://user-images.githubusercontent.com/46717432/114363209-23fa7580-9bb3-11eb-9e23-5f0b77065c75.png> </div></details>  
 
 
 > <strong>C. 노선 관리 페이지</strong>
