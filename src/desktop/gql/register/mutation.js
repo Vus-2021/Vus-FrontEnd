@@ -8,3 +8,15 @@ export const SIGNUP_USER = gql`
         }
     }
 `;
+
+export const SIGNUP_FOR_EXCEL = gql`
+    mutation signupForExcel($input: [UserInput]) {
+        signupForExcel(input: $input) {
+            success
+            message
+            data {
+                userId
+            }
+        }
+    }
+`;

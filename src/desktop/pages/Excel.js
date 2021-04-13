@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, Button, Typography, Box } from '@material-ui/core';
 import xlsx from 'xlsx';
 import MiniHeader from '../layout/MiniHeader';
 import ExcelStyle from '../styles/ExcelStyle';
+import { SIGNUP_FOR_EXCEL } from '../gql/register/mutation';
+import { useMutation } from '@apollo/react-hooks';
 
 const Excel = props => {
-    const { open, onClose } = props;
+    const { open, onClose, refetch } = props;
     const classes = ExcelStyle();
     const [file, setFile] = useState(null);
+
+    const [signupForExcel, { data }] = useMutation(SIGNUP_FOR_EXCEL, {
+        onCompleted() {
+            refetch();
+            handleClose();
+        },
+    });
 
     const handleClose = () => {
         setFile(null);
@@ -22,14 +31,45 @@ const Excel = props => {
                 const wb = xlsx.read(fileData, { type: 'binary' });
                 const wsname = wb.SheetNames[0];
                 const ws = wb.Sheets[wsname];
-                const data = xlsx.utils.sheet_to_json(ws, { header: 1, raw: false });
-                console.log(data[1]);
+                const raws = xlsx.utils.sheet_to_json(ws, { header: 1, raw: false });
+                const excelArr = [];
+                raws.forEach((raw, index) => {
+                    if (raw.length === 6 && index !== 0) {
+                        let isValid = true;
+                        for (let i = 0; i < raw.length; i++) {
+                            if (raw[i] == null) {
+                                isValid = false;
+                                break;
+                            }
+                        }
+                        if (isValid) {
+                            excelArr.push({
+                                userId: raw[0],
+                                password: raw[1],
+                                name: raw[2],
+                                phoneNumber: raw[3],
+                                type: raw[4],
+                                registerDate: raw[5],
+                            });
+                        } else console.log('유효하지 않은 유저: ' + raw[0]);
+                    }
+                });
+                signupForExcel({ variables: { input: excelArr } });
             };
             reader.readAsBinaryString(file);
         } else {
             alert('엑셀을 먼저 선택해주세요.');
         }
     };
+
+    useEffect(() => {
+        if (data) {
+            const { success, message, data: excelData } = data.signupForExcel;
+            if (success) {
+                console.log('중복된 유저목록: ' + JSON.stringify(excelData));
+            } else console.log(message);
+        }
+    }, [data]);
 
     return (
         <Dialog open={open} onClose={handleClose}>

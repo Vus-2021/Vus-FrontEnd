@@ -61,7 +61,7 @@ const User = () => {
         setSearch({
             [data.select]: data.search,
         });
-        setExcelName(`${excelName}_[${data.select}-${data.search}]`);
+        setExcelName(`바텍 통근버스_사용자 정보_[${data.select}-${data.search}]`);
         setPage(0);
     };
 
@@ -188,6 +188,7 @@ const User = () => {
                                     deleteUserClick: deleteUserClick,
                                     userRow: userRow,
                                     excelName: excelName,
+                                    refetch: refetch,
                                 },
                             }}
                         />
@@ -210,7 +211,7 @@ const User = () => {
 };
 
 const CustomToolbar = props => {
-    const { selection, deleteUserClick, userRow, excelName } = props;
+    const { selection, deleteUserClick, userRow, excelName, refetch } = props;
     const classes = UserStyle();
     const [excelDialog, setExcelDialog] = useState(false); //엑셀 Dialog open 여부
 
@@ -290,7 +291,7 @@ const CustomToolbar = props => {
                     </Button>
                 </Box>
             </Box>
-            <ExcelDialog open={excelDialog} onClose={setExcelDialog} />
+            <ExcelDialog open={excelDialog} onClose={setExcelDialog} refetch={refetch} />
         </GridToolbarContainer>
     );
 };

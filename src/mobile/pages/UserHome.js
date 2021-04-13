@@ -293,7 +293,11 @@ const BusList = props => {
                         }
                     >
                         <Paper elevation={3}>
-                            <CardMedia component="img" src={data.imageUrl} title="BusImage" />
+                            <CardMedia
+                                component="img"
+                                src={data.imageUrl}
+                                title={data.route + '노선'}
+                            />
                         </Paper>
                         <CardContent>
                             <Box mb={0.3}>
@@ -367,7 +371,7 @@ const BusNoticeForm = () => {
     }, [departMin, currentMin]);
 
     return (
-        <BusSwipeableViews axis="y" resistance interval={4000} containerStyle={{ height: '40px' }}>
+        <BusSwipeableViews axis="y" resistance interval={3500} containerStyle={{ height: '40px' }}>
             {busNotice.length > 0 ? (
                 busNotice.map((notice, index) => (
                     <Box

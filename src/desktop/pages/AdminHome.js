@@ -8,6 +8,7 @@ import {
     Typography,
     InputAdornment,
     IconButton,
+    Snackbar,
 } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
 import { Visibility, VisibilityOff } from '@material-ui/icons';
@@ -19,6 +20,7 @@ import { useMutation } from '@apollo/react-hooks';
 const AdminHome = ({ history }) => {
     const classes = HomeStyle();
     const [showPwd, setShowPwd] = useState(false);
+    const [openSnackbar, setSnackbar] = useState(false);
 
     const { errors, handleSubmit, control } = useForm();
 
@@ -42,6 +44,7 @@ const AdminHome = ({ history }) => {
                 localStorage.setItem('refreshToken', token.refreshToken);
                 history.push('/admin');
             } else {
+                setSnackbar(true);
                 console.log(message);
             }
         }
@@ -144,6 +147,16 @@ const AdminHome = ({ history }) => {
                     </Box>
                 </Box>
             </div>
+            <Snackbar
+                open={openSnackbar}
+                autoHideDuration={1500}
+                style={{ height: '60%' }}
+                onClose={() => setSnackbar(false)}
+                onClick={() => setSnackbar(false)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert severity="error">잘못된 아이디 혹은 비밀번호입니다.</Alert>
+            </Snackbar>
         </React.Fragment>
     );
 };

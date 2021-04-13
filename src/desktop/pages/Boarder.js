@@ -20,7 +20,12 @@ import { DataGrid } from '@material-ui/data-grid';
 import { useForm, Controller } from 'react-hook-form';
 import BoarderStyle from '../styles/BoarderStyle';
 import { GET_BUS_APPLICANT, GET_ROUTE_BY_MONTH } from '../gql/boarder/query';
-import { ADD_MONTHLY_ROUTE, RESET_MONTH_ROUTE } from '../gql/boarder/mutation';
+import {
+    ADD_MONTHLY_ROUTE,
+    RESET_MONTH_ROUTE,
+    INIT_PASSENGERS,
+    TRIGGER_PASSENGERS,
+} from '../gql/boarder/mutation';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import * as dayjs from 'dayjs';
 import MiniHeader from '../layout/MiniHeader';
@@ -98,7 +103,8 @@ const Boarder = props => {
     }); //검색 기준(이름, 아이디, 소속)
     const [monthSelect, setMonthSelect] = useState([]); //getRouteByMonth의 데이터를 담을 state
     const [openAddDialog, setOpenAddDialog] = useState(false); // 월 추가 Dialog의 open여부
-    const [openReallyDialog, setOpenReallyDialog] = useState(false); //탑승객 초기화 Dialog의 open여부
+    const [openApplyDialog, setOpenApplyDialog] = useState(false); //탑승 신청 초기화 Dialog의 open여부
+    const [openSelectionDialog, setOpenSelectionDialog] = useState(false); //대기자 선별 초기화 Dialog의 open여부
     const [page, setPage] = useState(0);
 
     const { loading, data, refetch } = useQuery(GET_BUS_APPLICANT, {
@@ -118,6 +124,12 @@ const Boarder = props => {
             fetchPolicy: 'no-cache',
         },
     );
+
+    const [triggerPassengers, { data: passengersData }] = useMutation(TRIGGER_PASSENGERS, {
+        onCompleted() {
+            refetch();
+        },
+    });
 
     const boardList = [
         {
@@ -176,6 +188,18 @@ const Boarder = props => {
         setBoardType(index);
     };
 
+    const selectionClick = () => {
+        //대기자 선별 클릭
+        triggerPassengers({
+            variables: {
+                month: standard.month,
+                route: standard.route,
+                busId: standard.partitionKey,
+            },
+        });
+        setPage(0);
+    };
+
     useEffect(() => {
         if (data) {
             const { success, message, data: applicantData } = data.getBusApplicant;
@@ -220,6 +244,13 @@ const Boarder = props => {
             setMonthSelect([]);
         };
     }, [monthData]);
+
+    useEffect(() => {
+        if (passengersData) {
+            const { success, message } = passengersData.triggerPassengers;
+            if (!success) console.log(message);
+        }
+    }, [passengersData]);
 
     return (
         <Box px={15} pb={2} minWidth="600px">
@@ -377,29 +408,37 @@ const Boarder = props => {
                 </Paper>
             </Box>
 
-            <Box display="flex" justifyContent="flex-end" mb={2}>
+            <Box display="flex" justifyContent="space-between" mb={2}>
                 {boardType === 0 && (
-                    <Box>
-                        <Button
-                            variant="contained"
-                            className={classes.resetAllButton}
-                            onClick={() => setOpenReallyDialog(true)}
-                        >
-                            탑승객 전체 초기화
-                        </Button>
-                    </Box>
-                )}
-                {boardType === 3 && (
                     <React.Fragment>
-                        <Box mr={1}>
-                            <Button variant="contained" className={classes.decideButton}>
-                                대기자 선별
+                        <Box>
+                            <Button
+                                variant="contained"
+                                className={classes.resetAllButton}
+                                onClick={() => setOpenApplyDialog(true)}
+                            >
+                                탑승 신청 초기화
                             </Button>
                         </Box>
-                        <Box>
-                            <Button variant="contained" className={classes.resetButton}>
-                                대기자 초기화
-                            </Button>
+                        <Box display="flex">
+                            <Box mr={1}>
+                                <Button
+                                    variant="contained"
+                                    className={classes.decideButton}
+                                    onClick={selectionClick}
+                                >
+                                    대기자 선별
+                                </Button>
+                            </Box>
+                            <Box>
+                                <Button
+                                    variant="contained"
+                                    className={classes.resetButton}
+                                    onClick={() => setOpenSelectionDialog(true)}
+                                >
+                                    선별 초기화
+                                </Button>
+                            </Box>
                         </Box>
                     </React.Fragment>
                 )}
@@ -413,9 +452,16 @@ const Boarder = props => {
                 currentRoute={standard.route}
                 currentKey={standard.partitionKey}
             />
-            <ReallyResetDialog
-                open={openReallyDialog}
-                onClose={setOpenReallyDialog}
+            <ApplyResetDialog
+                open={openApplyDialog}
+                onClose={setOpenApplyDialog}
+                refetch={refetch}
+                standard={standard}
+                setPage={setPage}
+            />
+            <SelectionResetDialog
+                open={openSelectionDialog}
+                onClose={setOpenSelectionDialog}
                 refetch={refetch}
                 standard={standard}
                 setPage={setPage}
@@ -424,14 +470,13 @@ const Boarder = props => {
     );
 };
 
-const ReallyResetDialog = props => {
+const ApplyResetDialog = props => {
     const { open, onClose, refetch, standard, setPage } = props;
     const classes = BoarderStyle();
 
     const [resetMonthRoute, { data: resetData }] = useMutation(RESET_MONTH_ROUTE, {
         onCompleted() {
             refetch();
-            onClose(false);
         },
     });
 
@@ -449,10 +494,10 @@ const ReallyResetDialog = props => {
     useEffect(() => {
         if (resetData) {
             const { success, message } = resetData.resetMonthRoute;
-            if (success);
+            if (success) onClose(false);
             else console.log(message);
         }
-    }, [resetData]);
+    }, [resetData, onClose]);
 
     return (
         <Dialog open={open} onClose={() => onClose(false)} fullWidth maxWidth="xs">
@@ -465,6 +510,78 @@ const ReallyResetDialog = props => {
                 <Box mb={3}>
                     <Typography className={classes.warningText}>
                         <strong>{dayjs(standard.month).format('YYYY년 MM월')}</strong>의 모든 신청
+                        정보가 사라집니다.
+                        <br />
+                        정말 초기화 하시겠습니까?
+                    </Typography>
+                </Box>
+                <Box display="flex" justifyContent="flex-end">
+                    <Box mr={2} width="50%">
+                        <Button
+                            variant="contained"
+                            onClick={resetAll}
+                            className={classes.resetButton}
+                            fullWidth
+                        >
+                            초기화
+                        </Button>
+                    </Box>
+                    <Box width="50%">
+                        <Button
+                            variant="contained"
+                            onClick={() => onClose(false)}
+                            className={classes.decideButton}
+                            fullWidth
+                        >
+                            취소
+                        </Button>
+                    </Box>
+                </Box>
+            </Box>
+        </Dialog>
+    );
+};
+
+const SelectionResetDialog = props => {
+    const { open, onClose, standard, setPage, refetch } = props;
+    const classes = BoarderStyle();
+
+    const [initPassengers, { data }] = useMutation(INIT_PASSENGERS, {
+        onCompleted() {
+            refetch();
+        },
+    });
+
+    const resetAll = () => {
+        initPassengers({
+            variables: {
+                month: standard.month,
+                route: standard.route,
+                busId: standard.partitionKey,
+            },
+        });
+        setPage(0);
+    };
+
+    useEffect(() => {
+        if (data) {
+            const { success, message } = data.initPassengers;
+            if (success) onClose(false);
+            else console.log(message);
+        }
+    }, [data, onClose]);
+
+    return (
+        <Dialog open={open} onClose={() => onClose(false)} fullWidth maxWidth="xs">
+            <Box px={3} py={2}>
+                <Box mb={2}>
+                    <Typography className={classes.warningTitle}>
+                        {standard.route}노선 선별 초기화
+                    </Typography>
+                </Box>
+                <Box mb={3}>
+                    <Typography className={classes.warningText}>
+                        <strong>{dayjs(standard.month).format('YYYY년 MM월')}</strong>의 모든 선별
                         정보가 사라집니다.
                         <br />
                         정말 초기화 하시겠습니까?

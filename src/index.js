@@ -11,7 +11,7 @@ import { ApolloLink, concat } from 'apollo-boost';
 import { createUploadLink } from 'apollo-upload-client';
 
 const uploadLink = createUploadLink({
-    uri: 'http://172.31.99.49:4001',
+    uri: 'http://172.31.99.49:4000',
 });
 
 const authMiddleware = new ApolloLink((operation, forward) => {

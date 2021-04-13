@@ -35,6 +35,11 @@ const DriverHome = ({ history }) => {
     const [getBusLocation, { data: busLocationData }] = useLazyQuery(GET_BUS_LOCATION);
     const [createDriverLocation, { data: createLocationData }] = useMutation(
         CREATE_DRIVER_LOCATION,
+        {
+            onCompleted() {
+                if (where === detailRoutes.length) window.location.reload();
+            },
+        },
     );
 
     const logoutClick = () => {

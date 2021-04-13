@@ -17,3 +17,21 @@ export const RESET_MONTH_ROUTE = gql`
         }
     }
 `;
+
+export const TRIGGER_PASSENGERS = gql`
+    mutation triggerPassengers($month: String!, $route: String!, $busId: String!) {
+        triggerPassengers(month: $month, route: $route, busId: $busId) {
+            success
+            message
+        }
+    }
+`;
+
+export const INIT_PASSENGERS = gql`
+    mutation initPassengers($month: String!, $route: String!, $busId: String!) {
+        initPassengers(month: $month, route: $route, busId: $busId) {
+            success
+            message
+        }
+    }
+`;

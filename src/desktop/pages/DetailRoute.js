@@ -381,8 +381,11 @@ const CreateDialog = props => {
     useEffect(() => {
         if (data) {
             const { success, message } = data.createRouteDetail;
-            if (success) onClose(false);
-            else console.log(message);
+            if (success) {
+                onClose(false);
+                setImgPreview('');
+                setImageName('노선 이미지 업로드');
+            } else console.log(message);
         }
     }, [data, onClose]);
 
@@ -510,7 +513,6 @@ const CreateDialog = props => {
 };
 
 const UpdateDialog = props => {
-    // eslint-disable-next-line no-unused-vars
     const { open, onClose, marker, route, refetch } = props;
     const classes = RouteStyle();
     const { control, handleSubmit, errors } = useForm();

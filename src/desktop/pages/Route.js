@@ -112,7 +112,7 @@ const Route = props => {
                         detailRoutes.length > 0
                             ? new kakao.maps.LatLng(100, 100)
                             : new kakao.maps.LatLng(37.220825, 127.07547),
-                    level: 10,
+                    level: 7,
                 };
                 map.current = new kakao.maps.Map(container, options);
                 const bounds = new kakao.maps.LatLngBounds();
@@ -200,6 +200,13 @@ const Route = props => {
                     position: map.current.getCenter(),
                 });
                 createMarker.current.setMap(map.current);
+                kakao.maps.event.addListener(createMarker.current, 'click', () => {
+                    setLatLng({
+                        lat: 37.220825,
+                        lng: 127.07547,
+                    });
+                    setCreateDialog(true);
+                });
 
                 if (detailRoutes.length > 0) map.current.setBounds(bounds);
                 kakao.maps.event.addListener(map.current, 'click', e => mapClick(e));
