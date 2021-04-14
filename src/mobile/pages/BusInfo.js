@@ -63,8 +63,6 @@ const BusInfo = ({ history, location }) => {
         fetchPolicy: 'no-cache',
     });
 
-    console.log(location.state.busData);
-
     useEffect(() => {
         const tick = () => {
             return setTimeout(() => setCurrentMin(currentMin + 1), 60000);
@@ -191,7 +189,6 @@ const MapTabPanel = props => {
             center: new kakao.maps.LatLng(37.220825, 127.07547), //바텍 위치
             level: 8,
         };
-        // eslint-disable-next-line no-unused-vars
         const map = new kakao.maps.Map(container, options);
         const bounds = new kakao.maps.LatLngBounds();
 

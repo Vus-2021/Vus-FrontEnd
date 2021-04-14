@@ -42,7 +42,7 @@ const BusInfoStyle = makeStyles(theme => ({
         flexShrink: 0,
     },
     menuButton: {
-        backgroundColor: 'rgba(255,255,255,0.9)',
+        backgroundColor: 'rgba(255,149,128,0.9)',
         position: 'absolute',
         bottom: '0%',
         left: '50%',
@@ -75,7 +75,7 @@ const BusInfoStyle = makeStyles(theme => ({
         position: 'absolute',
         zIndex: '5500',
         bottom: '0%',
-        backgroundColor: 'rgba(255,255,255,0.9)',
+        backgroundColor: 'rgba(255,149,128,0.9)',
         width: '100%',
         height: heightValue,
     },

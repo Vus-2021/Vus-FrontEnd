@@ -8,6 +8,7 @@ const RouteStyle = makeStyles(theme => ({
         backgroundColor: 'rgba(255,255,255,0.9)',
         position: 'absolute',
         top: '40%',
+        height: '50px',
         zIndex: '5600',
         display: 'flex',
         alignItems: 'center',

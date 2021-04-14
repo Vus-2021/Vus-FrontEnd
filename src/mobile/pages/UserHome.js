@@ -278,7 +278,6 @@ const BusList = props => {
     const { routeInfo } = props;
 
     const smallDevice = useMediaQuery('(max-height: 600px)');
-    console.log(routeInfo);
     const busList = routeInfo.map((data, index) => (
         <GridListTile key={index}>
             <Box minHeight="150px" height="100%" overflow="auto">
@@ -322,7 +321,7 @@ const BusList = props => {
         </GridListTile>
     ));
     return (
-        <GridList cellHeight="auto" className={classes.busList} cols={2}>
+        <GridList cellHeight="auto" className={classes.busList} cols={2.1}>
             {busList}
         </GridList>
     );
