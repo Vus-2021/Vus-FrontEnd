@@ -41,7 +41,8 @@
 >> <details><summary><strong>실제 페이지 보기</strong></summary>
 >> <div markdown="1"><img width="1200" src=https://user-images.githubusercontent.com/46717432/114361524-2d82de00-9bb1-11eb-8452-1b60baebeff2.png>
 >> <br/><img width="1200" src=https://user-images.githubusercontent.com/46717432/114362167-011b9180-9bb2-11eb-817c-be888ec8918a.png>   
->> <br/><img width="1200" src=https://user-images.githubusercontent.com/46717432/114362054-dc271e80-9bb1-11eb-883a-293c19dd5f7d.png> </div></details>  
+>> <br/><img width="1200" src=https://user-images.githubusercontent.com/46717432/114362054-dc271e80-9bb1-11eb-883a-293c19dd5f7d.png>   
+>> <br/><img width="1200" src=https://user-images.githubusercontent.com/46717432/114646695-b49d9680-9d16-11eb-8720-35f0c35f3e17.png> </div></details>  
 
 
 > <strong>D. 공지 관리 페이지</strong>
