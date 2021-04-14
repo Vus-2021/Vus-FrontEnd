@@ -11,11 +11,31 @@ import {
     Collapse,
     ListItem,
     ListItemText,
+    Drawer,
+    CircularProgress,
+    Paper,
 } from '@material-ui/core';
-import { Search, ExpandLess, ExpandMore } from '@material-ui/icons';
+import {
+    Timeline,
+    TimelineItem,
+    TimelineSeparator,
+    TimelineDot,
+    TimelineConnector,
+    TimelineContent,
+    TimelineOppositeContent,
+} from '@material-ui/lab';
+import {
+    Search,
+    ExpandLess,
+    ExpandMore,
+    KeyboardArrowLeft,
+    KeyboardArrowRight,
+    Send,
+} from '@material-ui/icons';
 import { useQuery } from '@apollo/react-hooks';
 import { GET_DETAIL_ROUTES } from '../gql/route/query';
 import { useForm, Controller } from 'react-hook-form';
+import clsx from 'clsx';
 
 import SPRITE_IMAGE from '../../mobile/images/MarkerImages.png';
 import ARRIVAL_IMAGE from '../../mobile/images/ArrivalMarker.png';
@@ -31,22 +51,27 @@ const Route = props => {
 
     const map = useRef();
     const createMarker = useRef();
-    const selectedMarker = useRef();
 
     const [latlng, setLatLng] = useState({
         lat: '',
         lng: '',
     });
     const [route, setRoute] = useState({});
+    const [detailRoutes, setDetailRoutes] = useState([]);
     const [updateRouteDialog, setUpdateRouteDialog] = useState(false); //노선 수정 Dialog open 여부
     const [deleteRouteDialog, setDeleteRouteDialog] = useState(false); //노선 삭제 Dialog open 여부
     const [createDialog, setCreateDialog] = useState(false); //정류장 등록 Dialog open 여부
     const [updateDialog, setUpdateDialog] = useState(false); //정류장 수정/삭제 Dialog open 여부
 
+    const [selectedMarker, setSelectedMarker] = useState(null);
     const [listData, setListData] = useState([]);
+    const [markerList, setMarkerList] = useState([]);
     const [openList, setOpenList] = useState(false);
+    const [openRoute, setOpenRoute] = useState(false);
 
-    const { data, refetch } = useQuery(GET_DETAIL_ROUTES, { variables: { route: routeName } });
+    const { loading, data, refetch } = useQuery(GET_DETAIL_ROUTES, {
+        variables: { route: routeName },
+    });
 
     const searchList = (data, status) => {
         if (status === kakao.maps.services.Status.OK) {
@@ -64,12 +89,6 @@ const Route = props => {
         const moveLatLng = new kakao.maps.LatLng(lat, lng);
         map.current.setLevel(2);
         map.current.panTo(moveLatLng);
-    };
-
-    const markerClick = (marker, route) => {
-        selectedMarker.current = marker;
-        setRoute(route);
-        setUpdateDialog(true);
     };
 
     const mapClick = e => {
@@ -103,9 +122,16 @@ const Route = props => {
             SPRITE_WIDTH = 390 * sizeRate, //마커 전체 가로 길이
             SPRITE_HEIGHT = 458 * sizeRate; //마커 전체 세로 길이
 
+        const markerClick = (marker, route) => {
+            setSelectedMarker(marker);
+            setRoute(route);
+            setUpdateDialog(true);
+        };
+
         if (data) {
             const { success, message, data: detailRoutes } = data.getDetailRoutes;
             if (success) {
+                setDetailRoutes(detailRoutes);
                 const container = document.getElementById('kakaoMap');
                 const options = {
                     center:
@@ -119,6 +145,8 @@ const Route = props => {
 
                 const spriteSize = new kakao.maps.Size(SPRITE_WIDTH, SPRITE_HEIGHT);
                 const markerSize = new kakao.maps.Size(MARKER_WIDTH, MARKER_HEIGHT);
+
+                const markerlist = [];
 
                 for (let i = 0; i < detailRoutes.length; i++) {
                     const { lat, long } = detailRoutes[i];
@@ -195,6 +223,7 @@ const Route = props => {
                         infowindow.close();
                     });
                     bounds.extend(markerPosition);
+                    markerlist.push(marker);
                 }
                 createMarker.current = new kakao.maps.Marker({
                     position: map.current.getCenter(),
@@ -206,7 +235,10 @@ const Route = props => {
                         lng: 127.07547,
                     });
                     setCreateDialog(true);
+                    setOpenRoute(false);
                 });
+
+                setMarkerList(markerlist);
 
                 if (detailRoutes.length > 0) map.current.setBounds(bounds);
                 kakao.maps.event.addListener(map.current, 'click', e => mapClick(e));
@@ -219,6 +251,51 @@ const Route = props => {
     return (
         <Box px={2} pt={1} minWidth="600px" width="95%" height="98%">
             <Box id="kakaoMap" width="100%" height="100%">
+                <Box
+                    className={clsx(classes.menuButton, { [classes.menuButtonShift]: openRoute })}
+                    component={ButtonBase}
+                    onClick={() => {
+                        setOpenRoute(!openRoute);
+                        setOpenList(false);
+                    }}
+                >
+                    <Box display="flex" flexDirection="column" alignItems="center">
+                        {openRoute ? (
+                            <KeyboardArrowLeft style={{ fontSize: '35px' }} />
+                        ) : (
+                            <KeyboardArrowRight style={{ fontSize: '35px' }} />
+                        )}
+                    </Box>
+                </Box>
+
+                <Drawer
+                    anchor="left"
+                    variant="persistent"
+                    open={openRoute}
+                    ModalProps={{ className: classes.routeModal }}
+                    PaperProps={{
+                        className: classes.routePaper,
+                        style: { height: `calc(100% - 60px)` },
+                    }}
+                    className={classes.menuDrawer}
+                >
+                    <Box mb={1} />
+
+                    {detailRoutes.length === 0 ? (
+                        <Box display="flex" justifyContent="center">
+                            생성된 정류장이 없습니다.
+                        </Box>
+                    ) : (
+                        <RouteTimeLine
+                            detailRoutes={detailRoutes}
+                            loading={loading}
+                            markerList={markerList}
+                            setUpdateDialog={setUpdateDialog}
+                            setSelectedMarker={setSelectedMarker}
+                            setRoute={setRoute}
+                        />
+                    )}
+                </Drawer>
                 <Box
                     position="absolute"
                     zIndex={updateRouteDialog ? '0' : '4000'}
@@ -249,8 +326,8 @@ const Route = props => {
                 <Box
                     position="absolute"
                     zIndex={updateRouteDialog ? '0' : '5000'}
-                    minWidth="200px"
-                    p={0.5}
+                    minWidth="325px"
+                    pt={0.5}
                 >
                     <Box p={1} className={classes.searchField}>
                         <form
@@ -258,6 +335,7 @@ const Route = props => {
                                 if (data.search) {
                                     const ps = new kakao.maps.services.Places();
                                     ps.keywordSearch(data.search, searchList);
+                                    setOpenRoute(false);
                                 }
                             })}
                         >
@@ -294,7 +372,10 @@ const Route = props => {
                                 {listData.length > 0 && (
                                     <Box
                                         component={ButtonBase}
-                                        onClick={() => setOpenList(!openList)}
+                                        onClick={() => {
+                                            setOpenList(!openList);
+                                            setOpenRoute(false);
+                                        }}
                                     >
                                         {openList ? <ExpandLess /> : <ExpandMore />}
                                     </Box>
@@ -315,13 +396,13 @@ const Route = props => {
                                             flexDirection="column"
                                         >
                                             <List disablePadding>
-                                                <ListItem style={{ padding: '0 0 0 6px' }}>
+                                                <ListItem style={{ padding: '0 0 0 25px' }}>
                                                     <ListItemText>
                                                         <Typography className={classes.placeName}>
                                                             {data.place_name}
                                                         </Typography>
                                                         <Typography className={classes.addressName}>
-                                                            {data.address_name}
+                                                            {data.road_address_name}
                                                         </Typography>
                                                     </ListItemText>
                                                 </ListItem>
@@ -360,6 +441,75 @@ const Route = props => {
                     marker={selectedMarker}
                 />
             </Box>
+        </Box>
+    );
+};
+
+const RouteTimeLine = props => {
+    const {
+        detailRoutes,
+        loading,
+        markerList,
+        setUpdateDialog,
+        setSelectedMarker,
+        setRoute,
+    } = props;
+    const classes = RouteStyle();
+
+    const routeClick = index => {
+        setSelectedMarker(markerList[index]);
+        setRoute(detailRoutes[index]);
+        setUpdateDialog(true);
+    };
+
+    return loading ? (
+        <Box display="flex" alignItems="center" justifyContent="center" height="100%">
+            <CircularProgress />
+        </Box>
+    ) : (
+        <Box>
+            <Timeline className={classes.timeLine}>
+                {detailRoutes.map((data, index) => (
+                    <TimelineItem key={data.location}>
+                        <TimelineOppositeContent className={classes.timeLineOpposite}>
+                            <Typography className={classes.boardingTimeText}>
+                                {data.boardingTime}
+                            </Typography>
+                        </TimelineOppositeContent>
+                        <TimelineSeparator>
+                            <TimelineDot variant="outlined" className={classes.timeLineDotIcon}>
+                                {index !== detailRoutes.length - 1 ? (
+                                    <Box
+                                        width="15px"
+                                        height="15px"
+                                        display="flex"
+                                        justifyContent="center"
+                                        alignItems="center"
+                                    >
+                                        <Typography color="secondary">{index + 1}</Typography>
+                                    </Box>
+                                ) : (
+                                    <Send className={classes.iconSize} />
+                                )}
+                            </TimelineDot>
+                            {index !== detailRoutes.length - 1 && <TimelineConnector />}
+                        </TimelineSeparator>
+                        <TimelineContent>
+                            <Box minHeight="100px">
+                                <Paper
+                                    className={classes.timeLineContentPaper}
+                                    component={ButtonBase}
+                                    onClick={() => routeClick(index)}
+                                >
+                                    <Box px={2} py={1} width="100%">
+                                        <Typography>{data.location}</Typography>
+                                    </Box>
+                                </Paper>
+                            </Box>
+                        </TimelineContent>
+                    </TimelineItem>
+                ))}
+            </Timeline>
         </Box>
     );
 };

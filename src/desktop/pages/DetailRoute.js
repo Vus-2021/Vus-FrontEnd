@@ -27,7 +27,7 @@ import RouteStyle from '../styles/RouteStyle';
 const UpdateRouteDialog = props => {
     const { open, onClose, routeName } = props;
     const classes = RouteStyle();
-    const { control, handleSubmit, errors } = useForm();
+    const { control, handleSubmit, errors, setError } = useForm();
     const [drivers, setDrivers] = useState([]);
     const [routeInfo, setRouteInfo] = useState({});
     const [imageName, setImageName] = useState('노선 이미지 업로드');
@@ -41,11 +41,7 @@ const UpdateRouteDialog = props => {
         variables: { route: routeName },
         fetchPolicy: 'no-cache',
     });
-    const [updateRoute, { data: updateData }] = useMutation(UPDATE_ROUTE, {
-        onCompleted() {
-            window.location.href = '/admin';
-        },
-    });
+    const [updateRoute, { data: updateData }] = useMutation(UPDATE_ROUTE);
 
     const handleClose = () => {
         onClose(false);
@@ -99,9 +95,12 @@ const UpdateRouteDialog = props => {
             const { success, message } = updateData.updateRoute;
             if (success) {
                 onClose(false);
-            } else console.log(message);
+                window.location.href = '/admin';
+            } else {
+                setError('driver', { type: 'alreadyExist', message: message });
+            }
         }
-    }, [updateData, onClose]);
+    }, [updateData, onClose, setError]);
 
     return (
         <Dialog open={open} onClose={handleClose}>
@@ -164,7 +163,11 @@ const UpdateRouteDialog = props => {
                                             ))}
                                         </Select>
                                         <FormHelperText>
-                                            {errors.driver ? '버스 기사를 선택해주세요.' : ' '}
+                                            {errors.driver
+                                                ? errors.driver.type === 'required'
+                                                    ? '버스 기사를 선택해주세요.'
+                                                    : errors.driver.message
+                                                : ' '}
                                         </FormHelperText>
                                     </FormControl>
                                 )}
@@ -544,7 +547,7 @@ const UpdateDialog = props => {
                 partitionKey: route.partitionKey,
             },
         });
-        marker.current.setMap(null);
+        marker.setMap(null);
     };
 
     const reviseRouteClick = data => {

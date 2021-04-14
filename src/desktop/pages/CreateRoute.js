@@ -22,7 +22,7 @@ import { CREATE_ROUTE } from '../gql/route/mutation';
 const CreateRoute = props => {
     const { refetch } = props;
     const classes = RouteStyle();
-    const { control, handleSubmit, errors, reset, setValue } = useForm();
+    const { control, handleSubmit, errors, reset, setValue, setError } = useForm();
     const [drivers, setDrivers] = useState([]);
     const [openSnackbar, setSnackbar] = useState(false);
     const [imageName, setImageName] = useState('노선 이미지 업로드');
@@ -78,9 +78,11 @@ const CreateRoute = props => {
                 setValue('image', null);
                 setImageName('노선 이미지 업로드');
                 setSnackbar(true);
-            } else console.log(message);
+            } else {
+                setError('driver', { type: 'alreadyExist', message: message });
+            }
         }
-    }, [createData, reset, setValue]);
+    }, [createData, reset, setValue, setError]);
 
     return (
         <Box display="flex" justifyContent="center" py={5} minHeight="530px">
@@ -141,7 +143,11 @@ const CreateRoute = props => {
                                                 ))}
                                             </Select>
                                             <FormHelperText>
-                                                {errors.driver ? '버스 기사를 선택해주세요.' : ' '}
+                                                {errors.driver
+                                                    ? errors.driver.type === 'required'
+                                                        ? '버스 기사를 선택해주세요.'
+                                                        : errors.driver.message
+                                                    : ' '}
                                             </FormHelperText>
                                         </FormControl>
                                     )}

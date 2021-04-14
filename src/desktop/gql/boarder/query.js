@@ -30,6 +30,7 @@ export const GET_BUS_APPLICANT = gql`
                 previousMonthState
                 state
                 registerDate
+                isCancellation
             }
         }
     }

@@ -9,6 +9,8 @@ import {
     CircularProgress,
     Dialog,
     TextField,
+    Drawer,
+    ButtonBase,
 } from '@material-ui/core';
 import {
     Timeline,
@@ -19,7 +21,14 @@ import {
     TimelineContent,
     TimelineOppositeContent,
 } from '@material-ui/lab';
-import { Map, PinDrop, Send, DirectionsBus } from '@material-ui/icons';
+import {
+    Map,
+    PinDrop,
+    Send,
+    DirectionsBus,
+    KeyboardArrowUp,
+    KeyboardArrowDown,
+} from '@material-ui/icons';
 import ArrowDown from '../components/ArrowDown';
 import Header2 from '../layout/Header2';
 import BusInfoStyle from '../styles/BusInfoStyle';
@@ -29,12 +38,13 @@ import { GET_DETAIL_ROUTES, GET_DRIVER_NOTICE } from '../gql/businfo/query';
 import SPRITE_IMAGE from '../images/MarkerImages.png';
 import ARRIVAL_IMAGE from '../images/ArrivalMarker.png';
 import * as dayjs from 'dayjs';
+import clsx from 'clsx';
 
 const { kakao } = window;
 
 const BusInfo = ({ history, location }) => {
     const classes = BusInfoStyle();
-    const busName = location.state.busName;
+    const { route: busName, busNumber, driver } = location.state.busData;
     const [boardNum, setNumber] = useState(0);
     const [detailRoutes, setDetailRoutes] = useState([]);
     const [busNotice, setBusNotice] = useState({});
@@ -52,6 +62,8 @@ const BusInfo = ({ history, location }) => {
         variables: { route: busName },
         fetchPolicy: 'no-cache',
     });
+
+    console.log(location.state.busData);
 
     useEffect(() => {
         const tick = () => {
@@ -140,7 +152,14 @@ const BusInfo = ({ history, location }) => {
                         </Box>
                     </Box>
                 </Box>
-                {boardNum === 0 && <MapTabPanel detailRoutes={detailRoutes} loading={loading} />}
+                {boardNum === 0 && (
+                    <MapTabPanel
+                        detailRoutes={detailRoutes}
+                        loading={loading}
+                        busNumber={busNumber}
+                        driver={driver}
+                    />
+                )}
                 {boardNum === 1 && (
                     <RouteTabPanel
                         detailRoutes={detailRoutes}
@@ -154,8 +173,10 @@ const BusInfo = ({ history, location }) => {
 };
 
 const MapTabPanel = props => {
-    const { detailRoutes } = props;
+    const classes = BusInfoStyle();
+    const { detailRoutes, busNumber, driver } = props;
     const [openMarkerDialog, setMarkerDialog] = useState(false);
+    const [openInfo, setOpenInfo] = useState(false);
     const [routeInfo, setRouteInfo] = useState({});
 
     useEffect(() => {
@@ -212,6 +233,62 @@ const MapTabPanel = props => {
 
     return (
         <Box id="kakaoMap" height="100%" width="100%">
+            <Box
+                className={clsx(classes.menuButton, { [classes.menuButtonShift]: openInfo })}
+                component={ButtonBase}
+                onClick={() => setOpenInfo(!openInfo)}
+            >
+                <Box display="flex" flexDirection="column" alignItems="center">
+                    {openInfo ? (
+                        <KeyboardArrowDown style={{ fontSize: '30px' }} />
+                    ) : (
+                        <KeyboardArrowUp style={{ fontSize: '30px' }} />
+                    )}
+                </Box>
+            </Box>
+            <Drawer
+                open={openInfo}
+                anchor="bottom"
+                variant="persistent"
+                ModalProps={{ className: classes.infoModal }}
+                PaperProps={{
+                    className: classes.infoPaper,
+                }}
+                className={classes.menuDrawer}
+            >
+                <Box display="flex" flexDirection="column" height="100%">
+                    <Box
+                        height="25%"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="space-between"
+                        my={1}
+                        mx={3}
+                    >
+                        <Typography className={classes.busInfoTitle}>버스 정보</Typography>
+                        <Paper elevation={2} className={classes.busInfoPaper}>
+                            <Typography align="center" className={classes.busNumber}>
+                                {busNumber}
+                            </Typography>
+                        </Paper>
+                    </Box>
+                    <Box
+                        height="75%"
+                        display="flex"
+                        flexDirection="column"
+                        justifyContent="center"
+                        mx={3}
+                    >
+                        <Typography>
+                            기사님 성함: &nbsp;<strong>{driver.name}</strong>
+                        </Typography>
+
+                        <Typography>
+                            기사님 전화번호: &nbsp;<strong>{driver.phone}</strong>
+                        </Typography>
+                    </Box>
+                </Box>
+            </Drawer>
             <Dialog
                 open={openMarkerDialog}
                 onClose={() => setMarkerDialog(false)}

@@ -5,6 +5,7 @@ import MiniHeader from '../layout/MiniHeader';
 import ExcelStyle from '../styles/ExcelStyle';
 import { SIGNUP_FOR_EXCEL } from '../gql/register/mutation';
 import { useMutation } from '@apollo/react-hooks';
+import * as dayjs from 'dayjs';
 
 const Excel = props => {
     const { open, onClose, refetch } = props;
@@ -49,9 +50,9 @@ const Excel = props => {
                                 name: raw[2],
                                 phoneNumber: raw[3],
                                 type: raw[4],
-                                registerDate: raw[5],
+                                registerDate: dayjs(raw[5]).format('YYYY-MM-DD'),
                             });
-                        } else console.log('유효하지 않은 유저: ' + raw[0]);
+                        } else console.log(index + '번째 행의 데이터가 유효하지 않음.');
                     }
                 });
                 signupForExcel({ variables: { input: excelArr } });

@@ -31,6 +31,7 @@ export const GET_ROUTES_INFO = gql`
                 limitCount
                 driver {
                     name
+                    phone
                 }
                 month {
                     registerCount

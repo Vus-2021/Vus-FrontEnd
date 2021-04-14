@@ -53,9 +53,21 @@ const ApplicantStyle = makeStyles(theme => ({
         backgroundColor: '#FDB600',
         height: '23px',
     },
+    chipCancel: {
+        backgroundColor: '#E4E4E4',
+        color: 'black',
+        height: '23px',
+    },
     chipEmpty: {
         backgroundColor: '#A5A8A2',
         height: '23px',
+    },
+    darkChipText: {
+        fontSize: '15px',
+        fontWeight: '400',
+        width: '60px',
+        textAlign: 'center',
+        color: 'black',
     },
     chipText: {
         fontSize: '15px',

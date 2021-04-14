@@ -1,5 +1,7 @@
 import { makeStyles } from '@material-ui/core/styles';
 
+const heightValue = '100px';
+
 const BusInfoStyle = makeStyles(theme => ({
     tab: {
         height: '40px',
@@ -34,6 +36,60 @@ const BusInfoStyle = makeStyles(theme => ({
     busLocation: {
         height: '80%',
         color: '#FF6666',
+    },
+
+    menuDrawer: {
+        flexShrink: 0,
+    },
+    menuButton: {
+        backgroundColor: 'rgba(255,255,255,0.9)',
+        position: 'absolute',
+        bottom: '0%',
+        left: '50%',
+        transform: 'translate(-50%,0)',
+        zIndex: '5600',
+        display: 'flex',
+        alignItems: 'center',
+        transition: theme.transitions.create('bottom', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+        }),
+        width: '50px',
+        borderRadius: '100px 100px 0 0',
+    },
+    menuButtonShift: {
+        transition: theme.transitions.create('bottom', {
+            easing: theme.transitions.easing.easeOut,
+            duration: theme.transitions.duration.enteringScreen,
+        }),
+        bottom: heightValue,
+        width: '50px',
+        borderRadius: '50px 50px 0 0',
+    },
+    infoModal: {
+        keepMounted: true,
+        container: document.getElementById('kakaoMap'),
+        style: { position: 'absolute' },
+    },
+    infoPaper: {
+        position: 'absolute',
+        zIndex: '5500',
+        bottom: '0%',
+        backgroundColor: 'rgba(255,255,255,0.9)',
+        width: '100%',
+        height: heightValue,
+    },
+    busInfoTitle: {
+        fontSize: '20px',
+        fontWeight: '600',
+    },
+    busInfoPaper: {
+        border: '1px solid',
+        padding: '2px 10px 2px 10px',
+    },
+    busNumber: {
+        fontWeight: 600,
+        wordSpacing: '5px',
     },
 }));
 

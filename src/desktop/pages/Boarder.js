@@ -68,6 +68,10 @@ const ChipStyle = props => {
             chipStyle = classes.chipWait;
             chipText = '대기';
             break;
+        case 'cancelled':
+            chipStyle = classes.chipCancel;
+            chipText = '취소';
+            break;
         default:
             chipStyle = classes.chipEmpty;
             chipText = '미신청';
@@ -77,7 +81,17 @@ const ChipStyle = props => {
         <Chip
             className={chipStyle}
             size="small"
-            label={<Typography className={classes.chipText}>{chipText}</Typography>}
+            label={
+                <Typography
+                    className={
+                        state === 'pending' || state === 'cancelled'
+                            ? classes.darkChipText
+                            : classes.chipText
+                    }
+                >
+                    {chipText}
+                </Typography>
+            }
         />
     );
 };
@@ -208,6 +222,7 @@ const Boarder = props => {
                 boardDataChange.forEach(board => {
                     board.id = board.userId;
                     board.registerDate = dayjs(board.registerDate).format('YYYY-MM-DD');
+                    if (board.isCancellation) board.state = 'cancelled';
                 });
                 setBoardRow(boardDataChange);
             } else console.log(message);
