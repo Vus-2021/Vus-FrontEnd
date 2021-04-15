@@ -63,7 +63,8 @@
 >> - 검색 기능으로 탑승객을 찾음.  
 >> <details><summary><strong>실제 페이지 보기</strong></summary>
 >> <div markdown="1"><img width="1200" src=https://user-images.githubusercontent.com/46717432/114362519-61aace80-9bb2-11eb-9501-7e07dc0fd058.png>
->> <br/><img width="1200" src=https://user-images.githubusercontent.com/46717432/114362527-640d2880-9bb2-11eb-90dd-8a197a03fd37.png> </div></details>    
+>> <br/><img width="1200" src=https://user-images.githubusercontent.com/46717432/114362527-640d2880-9bb2-11eb-90dd-8a197a03fd37.png>     
+>> <br/><img width="1200" src=https://user-images.githubusercontent.com/46717432/114832043-00c90380-9e09-11eb-91e9-20fb02948f43.png> </div></details> 
 
 
 ### 2. 유저 페이지
