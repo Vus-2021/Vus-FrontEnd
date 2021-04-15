@@ -20,15 +20,11 @@ import { DataGrid } from '@material-ui/data-grid';
 import { useForm, Controller } from 'react-hook-form';
 import BoarderStyle from '../styles/BoarderStyle';
 import { GET_BUS_APPLICANT, GET_ROUTE_BY_MONTH } from '../gql/boarder/query';
-import {
-    ADD_MONTHLY_ROUTE,
-    RESET_MONTH_ROUTE,
-    INIT_PASSENGERS,
-    TRIGGER_PASSENGERS,
-} from '../gql/boarder/mutation';
+import { ADD_MONTHLY_ROUTE, RESET_MONTH_ROUTE, INIT_PASSENGERS } from '../gql/boarder/mutation';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import * as dayjs from 'dayjs';
 import MiniHeader from '../layout/MiniHeader';
+import BoarderSelectionDialog from './BoarderSelection';
 
 const columns = [
     { field: 'name', headerName: '이름', width: 120 },
@@ -118,7 +114,8 @@ const Boarder = props => {
     const [monthSelect, setMonthSelect] = useState([]); //getRouteByMonth의 데이터를 담을 state
     const [openAddDialog, setOpenAddDialog] = useState(false); // 월 추가 Dialog의 open여부
     const [openApplyDialog, setOpenApplyDialog] = useState(false); //탑승 신청 초기화 Dialog의 open여부
-    const [openSelectionDialog, setOpenSelectionDialog] = useState(false); //대기자 선별 초기화 Dialog의 open여부
+    const [openResetSelectionDialog, setOpenResetSelectionDialog] = useState(false); //대기자 선별 초기화 Dialog의 open여부
+    const [openSelectionDialog, setOpenSelectionDialog] = useState(false); //대기자 선별 Dialog open여부
     const [page, setPage] = useState(0);
 
     const { loading, data, refetch } = useQuery(GET_BUS_APPLICANT, {
@@ -138,12 +135,6 @@ const Boarder = props => {
             fetchPolicy: 'no-cache',
         },
     );
-
-    const [triggerPassengers, { data: passengersData }] = useMutation(TRIGGER_PASSENGERS, {
-        onCompleted() {
-            refetch();
-        },
-    });
 
     const boardList = [
         {
@@ -204,14 +195,7 @@ const Boarder = props => {
 
     const selectionClick = () => {
         //대기자 선별 클릭
-        triggerPassengers({
-            variables: {
-                month: standard.month,
-                route: standard.route,
-                busId: standard.partitionKey,
-            },
-        });
-        setPage(0);
+        setOpenSelectionDialog(true);
     };
 
     useEffect(() => {
@@ -259,13 +243,6 @@ const Boarder = props => {
             setMonthSelect([]);
         };
     }, [monthData]);
-
-    useEffect(() => {
-        if (passengersData) {
-            const { success, message } = passengersData.triggerPassengers;
-            if (!success) console.log(message);
-        }
-    }, [passengersData]);
 
     return (
         <Box px={15} pb={2} minWidth="600px">
@@ -449,7 +426,7 @@ const Boarder = props => {
                                 <Button
                                     variant="contained"
                                     className={classes.resetButton}
-                                    onClick={() => setOpenSelectionDialog(true)}
+                                    onClick={() => setOpenResetSelectionDialog(true)}
                                 >
                                     선별 초기화
                                 </Button>
@@ -474,9 +451,16 @@ const Boarder = props => {
                 standard={standard}
                 setPage={setPage}
             />
-            <SelectionResetDialog
+            <BoarderSelectionDialog
                 open={openSelectionDialog}
                 onClose={setOpenSelectionDialog}
+                refetch={refetch}
+                standard={standard}
+                setPage={setPage}
+            />
+            <SelectionResetDialog
+                open={openResetSelectionDialog}
+                onClose={setOpenResetSelectionDialog}
                 refetch={refetch}
                 standard={standard}
                 setPage={setPage}

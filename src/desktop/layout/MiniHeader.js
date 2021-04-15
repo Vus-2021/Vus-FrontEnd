@@ -4,11 +4,12 @@ import { Backspace } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
 
 const MiniHeader = props => {
-    const { handleClose, headerText, height } = props;
+    const { handleClose, headerText, height, width } = props;
     const headerHeight = height ? height : '40px';
+    const headerWidth = width ? width : '380px';
     const classes = UseStyles();
     return (
-        <Box height={headerHeight} className={classes.headerBox} width="380px">
+        <Box height={headerHeight} className={classes.headerBox} width={headerWidth}>
             <Box width="20%">
                 {handleClose && (
                     <IconButton color="inherit" onClick={handleClose}>

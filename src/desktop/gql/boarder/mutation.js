@@ -19,8 +19,22 @@ export const RESET_MONTH_ROUTE = gql`
 `;
 
 export const TRIGGER_PASSENGERS = gql`
-    mutation triggerPassengers($month: String!, $route: String!, $busId: String!) {
-        triggerPassengers(month: $month, route: $route, busId: $busId) {
+    mutation triggerPassengers(
+        $month: String!
+        $route: String!
+        $busId: String!
+        $methodList: [String]
+        $sortType: String
+        $monthArg: Int
+    ) {
+        triggerPassengers(
+            month: $month
+            route: $route
+            busId: $busId
+            methodList: $methodList
+            sortType: $sortType
+            monthArg: $monthArg
+        ) {
             success
             message
         }
