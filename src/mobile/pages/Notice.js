@@ -227,9 +227,10 @@ const Notice = props => {
                                             </Typography>
                                             <Divider />
                                         </Box>
-                                        <Box>
-                                            <Typography>{data.content}</Typography>
-                                        </Box>
+                                        <Box
+                                            className="ck-content"
+                                            dangerouslySetInnerHTML={{ __html: data.content }}
+                                        />
                                     </Box>
                                 </AccordionDetails>
                             </Accordion>

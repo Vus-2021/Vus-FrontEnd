@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, Box, TextField, Button, IconButton } from '@material-ui/core';
+import {
+    Dialog,
+    Box,
+    TextField,
+    Button,
+    IconButton,
+    FormControl,
+    FormLabel,
+    FormHelperText,
+} from '@material-ui/core';
 import { Cancel } from '@material-ui/icons';
 import { useForm, Controller } from 'react-hook-form';
 import NoticeStyle from '../styles/NoticeStyle';
@@ -7,10 +16,14 @@ import * as dayjs from 'dayjs';
 import { useMutation } from '@apollo/react-hooks';
 import { UPDATE_ADMIN_NOTICE, DELETE_NOTICE } from '../gql/notice/mutation';
 
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor';
+import editorConfiguration from './customTextEditor';
+
 const DetailNotice = props => {
     const { open, onClose, noticeData, partitionKey, refetch } = props;
     const classes = NoticeStyle();
-    const { handleSubmit, control, errors } = useForm();
+    const { handleSubmit, control, errors, setValue } = useForm();
     const [notice, setNotice] = useState({
         notice: '',
         createdAt: '',
@@ -104,19 +117,39 @@ const DetailNotice = props => {
 
                     <Box width="100%" mb={3}>
                         <Controller
-                            as={TextField}
                             name="content"
+                            defaultValue=""
                             control={control}
-                            defaultValue={notice.content}
-                            label="내용"
-                            fullWidth
-                            variant="outlined"
-                            size="medium"
-                            rows={18}
-                            multiline
                             rules={{ required: true }}
-                            error={errors.content ? true : false}
-                            helperText={errors.content ? '내용을 입력해주세요.' : ' '}
+                            render={() => (
+                                <FormControl error={errors.content ? true : false}>
+                                    <FormLabel>내용</FormLabel>
+                                    <CKEditor
+                                        editor={ClassicEditor}
+                                        data={notice.content}
+                                        config={editorConfiguration}
+                                        onReady={editor => {
+                                            if (editor) {
+                                                editor.ui.view.element.style.width = '504px';
+                                                editor.editing.view.change(writer => {
+                                                    writer.setStyle(
+                                                        'min-height',
+                                                        '350px',
+                                                        editor.editing.view.document.getRoot(),
+                                                    );
+                                                });
+                                            }
+                                        }}
+                                        onChange={(event, editor) => {
+                                            const data = editor.getData();
+                                            setValue('content', data);
+                                        }}
+                                    />
+                                    <FormHelperText>
+                                        {errors.content ? '내용을 입력해주세요.' : ' '}
+                                    </FormHelperText>
+                                </FormControl>
+                            )}
                         />
                     </Box>
                     <Box height="40px" mb={2} display="flex" justifyContent="flex-end">

@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import './ckeditor.css';
 import App from './App';
 import { BrowserRouter } from 'react-router-dom';
 import reportWebVitals from './reportWebVitals';
@@ -11,7 +12,7 @@ import { ApolloLink, concat } from 'apollo-boost';
 import { createUploadLink } from 'apollo-upload-client';
 
 const uploadLink = createUploadLink({
-    uri: 'http://172.31.99.49:4000',
+    uri: 'https://61si4rkyc6.execute-api.ap-northeast-2.amazonaws.com/dev/graphql',
 });
 
 const authMiddleware = new ApolloLink((operation, forward) => {

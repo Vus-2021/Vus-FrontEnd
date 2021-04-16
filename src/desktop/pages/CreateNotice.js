@@ -1,16 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Dialog, TextField, Button, IconButton, Snackbar } from '@material-ui/core';
+import {
+    Box,
+    Dialog,
+    TextField,
+    Button,
+    IconButton,
+    Snackbar,
+    FormControl,
+    FormLabel,
+    FormHelperText,
+} from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
 import { Cancel } from '@material-ui/icons';
 import { useForm, Controller } from 'react-hook-form';
 import NoticeStyle from '../styles/NoticeStyle';
 import { useMutation } from '@apollo/react-hooks';
 import { CREATE_ADMIN_NOTICE } from '../gql/notice/mutation';
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor';
+import editorConfiguration from './customTextEditor';
 
 const CreateNotice = props => {
     const { open, onClose, refetch } = props;
     const classes = NoticeStyle();
-    const { handleSubmit, control, errors } = useForm();
+    const { handleSubmit, control, errors, setValue } = useForm();
     const [openSnackbar, setSnackbar] = useState(false);
 
     const [createAdminNotice, { data }] = useMutation(CREATE_ADMIN_NOTICE, {
@@ -64,24 +77,41 @@ const CreateNotice = props => {
                             size="medium"
                             rules={{ required: true }}
                             error={errors.notice ? true : false}
-                            helperText={errors.notice ? '내용을 입력해주세요.' : ' '}
+                            helperText={errors.notice ? '제목을 입력해주세요.' : ' '}
                         />
                     </Box>
                     <Box width="100%" mb={1}>
                         <Controller
-                            as={TextField}
                             name="content"
-                            control={control}
                             defaultValue=""
-                            label="내용"
-                            fullWidth
-                            variant="outlined"
-                            size="medium"
-                            rows={20}
-                            multiline
+                            control={control}
                             rules={{ required: true }}
-                            error={errors.content ? true : false}
-                            helperText={errors.content ? '내용을 입력해주세요.' : ' '}
+                            render={() => (
+                                <FormControl error={errors.content ? true : false}>
+                                    <FormLabel>내용</FormLabel>
+                                    <CKEditor
+                                        editor={ClassicEditor}
+                                        config={editorConfiguration}
+                                        onReady={editor => {
+                                            editor.ui.view.element.style.width = '504px';
+                                            editor.editing.view.change(writer => {
+                                                writer.setStyle(
+                                                    'height',
+                                                    '400px',
+                                                    editor.editing.view.document.getRoot(),
+                                                );
+                                            });
+                                        }}
+                                        onChange={(event, editor) => {
+                                            const data = editor.getData();
+                                            setValue('content', data);
+                                        }}
+                                    />
+                                    <FormHelperText>
+                                        {errors.content ? '내용을 입력해주세요.' : ' '}
+                                    </FormHelperText>
+                                </FormControl>
+                            )}
                         />
                     </Box>
                     <Box height="40px" mb={2} display="flex" justifyContent="flex-end">

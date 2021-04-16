@@ -80,6 +80,7 @@ const BoarderSelection = props => {
     const selectionClick = () => {
         const methodList = [];
         const selectedList = columns.selected.list;
+        methodList.push('sortPeople');
         selectedList.forEach(data => {
             methodList.push(data.function);
         });
