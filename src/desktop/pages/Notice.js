@@ -172,7 +172,7 @@ const Notice = () => {
                                     placeholder="검색"
                                 />
                             </Box>
-                            <Box>
+                            <Box display="flex" alignItems="center">
                                 <Button
                                     size="large"
                                     type="submit"

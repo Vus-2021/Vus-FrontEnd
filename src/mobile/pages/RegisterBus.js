@@ -15,6 +15,7 @@ import {
 } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
 import * as dayjs from 'dayjs';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import RegisterStyle from '../styles/RegisterStyle';
 import { useLazyQuery, useMutation } from '@apollo/react-hooks';
 import { GET_ROUTE_BY_MONTH } from '../gql/registerbus/query';
@@ -172,7 +173,7 @@ const Register = props => {
             const { success, message, data: monthData } = data.getRouteByMonth;
             if (success) {
                 setRouteMonth(monthData);
-                setMonth(monthData[0].month);
+                setMonth(monthData[monthData.length - 1].month);
             } else console.log(message);
         }
     }, [data]);
@@ -197,21 +198,32 @@ const Register = props => {
                 </TextField>
             </Box>
             <Box mb={4}>
-                <TextField
-                    select
-                    value={month}
-                    onChange={e => setMonth(e.target.value)}
-                    variant="outlined"
-                    label="신청 월"
-                    fullWidth
-                    size="small"
-                >
-                    {routeMonth.map(data => (
-                        <MenuItem key={data.month} value={dayjs(data.month).format('YYYY-MM')}>
-                            {dayjs(data.month).format('YYYY년 MM월')}
-                        </MenuItem>
-                    ))}
-                </TextField>
+                {routeMonth.length > 0 && (
+                    <TextField
+                        select
+                        value={month}
+                        onChange={e => setMonth(e.target.value)}
+                        variant="outlined"
+                        label="신청 월"
+                        fullWidth
+                        size="small"
+                    >
+                        {routeMonth.map(data => {
+                            dayjs.extend(isSameOrAfter);
+
+                            if (dayjs(data.month).isSameOrAfter(dayjs().format('YYYY-MM'))) {
+                                return (
+                                    <MenuItem
+                                        key={data.month}
+                                        value={dayjs(data.month).format('YYYY-MM')}
+                                    >
+                                        {dayjs(data.month).format('YYYY년 MM월')}
+                                    </MenuItem>
+                                );
+                            } else return null;
+                        })}
+                    </TextField>
+                )}
             </Box>
             <Box width="100%">
                 <Button onClick={registerSubmit} className={classes.registerButton}>

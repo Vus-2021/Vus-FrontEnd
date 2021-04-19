@@ -382,7 +382,7 @@ const Route = props => {
                                 )}
                             </Box>
                         </form>
-                        <Box overflow="auto" maxHeight="500px">
+                        <Box overflow="auto" maxHeight="500px" maxWidth="340px">
                             <Collapse in={openList} timeout="auto" unmountOnExit>
                                 {listData.length > 0 &&
                                     listData.map(data => (
@@ -390,10 +390,7 @@ const Route = props => {
                                             component={ButtonBase}
                                             onClick={() => listClick(data.y, data.x)}
                                             key={data.id}
-                                            display="flex"
-                                            width="100%"
-                                            alignItems="flex-start"
-                                            flexDirection="column"
+                                            className={classes.buttonBase}
                                         >
                                             <List disablePadding>
                                                 <ListItem style={{ padding: '0 0 0 25px' }}>

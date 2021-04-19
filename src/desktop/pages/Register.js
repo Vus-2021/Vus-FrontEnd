@@ -172,7 +172,7 @@ const Register = props => {
 
     return (
         <Dialog open={open} onClose={handleClose} TransitionComponent={Transition}>
-            <MiniHeader handleClose={handleClose} headerText="사용자 등록" />
+            <MiniHeader handleClose={handleClose} headerText="사용자 등록" width="385px" />
             <Box p={4}>
                 <Box mb={5}>
                     <Tabs

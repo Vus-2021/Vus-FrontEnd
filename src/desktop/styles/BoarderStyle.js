@@ -4,6 +4,7 @@ const ApplicantStyle = makeStyles(theme => ({
     tab: {
         minWidth: 120,
         width: 120,
+        alignItems: 'center',
     },
     tabText: {
         fontSize: '17px',

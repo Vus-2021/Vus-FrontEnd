@@ -14,9 +14,6 @@ const HomeStyle = makeStyles(theme => ({
         fontSize: '20px',
         lineHeight: '19px',
         /* identical to box height */
-
-        display: 'flex',
-        alignItems: 'center',
     },
     getMyData: {
         display: 'flex',

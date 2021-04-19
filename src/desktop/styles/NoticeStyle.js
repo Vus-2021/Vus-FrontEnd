@@ -23,6 +23,7 @@ const NoticeStyle = makeStyles(theme => ({
             color: 'white',
             backgroundColor: '#0078CE',
         },
+        alignItems: 'center',
     },
     createButton: {
         width: '80px',

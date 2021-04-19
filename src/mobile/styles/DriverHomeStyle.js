@@ -16,6 +16,10 @@ const DriverHomeStyle = makeStyles(theme => ({
         display: 'flex',
         alignItems: 'center',
     },
+    buttonBase: {
+        paddingLeft: '8px',
+        paddingRight: '8px',
+    },
     loginButton: {
         color: 'white',
         backgroundColor: '#FD3434',

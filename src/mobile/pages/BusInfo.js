@@ -230,62 +230,70 @@ const MapTabPanel = props => {
 
     return (
         <Box id="kakaoMap" height="100%" width="100%">
-            <Box
-                className={clsx(classes.menuButton, { [classes.menuButtonShift]: openInfo })}
-                component={ButtonBase}
-                onClick={() => setOpenInfo(!openInfo)}
-            >
-                <Box display="flex" flexDirection="column" alignItems="center">
-                    {openInfo ? (
-                        <KeyboardArrowDown style={{ fontSize: '30px' }} />
-                    ) : (
-                        <KeyboardArrowUp style={{ fontSize: '30px' }} />
-                    )}
-                </Box>
-            </Box>
-            <Drawer
-                open={openInfo}
-                anchor="bottom"
-                variant="persistent"
-                ModalProps={{ className: classes.infoModal }}
-                PaperProps={{
-                    className: classes.infoPaper,
-                }}
-                className={classes.menuDrawer}
-            >
-                <Box display="flex" flexDirection="column" height="100%">
+            {driver && (
+                <React.Fragment>
                     <Box
-                        height="25%"
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="space-between"
-                        my={1}
-                        mx={3}
+                        className={clsx(classes.menuButton, {
+                            [classes.menuButtonShift]: openInfo,
+                        })}
+                        component={ButtonBase}
+                        onClick={() => setOpenInfo(!openInfo)}
                     >
-                        <Typography className={classes.busInfoTitle}>버스 정보</Typography>
-                        <Paper elevation={2} className={classes.busInfoPaper}>
-                            <Typography align="center" className={classes.busNumber}>
-                                {busNumber}
-                            </Typography>
-                        </Paper>
+                        <Box display="flex" flexDirection="column" alignItems="center">
+                            {openInfo ? (
+                                <KeyboardArrowDown style={{ fontSize: '30px' }} />
+                            ) : (
+                                <KeyboardArrowUp style={{ fontSize: '30px' }} />
+                            )}
+                        </Box>
                     </Box>
-                    <Box
-                        height="75%"
-                        display="flex"
-                        flexDirection="column"
-                        justifyContent="center"
-                        mx={3}
-                    >
-                        <Typography>
-                            기사님 성함: &nbsp;<strong>{driver.name}</strong>
-                        </Typography>
 
-                        <Typography>
-                            기사님 전화번호: &nbsp;<strong>{driver.phone}</strong>
-                        </Typography>
-                    </Box>
-                </Box>
-            </Drawer>
+                    <Drawer
+                        open={openInfo}
+                        anchor="bottom"
+                        variant="persistent"
+                        ModalProps={{ className: classes.infoModal }}
+                        PaperProps={{
+                            className: classes.infoPaper,
+                        }}
+                        className={classes.menuDrawer}
+                    >
+                        <Box display="flex" flexDirection="column" height="100%">
+                            <Box
+                                height="25%"
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="space-between"
+                                my={1}
+                                mx={3}
+                            >
+                                <Typography className={classes.busInfoTitle}>버스 정보</Typography>
+                                <Paper elevation={2} className={classes.busInfoPaper}>
+                                    <Typography align="center" className={classes.busNumber}>
+                                        {busNumber}
+                                    </Typography>
+                                </Paper>
+                            </Box>
+                            <Box
+                                height="75%"
+                                display="flex"
+                                flexDirection="column"
+                                justifyContent="center"
+                                mx={3}
+                            >
+                                <Typography>
+                                    기사님 성함: &nbsp;<strong>{driver.name}</strong>
+                                </Typography>
+
+                                <Typography>
+                                    기사님 전화번호: &nbsp;<strong>{driver.phone}</strong>
+                                </Typography>
+                            </Box>
+                        </Box>
+                    </Drawer>
+                </React.Fragment>
+            )}
+
             <Dialog
                 open={openMarkerDialog}
                 onClose={() => setMarkerDialog(false)}

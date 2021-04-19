@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/core/styles';
 const RegisterStyle = makeStyles(theme => ({
     tab: {
         minWidth: 90,
-        width: 90,
+        alignItems: 'center',
     },
     tabText: {
         fontSize: '17px',
@@ -20,6 +20,7 @@ const RegisterStyle = makeStyles(theme => ({
         '&:hover': {
             backgroundColor: '#FA8700',
         },
+        alignItems: 'center',
     },
 }));
 

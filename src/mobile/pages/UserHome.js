@@ -14,6 +14,10 @@ import {
     Divider,
     CircularProgress,
     Paper,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
 } from '@material-ui/core';
 import BusAlert from '../components/BusAlert';
 import { Header } from '../layout';
@@ -51,12 +55,13 @@ const UserHome = ({ history }) => {
     const [userBusData, setUserBusData] = useState([]);
     const [routeInfo, setRouteInfo] = useState([]);
     const [notice, setNotice] = useState([]);
+    const [month, setMonth] = useState(dayjs().format('YYYY-MM'));
 
     const [getMyInfo, { data: myData, refetch: userRefetch }] = useLazyQuery(GET_MY_INFO, {
         fetchPolicy: 'no-cache',
     });
     const { loading, data: busData, refetch } = useQuery(GET_ROUTES_INFO, {
-        variables: { month: dayjs(new Date()).format('YYYY-MM') },
+        variables: { month: month },
     });
 
     const { loading: noticeLoading, data: noticeData } = useQuery(GET_ADMIN_NOTICE, {
@@ -142,11 +147,37 @@ const UserHome = ({ history }) => {
         <div>
             <Header />
             <Box px={3} py={2} className={classes.mainBox}>
-                <Box height="4%" className={classes.requireLogin}>
-                    <Box mr={1}>
-                        <AccountCircle fontSize="large" />
+                <Box
+                    height="4%"
+                    display="flex"
+                    justifyContent="space-between"
+                    className={classes.requireLogin}
+                >
+                    <Box display="flex" alignItems="center">
+                        <Box mr={1}>
+                            <AccountCircle fontSize="large" />
+                        </Box>
+                        {isLogin ? `환영합니다. ${userData.name} 님` : '로그인이 필요합니다.'}
                     </Box>
-                    {isLogin ? `환영합니다. ${userData.name} 님` : '로그인이 필요합니다.'}
+                    <Box display="flex" alignItems="flex-start">
+                        <FormControl variant="outlined" size="small" fullWidth>
+                            <InputLabel>월 선택</InputLabel>
+                            <Select
+                                onChange={e => setMonth(e.target.value)}
+                                label="월 선택"
+                                value={month}
+                                style={{ height: '35px' }}
+                                color="secondary"
+                            >
+                                <MenuItem value={dayjs().format('YYYY-MM')}>
+                                    {dayjs().format('MM')}월
+                                </MenuItem>
+                                <MenuItem value={dayjs().add(1, 'month').format('YYYY-MM')}>
+                                    {dayjs().add(1, 'month').format('MM')}월
+                                </MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Box>
                 </Box>
                 <Box mt={2} height="38%" className={classes.chooseBus}>
                     <BusList routeInfo={routeInfo} />
@@ -204,6 +235,7 @@ const UserHome = ({ history }) => {
                                                 state: { partitionKey: data.partitionKey },
                                             })
                                         }
+                                        style={{ alignItems: 'flex-start' }}
                                     >
                                         <Box
                                             height={!smallDevice ? '60%' : '100%'}
@@ -311,7 +343,9 @@ const BusList = props => {
                                     align="center"
                                     className={smallDevice ? classes.countText : null}
                                 >
-                                    신청자: {data.month.registerCount} / {data.limitCount}
+                                    {data.month.registerCount !== null
+                                        ? `신청자: ${data.month.registerCount} / ${data.limitCount}`
+                                        : '신청 미개시'}
                                 </Typography>
                             </Box>
                         </CardContent>
@@ -413,7 +447,7 @@ const NoticeDetail = props => {
     ) : dayjs().hour() > 8 ? (
         <strong>금일 {notice.route}버스 운행이 종료되었습니다.</strong>
     ) : (
-        <strong>버스가 아직 출발하지 않았습니다.</strong>
+        <strong>{notice.route}버스가 아직 출발하지 않았습니다.</strong>
     );
 };
 export default UserHome;

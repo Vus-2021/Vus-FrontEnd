@@ -145,20 +145,22 @@ const DriverHome = ({ history }) => {
                                 환영합니다. {userData.name} 기사님
                             </Box>
                             <Box height="3%" display="flex" justifyContent="flex-end" mb={1}>
-                                <Box px={1} mr={1} component={ButtonBase}>
+                                <Box component={ButtonBase} className={classes.buttonBase}>
                                     <Typography
                                         className={classes.subButton}
                                         onClick={() => {
                                             history.push({
                                                 pathname: '/businfo',
-                                                state: { busName: userData.routeInfo[0].route },
+                                                state: {
+                                                    busData: { route: userData.routeInfo[0].route },
+                                                },
                                             });
                                         }}
                                     >
                                         노선보기
                                     </Typography>
                                 </Box>
-                                <Box px={1} component={ButtonBase}>
+                                <Box component={ButtonBase} className={classes.buttonBase}>
                                     <Typography className={classes.subButton} onClick={logoutClick}>
                                         로그아웃
                                     </Typography>

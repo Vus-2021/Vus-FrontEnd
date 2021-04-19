@@ -274,7 +274,7 @@ const Boarder = props => {
             </Box>
             <Box display="flex" justifyContent="space-between" alignItems="flex-end" mb={1}>
                 <Box display="flex" flexDirection="row" alignItems="center">
-                    <Box mr={1} width="74px">
+                    <Box mr={1}>
                         <FormControl variant="outlined" size="small" fullWidth>
                             <InputLabel>노선</InputLabel>
                             <Select

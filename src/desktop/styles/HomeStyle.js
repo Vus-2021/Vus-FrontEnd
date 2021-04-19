@@ -34,9 +34,6 @@ const HomeStyle = createUseStyles({
             backgroundColor: '#F69017',
         },
     },
-    alert: {
-        width: '360px',
-    },
 });
 
 export default HomeStyle;

@@ -228,7 +228,7 @@ const SelectedTable = props => {
 
     return (
         <Box mx={1} display="flex">
-            <Box width="16%" mr={0.2}>
+            <Box width="20%" mr={0.2}>
                 <TableContainer
                     component={Paper}
                     elevation={5}
@@ -255,7 +255,7 @@ const SelectedTable = props => {
                     </Table>
                 </TableContainer>
             </Box>
-            <Box width="84%">
+            <Box width="80%">
                 <Droppable droppableId="selected">
                     {provided => (
                         <TableContainer

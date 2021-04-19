@@ -27,6 +27,7 @@ const RouteStyle = makeStyles(theme => ({
         left: 290,
         borderRadius: '50px 0 0 50px',
     },
+
     routeModal: {
         keepMounted: true,
         container: document.getElementById('kakaoMap'),
@@ -56,6 +57,13 @@ const RouteStyle = makeStyles(theme => ({
     timeLineContentPaper: {
         width: '100%',
         textAlign: 'left',
+    },
+
+    buttonBase: {
+        display: 'flex',
+        width: '100%',
+        alignItems: 'flex-start',
+        flexDirection: 'column',
     },
 
     registerPaper: {
