@@ -18,10 +18,10 @@ import {
     InputLabel,
     Select,
     MenuItem,
+    Chip,
 } from '@material-ui/core';
 import BusAlert from '../components/BusAlert';
 import { Header } from '../layout';
-import { AccountCircle } from '@material-ui/icons';
 import clsx from 'clsx';
 import {
     GET_MY_INFO,
@@ -52,6 +52,7 @@ const UserHome = ({ history }) => {
         userId: '',
         type: '',
     });
+    const [userApplyData, setUserApplyData] = useState([]);
     const [userBusData, setUserBusData] = useState([]);
     const [routeInfo, setRouteInfo] = useState([]);
     const [notice, setNotice] = useState([]);
@@ -101,14 +102,15 @@ const UserHome = ({ history }) => {
     useEffect(() => {
         if (myData) {
             if (myData.getMyInformation.success) {
-                const { name, userId, type, routeInfo } = myData.getMyInformation.data;
+                const { name, userId, type, routeInfo, routeStates } = myData.getMyInformation.data;
                 setIsLogin(true);
                 setUserData({
                     name: name,
                     userId: userId,
                     type: type,
                 });
-                setUserBusData(routeInfo);
+                setUserApplyData(routeInfo);
+                setUserBusData(routeStates);
             }
         }
 
@@ -145,23 +147,17 @@ const UserHome = ({ history }) => {
 
     return (
         <div>
-            <Header />
+            <Header
+                isLogin={isLogin}
+                userData={userData}
+                userBusData={userBusData}
+                setLoginDialog={setLoginDialog}
+            />
             <Box px={3} py={2} className={classes.mainBox}>
-                <Box
-                    height="4%"
-                    display="flex"
-                    justifyContent="space-between"
-                    className={classes.requireLogin}
-                >
-                    <Box display="flex" alignItems="center">
-                        <Box mr={1}>
-                            <AccountCircle fontSize="large" />
-                        </Box>
-                        {isLogin ? `환영합니다. ${userData.name} 님` : '로그인이 필요합니다.'}
-                    </Box>
-                    <Box display="flex" alignItems="flex-start">
+                <Box height="5%" display="flex" className={classes.requireLogin}>
+                    <Box display="flex" alignItems="flex-start" mr={1}>
                         <FormControl variant="outlined" size="small" fullWidth>
-                            <InputLabel>월 선택</InputLabel>
+                            <InputLabel color="secondary">월 선택</InputLabel>
                             <Select
                                 onChange={e => setMonth(e.target.value)}
                                 label="월 선택"
@@ -178,6 +174,12 @@ const UserHome = ({ history }) => {
                             </Select>
                         </FormControl>
                     </Box>
+                    {isLogin && (
+                        <Box display="flex" alignItems="center" height="100%">
+                            <Typography className={classes.applyText}>신청 현황:&nbsp;</Typography>
+                            <MyApply month={month} userBusData={userBusData} />
+                        </Box>
+                    )}
                 </Box>
                 <Box mt={2} height="38%" className={classes.chooseBus}>
                     <BusList routeInfo={routeInfo} />
@@ -273,7 +275,7 @@ const UserHome = ({ history }) => {
                         )}
                     </Box>
                 </Box>
-                <Box mb={1} height="20%" className={classes.buttonList}>
+                <Box mb={3} height="20%" className={classes.buttonList}>
                     <Button
                         className={clsx(classes.buttonCommon, classes.loginButton)}
                         variant="contained"
@@ -295,13 +297,87 @@ const UserHome = ({ history }) => {
                         open={registerBusDialog}
                         onClose={handleRegisterBusClose}
                         routeInfo={routeInfo}
-                        userBusData={userBusData}
+                        userBusData={userApplyData}
                         userRefetch={userRefetch}
                     />
                 </Box>
             </Box>
         </div>
     );
+};
+
+const MyApply = props => {
+    const { userBusData, month } = props;
+    const classes = HomeStyle();
+    const applyData = userBusData.filter(object => {
+        if (month === object.month) {
+            return object;
+        } else return '';
+    });
+    let chipStyle, chipText;
+
+    if (applyData[0]) {
+        switch (applyData[0].state) {
+            case 'fulfilled':
+                chipStyle = classes.chipYes;
+                chipText = '당첨';
+                break;
+            case 'reject':
+                chipStyle = classes.chipNo;
+                chipText = '미당첨';
+                break;
+            case 'pending':
+                if (applyData[0].isCancellation === 'true') {
+                    chipStyle = classes.chipCancel;
+                    chipText = '취소';
+                } else {
+                    chipStyle = classes.chipWait;
+                    chipText = '대기';
+                }
+
+                break;
+            case 'cancelled':
+                chipStyle = classes.chipCancel;
+                chipText = '취소';
+                break;
+            default:
+                chipStyle = classes.chipEmpty;
+                chipText = '미신청';
+        }
+        return (
+            <React.Fragment>
+                <Typography>{applyData[0].route}노선 -&nbsp;</Typography>
+                <Chip
+                    className={chipStyle}
+                    size="small"
+                    label={
+                        <Typography
+                            className={
+                                applyData[0].state === 'pending' ||
+                                applyData[0].state === 'cancelled'
+                                    ? classes.darkChipText
+                                    : classes.chipText
+                            }
+                        >
+                            {chipText}
+                        </Typography>
+                    }
+                />
+            </React.Fragment>
+        );
+    } else {
+        chipStyle = classes.chipEmpty;
+        chipText = '미신청';
+        return (
+            <React.Fragment>
+                <Chip
+                    className={chipStyle}
+                    size="small"
+                    label={<Typography className={classes.darkChipText}>{chipText}</Typography>}
+                />
+            </React.Fragment>
+        );
+    }
 };
 
 const BusList = props => {

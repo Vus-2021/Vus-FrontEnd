@@ -15,18 +15,22 @@ import {
     Typography,
 } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
-import { useQuery, useMutation } from '@apollo/react-hooks';
-import { GET_USERS } from '../gql/route/query';
+import { useQuery, useMutation, useLazyQuery } from '@apollo/react-hooks';
+import { GET_USERS, CHECK_USERID } from '../gql/route/query';
 import { CREATE_ROUTE } from '../gql/route/mutation';
+import fileUpload from '../components/FileUpload';
 
 const CreateRoute = props => {
     const { refetch } = props;
     const classes = RouteStyle();
-    const { control, handleSubmit, errors, reset, setValue, setError } = useForm();
+    const { control, handleSubmit, errors, reset, setValue, setError, clearErrors } = useForm();
     const [drivers, setDrivers] = useState([]);
     const [openSnackbar, setSnackbar] = useState(false);
     const [imageName, setImageName] = useState('노선 이미지 업로드');
     const [imgPreview, setImgPreview] = useState('');
+
+    const blank_pattern = /\s/g;
+    const special_pattern = /[`~!@#$%^&*|\\'";:/=-{}?<>,.()]/g;
 
     const { data } = useQuery(GET_USERS, {
         variables: { type: 'DRIVER' },
@@ -38,24 +42,28 @@ const CreateRoute = props => {
             refetch();
         },
     });
+    const [checkUserId, { data: checkData }] = useLazyQuery(CHECK_USERID, {
+        fetchPolicy: 'no-cache',
+    });
 
-    const registerRoute = data => {
+    const registerRoute = async data => {
         const driverData = data.driver.split('+');
+        const fileLocation = await fileUpload(data.image);
         createRoute({
             variables: {
                 route: data.route,
                 busNumber: data.busNumber,
                 limitCount: parseInt(data.limitCount),
                 driver: { name: driverData[0], phone: driverData[1], userId: driverData[2] },
-                file: data.image,
+                imageUrl: fileLocation,
             },
         });
     };
-
     const LimitCountHelperText = props => {
         const { type } = props.errors;
         if (type === 'required') return '수용 인원을 입력해주세요.';
         if (type === 'isNumber') return '숫자만 입력해주세요.';
+        if (type === 'invalidForm') return '특수문자나 공백은 입력할 수 없습니다.';
     };
 
     useEffect(() => {
@@ -79,10 +87,24 @@ const CreateRoute = props => {
                 setImageName('노선 이미지 업로드');
                 setSnackbar(true);
             } else {
-                setError('driver', { type: 'alreadyExist', message: message });
+                console.log(message);
             }
         }
     }, [createData, reset, setValue, setError]);
+
+    useEffect(() => {
+        if (checkData) {
+            const { success } = checkData.checkUserId;
+            if (success) {
+                clearErrors('driver');
+            } else {
+                setError('driver', {
+                    type: 'alreadyExist',
+                    message: '다른 노선에 등록된 기사님 입니다.',
+                });
+            }
+        }
+    }, [checkData, setError, clearErrors]);
 
     return (
         <Box display="flex" justifyContent="center" py={5} minHeight="530px">
@@ -102,8 +124,20 @@ const CreateRoute = props => {
                                     variant="outlined"
                                     size="small"
                                     error={errors.route ? true : false}
-                                    rules={{ required: true }}
-                                    helperText={errors.route ? '노선 이름을 입력해주세요.' : ' '}
+                                    rules={{
+                                        required: '노선 이름을 입력해주세요.',
+                                        validate: {
+                                            invalidForm: value => {
+                                                if (
+                                                    blank_pattern.test(value) ||
+                                                    special_pattern.test(value)
+                                                ) {
+                                                    return '특수문자나 공백은 입력할 수 없습니다.';
+                                                }
+                                            },
+                                        },
+                                    }}
+                                    helperText={errors.route ? errors.route.message : ' '}
                                 />
                             </Box>
                             <Box mb={1}>
@@ -131,7 +165,16 @@ const CreateRoute = props => {
                                                 labelId="bus-driver-select"
                                                 label="버스기사 배정"
                                                 defaultValue=""
-                                                onChange={e => props.onChange(e.target.value)}
+                                                onChange={e => {
+                                                    const driverData = e.target.value.split('+');
+                                                    checkUserId({
+                                                        variables: {
+                                                            userId: driverData[2],
+                                                            sortKey: '#driver',
+                                                        },
+                                                    });
+                                                    props.onChange(e.target.value);
+                                                }}
                                             >
                                                 {drivers.map(driver => (
                                                     <MenuItem
@@ -164,8 +207,16 @@ const CreateRoute = props => {
                                     variant="outlined"
                                     size="small"
                                     error={errors.busNumber ? true : false}
-                                    rules={{ required: true }}
-                                    helperText={errors.busNumber ? '차량번호를 입력해주세요.' : ' '}
+                                    rules={{
+                                        required: '차량번호를 입력해주세요.',
+                                        validate: {
+                                            invalidForm: value => {
+                                                if (special_pattern.test(value))
+                                                    return '특수문자는 입력할 수 없습니다.';
+                                            },
+                                        },
+                                    }}
+                                    helperText={errors.busNumber ? errors.busNumber.message : ' '}
                                 />
                             </Box>
                             <Box mb={1}>
@@ -181,7 +232,10 @@ const CreateRoute = props => {
                                     error={errors.limitCount ? true : false}
                                     rules={{
                                         required: true,
-                                        validate: { isNumber: value => !isNaN(value) },
+                                        validate: {
+                                            isNumber: value => !isNaN(value),
+                                            invalidForm: value => !blank_pattern.test(value),
+                                        },
                                     }}
                                     helperText={
                                         errors.limitCount ? (
@@ -258,6 +312,7 @@ const CreateRoute = props => {
                                     className={classes.registerButton}
                                     variant="contained"
                                     fullWidth
+                                    disabled={errors.driver ? true : false}
                                 >
                                     노선 등록하기
                                 </Button>

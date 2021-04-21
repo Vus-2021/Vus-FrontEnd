@@ -23,6 +23,7 @@ import { useQuery, useMutation } from '@apollo/react-hooks';
 import { useForm, Controller } from 'react-hook-form';
 import MiniHeader from '../layout/MiniHeader';
 import RouteStyle from '../styles/RouteStyle';
+import fileUpload from '../components/FileUpload';
 
 const UpdateRouteDialog = props => {
     const { open, onClose, routeName } = props;
@@ -56,8 +57,9 @@ const UpdateRouteDialog = props => {
         if (type === 'isNumber') return '숫자만 입력해주세요.';
     };
 
-    const updateClick = data => {
+    const updateClick = async data => {
         const driverData = data.driver.split('+');
+        const fileLocation = changedImage !== '' ? await fileUpload(data.image) : null;
         updateRoute({
             variables: {
                 partitionKey: routeInfo.partitionKey,
@@ -65,7 +67,7 @@ const UpdateRouteDialog = props => {
                 busNumber: data.busNumber,
                 limitCount: parseInt(data.limitCount),
                 driver: { name: driverData[0], phone: driverData[1], userId: driverData[2] },
-                file: changedImage !== '' ? data.image : null,
+                imageUrl: fileLocation,
             },
         });
     };
@@ -368,7 +370,8 @@ const CreateDialog = props => {
         if (type === 'isForm') return '형식에 맞게 입력해주세요.[예) 09:45]';
     };
 
-    const createRoute = data => {
+    const createRoute = async data => {
+        const fileLocation = imgPreview !== '' ? await fileUpload(data.image) : null;
         createRouteDetail({
             variables: {
                 route: routeName,
@@ -376,7 +379,7 @@ const CreateDialog = props => {
                 lat: latlng.lat,
                 long: latlng.lng,
                 boardingTime: data.boardingTime,
-                file: imgPreview !== '' ? data.image : null,
+                imageUrl: fileLocation,
             },
         });
     };
@@ -550,7 +553,8 @@ const UpdateDialog = props => {
         marker.setMap(null);
     };
 
-    const reviseRouteClick = data => {
+    const reviseRouteClick = async data => {
+        const fileLocation = changedImage !== '' ? await fileUpload(data.image) : null;
         updateDetailRoute({
             variables: {
                 partitionKey: route.partitionKey,
@@ -559,7 +563,7 @@ const UpdateDialog = props => {
                 route: route.route,
                 boardingTime: data.boardingTime,
                 location: data.location,
-                file: changedImage !== '' ? data.image : null,
+                imageUrl: fileLocation,
             },
         });
     };

@@ -14,6 +14,12 @@ export const GET_MY_INFO = gql`
                     month
                     busId
                 }
+                routeStates {
+                    route
+                    month
+                    state
+                    isCancellation
+                }
             }
         }
     }

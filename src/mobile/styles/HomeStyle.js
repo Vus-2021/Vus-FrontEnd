@@ -6,7 +6,13 @@ const HomeStyle = makeStyles(theme => ({
         backgroundImage: `url(${background})`,
         backgroundRepeat: 'no-repeat',
         backgroundSize: 'cover',
-        height: '90vh',
+        height: '91vh',
+    },
+    applyText: {
+        '&.MuiTypography-body1': {
+            fontSize: '17px',
+            fontWeight: '500',
+        },
     },
     requireLogin: {
         fontStyle: 'normal',
@@ -149,6 +155,52 @@ const HomeStyle = makeStyles(theme => ({
     },
     busSlide: {
         height: '40px',
+    },
+
+    chipYes: {
+        '&.MuiChip-root': {
+            backgroundColor: '#23D107',
+            height: '20px',
+        },
+    },
+    chipNo: {
+        '&.MuiChip-root': {
+            backgroundColor: '#FF3A3A',
+            height: '20px',
+        },
+    },
+    chipWait: {
+        '&.MuiChip-root': {
+            backgroundColor: '#FDB600',
+            height: '23px',
+        },
+    },
+    chipCancel: {
+        '&.MuiChip-root': {
+            backgroundColor: '#E4E4E4',
+            color: 'black',
+            height: '23px',
+        },
+    },
+    chipEmpty: {
+        '&.MuiChip-root': {
+            backgroundColor: '#A5A8A2',
+            height: '23px',
+        },
+    },
+    darkChipText: {
+        fontSize: '15px',
+        fontWeight: '400',
+        width: '50px',
+        textAlign: 'center',
+        color: 'black',
+    },
+    chipText: {
+        fontSize: '15px',
+        fontWeight: '600',
+        width: '50px',
+        textAlign: 'center',
+        color: 'white',
     },
 }));
 

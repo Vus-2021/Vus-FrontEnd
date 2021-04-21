@@ -1,6 +1,6 @@
 import React from 'react';
 import { Switch, Route } from 'react-router-dom';
-import { UserHome, DriverHome, BusInfo, Notice } from './mobile/pages';
+import { UserHome, DriverHome, BusInfo, Notice, MyInformation } from './mobile/pages';
 import { AdminHome, Admin, Error } from './desktop/pages';
 import { useMediaQuery } from 'react-responsive';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
@@ -19,6 +19,7 @@ const App = () => {
                     <Route path="/driver" component={DriverHome} />
                     <Route path="/notice" component={Notice} />
                     <Route path="/businfo" component={BusInfo} />
+                    <Route path="/myinfo" component={MyInformation} />
                 </Switch>
             ) : (
                 <Switch>

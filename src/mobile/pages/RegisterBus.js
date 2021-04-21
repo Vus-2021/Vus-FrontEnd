@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from 'react';
 import Header2 from '../layout/Header2';
 import {
@@ -18,7 +19,7 @@ import * as dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import RegisterStyle from '../styles/RegisterStyle';
 import { useLazyQuery, useMutation } from '@apollo/react-hooks';
-import { GET_ROUTE_BY_MONTH } from '../gql/registerbus/query';
+import { GET_ROUTE_BY_MONTH, GET_DETAIL_ROUTES } from '../gql/registerbus/query';
 import { APPLY_ROUTE, CANCEL_ROUTE } from '../gql/registerbus/mutation';
 
 const RegisterBus = props => {
@@ -119,9 +120,14 @@ const Register = props => {
         partitionKey: routeInfo.length === 0 ? '' : routeInfo[0].partitionKey,
     });
     const [month, setMonth] = useState('');
-    const [routeMonth, setRouteMonth] = useState([]);
+    const [location, setLocation] = useState('');
+    const [routeMonth, setRouteMonth] = useState([]); // 노선별 신청 가능 월 list
+    const [locationList, setLocationList] = useState([]); // 버스 정류장 list
 
     const [getRouteByMonth, { data, refetch }] = useLazyQuery(GET_ROUTE_BY_MONTH);
+    const [getDetailRoutes, { data: routeData, refetch: refetchRoute }] = useLazyQuery(
+        GET_DETAIL_ROUTES,
+    );
     const [applyRoute, { data: applyData }] = useMutation(APPLY_ROUTE, {
         onCompleted() {
             userRefetch();
@@ -133,6 +139,8 @@ const Register = props => {
         const routeName = e.target.value.split('+')[1];
         setRoute({ partitionKey: partitionKey, routeName: routeName });
         refetch({ partitionKey: partitionKey });
+        refetchRoute({ route: routeName });
+        setLocation('');
     };
 
     const registerSubmit = () => {
@@ -165,8 +173,13 @@ const Register = props => {
                     partitionKey: routeInfo[0].partitionKey,
                 },
             });
+            getDetailRoutes({
+                variables: {
+                    route: routeInfo[0].route,
+                },
+            });
         }
-    }, [routeInfo, getRouteByMonth]);
+    }, [routeInfo, getRouteByMonth, getDetailRoutes]);
 
     useEffect(() => {
         if (data) {
@@ -177,6 +190,15 @@ const Register = props => {
             } else console.log(message);
         }
     }, [data]);
+
+    useEffect(() => {
+        if (routeData) {
+            const { success, message, data } = routeData.getDetailRoutes;
+            if (success) {
+                setLocationList(data);
+            } else console.log(message);
+        }
+    }, [routeData]);
 
     return (
         <React.Fragment>
@@ -221,6 +243,29 @@ const Register = props => {
                                     </MenuItem>
                                 );
                             } else return null;
+                        })}
+                    </TextField>
+                )}
+            </Box>
+            <Box mb={4}>
+                {locationList.length > 0 && (
+                    <TextField
+                        select
+                        value={location}
+                        onChange={e => setLocation(e.target.value)}
+                        variant="outlined"
+                        label="정류장 명"
+                        fullWidth
+                        size="small"
+                    >
+                        {locationList.map((data, index) => {
+                            if (index !== locationList.length - 1)
+                                return (
+                                    <MenuItem key={data.partitionKey} value={data.partitionKey}>
+                                        {data.location}
+                                    </MenuItem>
+                                );
+                            else return '';
                         })}
                     </TextField>
                 )}

@@ -6,14 +6,14 @@ export const CREATE_ROUTE = gql`
         $busNumber: String!
         $limitCount: Int!
         $driver: driver!
-        $file: Upload
+        $imageUrl: String
     ) {
         createRoute(
             route: $route
             busNumber: $busNumber
             limitCount: $limitCount
             driver: $driver
-            file: $file
+            imageUrl: $imageUrl
         ) {
             success
             message
@@ -28,7 +28,7 @@ export const UPDATE_ROUTE = gql`
         $busNumber: String
         $limitCount: Int
         $driver: driver
-        $file: Upload
+        $imageUrl: String
     ) {
         updateRoute(
             partitionKey: $partitionKey
@@ -36,7 +36,7 @@ export const UPDATE_ROUTE = gql`
             busNumber: $busNumber
             limitCount: $limitCount
             driver: $driver
-            file: $file
+            imageUrl: $imageUrl
         ) {
             success
             message
@@ -62,7 +62,7 @@ export const UPDATE_DETAIL_ROUTE = gql`
         $long: Float!
         $location: String!
         $route: String!
-        $file: Upload
+        $imageUrl: String
     ) {
         updateDetailRoute(
             partitionKey: $partitionKey
@@ -71,7 +71,7 @@ export const UPDATE_DETAIL_ROUTE = gql`
             long: $long
             location: $location
             route: $route
-            file: $file
+            imageUrl: $imageUrl
         ) {
             success
             message
@@ -83,7 +83,7 @@ export const CREATE_ROUTE_DETAIL = gql`
     mutation createRouteDetail(
         $route: String!
         $location: String!
-        $file: Upload
+        $imageUrl: String!
         $lat: Float!
         $long: Float!
         $boardingTime: String!
@@ -91,7 +91,7 @@ export const CREATE_ROUTE_DETAIL = gql`
         createRouteDetail(
             route: $route
             location: $location
-            file: $file
+            imageUrl: $imageUrl
             lat: $lat
             long: $long
             boardingTime: $boardingTime

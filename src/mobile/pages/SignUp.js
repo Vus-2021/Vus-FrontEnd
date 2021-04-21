@@ -71,6 +71,9 @@ const SignUp = props => {
     const [checkUser, { data }] = useLazyQuery(CHECK_USERID, { fetchPolicy: 'no-cache' });
     const [signupUser] = useMutation(SIGNUP_USER);
 
+    const blank_pattern = /\s/g;
+    const special_pattern = /[`~!@#$%^&*|\\'";:/()=-{}?<>,.]/g;
+
     //Dialog창 닫기
     const handleClose = () => {
         onClose(false);
@@ -89,8 +92,12 @@ const SignUp = props => {
             setError('userId', {
                 type: 'required',
             });
+        } else if (blank_pattern.test(value) || special_pattern.test(value)) {
+            setError('userId', {
+                type: 'invalidForm',
+            });
         } else {
-            checkUser({ variables: { userId: value } });
+            checkUser({ variables: { userId: value, sortKey: '#user' } });
             // updateQuery({ variables: { userId: value } });
             setTmpUserId(value);
         }
@@ -138,7 +145,8 @@ const SignUp = props => {
             const { type } = errors;
             if (type === 'required') return '아이디를 입력해주세요.';
             if (type === 'exist') return '중복된 아이디입니다.';
-            if (type === 'confirmId') return '중복확인을 먼저 눌러주세요.';
+            if (type === 'confirmId') return '중복확인을 먼저 통과하세요.';
+            if (type === 'invalidForm') return '특수문자나 공백은 입력할 수 없습니다.';
         }
         // if (exist) return '중복된 아이디입니다.';
 
@@ -151,7 +159,7 @@ const SignUp = props => {
             const { type } = errors;
             if (type === 'required') return '휴대폰 번호를 입력해주세요.';
             if (type === 'maxLength' || type === 'minLength') return '11자리를 입력해주세요.';
-            if (type === 'isNumber') return '숫자만 입력해주세요.';
+            if (type === 'isNumber' || type === 'invalidForm') return '숫자만 입력해주세요.';
         }
         return '';
     };
@@ -176,6 +184,14 @@ const SignUp = props => {
                                     validate: {
                                         exist: () => exist === false,
                                         confirmId: value => value === tmpUserId,
+                                        invalidForm: value => {
+                                            if (
+                                                blank_pattern.test(value) ||
+                                                special_pattern.test(value)
+                                            ) {
+                                                return '특수문자나 공백은 입력할 수 없습니다.';
+                                            }
+                                        },
                                     },
                                 }}
                                 error={errors.userId ? true : false}
@@ -213,9 +229,17 @@ const SignUp = props => {
                             variant="outlined"
                             size="small"
                             type={showPwd ? 'text' : 'password'}
-                            rules={{ required: true }}
+                            rules={{
+                                required: '비밀번호를 입력해주세요.',
+                                validate: {
+                                    invalidForm: value => {
+                                        if (blank_pattern.test(value))
+                                            return '공백은 입력할 수 없습니다.';
+                                    },
+                                },
+                            }}
                             error={errors.password ? true : false}
-                            helperText={errors.password ? '비밀번호를 입력해주세요.' : ' '}
+                            helperText={errors.password ? errors.password.message : ' '}
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="end">
@@ -273,9 +297,21 @@ const SignUp = props => {
                             fullWidth
                             variant="outlined"
                             size="small"
-                            rules={{ required: true }}
+                            rules={{
+                                required: '이름을 입력해주세요.',
+                                validate: {
+                                    invalidForm: value => {
+                                        if (
+                                            blank_pattern.test(value) ||
+                                            special_pattern.test(value)
+                                        ) {
+                                            return '특수문자나 공백은 입력할 수 없습니다.';
+                                        }
+                                    },
+                                },
+                            }}
                             error={errors.name ? true : false}
-                            helperText={errors.name ? '이름을 입력해주세요.' : ' '}
+                            helperText={errors.name ? errors.name.message : ' '}
                         />
                     </Box>
                     <Box mb={1} className="phoneNumber">
@@ -294,6 +330,7 @@ const SignUp = props => {
                                 maxLength: 11,
                                 validate: {
                                     isNumber: value => !isNaN(value),
+                                    invalidForm: value => !blank_pattern.test(value),
                                 },
                             }}
                             error={errors.phoneNumber ? true : false}

@@ -81,6 +81,9 @@ const Register = props => {
         },
     });
 
+    const blank_pattern = /\s/g;
+    const special_pattern = /[`~!@#$%^&*|\\'";:/=-{}?<>,.]/g;
+
     const registerUser = data => {
         if (boardNum !== 2) {
             const type = boardNum === 0 ? 'ADMIN' : 'DRIVER';
@@ -124,8 +127,12 @@ const Register = props => {
             setError('userId', {
                 type: 'required',
             });
+        } else if (blank_pattern.test(value) || special_pattern.test(value)) {
+            setError('userId', {
+                type: 'invalidForm',
+            });
         } else {
-            checkUser({ variables: { userId: value } });
+            checkUser({ variables: { userId: value, sortKey: '#user' } });
             setTmpUserId(value);
         }
     };
@@ -155,6 +162,7 @@ const Register = props => {
             if (type === 'required') return '아이디를 입력해주세요.';
             if (type === 'exist') return '중복된 아이디입니다.';
             if (type === 'confirmId') return '중복확인을 먼저 눌러주세요.';
+            if (type === 'invalidForm') return '특수문자나 공백은 입력할 수 없습니다.';
         }
         return '';
     };
@@ -165,14 +173,14 @@ const Register = props => {
             const { type } = errors;
             if (type === 'required') return '휴대폰 번호를 입력해주세요.';
             if (type === 'maxLength' || type === 'minLength') return '11자리를 입력해주세요.';
-            if (type === 'isNumber') return '숫자만 입력해주세요.';
+            if (type === 'isNumber' || type === 'invalidForm') return '숫자만 입력해주세요.';
         }
         return '';
     };
 
     return (
         <Dialog open={open} onClose={handleClose} TransitionComponent={Transition}>
-            <MiniHeader handleClose={handleClose} headerText="사용자 등록" width="385px" />
+            <MiniHeader handleClose={handleClose} headerText="사용자 등록" width="400px" />
             <Box p={4}>
                 <Box mb={5}>
                     <Tabs
@@ -221,10 +229,18 @@ const Register = props => {
                                         )
                                     }
                                     rules={{
-                                        required: true,
+                                        required: '아이디를 입력해주세요.',
                                         validate: {
                                             exist: () => exist === false,
                                             confirmId: value => value === tmpUserId,
+                                            invalidForm: value => {
+                                                if (
+                                                    blank_pattern.test(value) ||
+                                                    special_pattern.test(value)
+                                                ) {
+                                                    return '특수문자나 공백은 입력할 수 없습니다.';
+                                                }
+                                            },
                                         },
                                     }}
                                 />
@@ -250,9 +266,15 @@ const Register = props => {
                                 variant="outlined"
                                 size="small"
                                 error={errors.password ? true : false}
-                                helperText={errors.password ? '비밀번호를 입력해주세요.' : ' '}
+                                helperText={errors.password ? errors.password.message : ' '}
                                 rules={{
-                                    required: true,
+                                    required: '비밀번호를 입력해주세요.',
+                                    validate: {
+                                        invalidForm: value => {
+                                            if (blank_pattern.test(value))
+                                                return '공백은 입력할 수 없습니다.';
+                                        },
+                                    },
                                 }}
                                 fullWidth
                                 label="비밀번호"
@@ -280,9 +302,19 @@ const Register = props => {
                                 variant="outlined"
                                 size="small"
                                 error={errors.name ? true : false}
-                                helperText={errors.name ? '이름을 입력해주세요.' : ' '}
+                                helperText={errors.name ? errors.name.message : ' '}
                                 rules={{
-                                    required: true,
+                                    required: '이름을 입력해주세요.',
+                                    validate: {
+                                        invalidForm: value => {
+                                            if (
+                                                blank_pattern.test(value) ||
+                                                special_pattern.test(value)
+                                            ) {
+                                                return '특수문자나 공백은 입력할 수 없습니다.';
+                                            }
+                                        },
+                                    },
                                 }}
                                 fullWidth
                                 label={boardNum === 0 ? '이름(소속)' : '이름'}
@@ -311,6 +343,7 @@ const Register = props => {
                                     maxLength: 11,
                                     validate: {
                                         isNumber: value => !isNaN(value),
+                                        invalidForm: value => !blank_pattern.test(value),
                                     },
                                 }}
                                 fullWidth

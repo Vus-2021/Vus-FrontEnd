@@ -54,3 +54,11 @@ export const GET_ROUTES_INFO = gql`
         }
     }
 `;
+
+export const CHECK_USERID = gql`
+    query($userId: String, $sortKey: String) {
+        checkUserId(userId: $userId, sortKey: $sortKey) {
+            success
+        }
+    }
+`;
