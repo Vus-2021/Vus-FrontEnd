@@ -34,6 +34,13 @@ const ApplicantStyle = makeStyles(theme => ({
             backgroundColor: '#008AEE',
         },
     },
+    reviseButton: {
+        backgroundColor: '#FA8700',
+        color: 'white',
+        '&:hover': {
+            backgroundColor: '#FA8700',
+        },
+    },
     resetButton: {
         width: '100%',
         backgroundColor: '#FF3A3A',

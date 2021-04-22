@@ -133,8 +133,13 @@ const DetailNotice = props => {
                                                 editor.ui.view.element.style.width = '504px';
                                                 editor.editing.view.change(writer => {
                                                     writer.setStyle(
-                                                        'min-height',
+                                                        'height',
                                                         '350px',
+                                                        editor.editing.view.document.getRoot(),
+                                                    );
+                                                    writer.setStyle(
+                                                        'overflow',
+                                                        'auto',
                                                         editor.editing.view.document.getRoot(),
                                                     );
                                                 });

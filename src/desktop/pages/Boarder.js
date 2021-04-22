@@ -26,6 +26,8 @@ import * as dayjs from 'dayjs';
 import MiniHeader from '../layout/MiniHeader';
 import BoarderSelectionDialog from './BoarderSelection';
 
+import DetailBoarderDialog from './DetailBoarder';
+
 const columns = [
     { field: 'name', headerName: '이름', width: 120 },
     { field: 'type', headerName: '소속', width: 120 },
@@ -117,6 +119,9 @@ const Boarder = props => {
     const [openResetSelectionDialog, setOpenResetSelectionDialog] = useState(false); //대기자 선별 초기화 Dialog의 open여부
     const [openSelectionDialog, setOpenSelectionDialog] = useState(false); //대기자 선별 Dialog open여부
     const [page, setPage] = useState(0);
+    const [selection, setSelection] = useState([]); //선택한 탑승객들의 partitionKey를 담음.
+    const [boarderData, setBoarderData] = useState({}); //탑승객 한명의 데이터
+    const [detailDialog, setDetailDialog] = useState(false); //탑승객 신청 정보 수정 Dialog의 open여부
 
     const { loading, data, refetch } = useQuery(GET_BUS_APPLICANT, {
         variables: {
@@ -163,6 +168,11 @@ const Boarder = props => {
             listName: '취소자',
         },
     ];
+
+    const handleCellClick = row => {
+        setBoarderData(row);
+        setDetailDialog(true);
+    };
 
     const searchClick = data => {
         setPage(0);
@@ -388,10 +398,23 @@ const Boarder = props => {
                 <Paper>
                     <Box width="100%" minHeight="500px" height="60vh">
                         <DataGrid
-                            columns={columns}
+                            columns={columns.map(column => ({
+                                ...column,
+                                disableClickEventBubbling: true,
+                            }))}
                             rows={boardRow}
-                            hideFooterSelectedRowCount
+                            checkboxSelection
                             autoPageSize
+                            onSelectionModelChange={newSelection => {
+                                setSelection(newSelection.selectionModel);
+                            }}
+                            onCellClick={cellClick => {
+                                const { field, row } = cellClick;
+                                if (field !== '__check__') handleCellClick(row);
+                            }}
+                            localeText={{
+                                footerRowSelected: count => `${count}명 선택됨.`,
+                            }}
                             loading={loading || monthLoading}
                             onPageChange={params => setPage(params.page)}
                             page={page}
@@ -407,6 +430,7 @@ const Boarder = props => {
                             <Button
                                 variant="contained"
                                 className={classes.resetAllButton}
+                                disabled={selection.length === 0 ? true : false}
                                 onClick={() => setOpenApplyDialog(true)}
                             >
                                 탑승 신청 초기화
@@ -450,6 +474,8 @@ const Boarder = props => {
                 refetch={refetch}
                 standard={standard}
                 setPage={setPage}
+                selection={selection}
+                setSelection={setSelection}
             />
             <BoarderSelectionDialog
                 open={openSelectionDialog}
@@ -465,12 +491,18 @@ const Boarder = props => {
                 standard={standard}
                 setPage={setPage}
             />
+            <DetailBoarderDialog
+                open={detailDialog}
+                onClose={setDetailDialog}
+                refetch={refetch}
+                boarderData={boarderData}
+            />
         </Box>
     );
 };
 
 const ApplyResetDialog = props => {
-    const { open, onClose, refetch, standard, setPage } = props;
+    const { open, onClose, refetch, standard, setPage, selection, setSelection } = props;
     const classes = BoarderStyle();
 
     const [resetMonthRoute, { data: resetData }] = useMutation(RESET_MONTH_ROUTE, {
@@ -485,9 +517,11 @@ const ApplyResetDialog = props => {
                 month: standard.month,
                 route: standard.route,
                 busId: standard.partitionKey,
+                userId: selection,
             },
         });
         setPage(0);
+        setSelection([]);
     };
 
     useEffect(() => {
@@ -508,8 +542,9 @@ const ApplyResetDialog = props => {
                 </Box>
                 <Box mb={3}>
                     <Typography className={classes.warningText}>
-                        <strong>{dayjs(standard.month).format('YYYY년 MM월')}</strong>의 모든 신청
-                        정보가 사라집니다.
+                        선택한 <strong>{selection.length}명</strong>의{' '}
+                        <strong>{dayjs(standard.month).format('YYYY년 MM월')}</strong> 신청 정보가
+                        사라집니다.
                         <br />
                         정말 초기화 하시겠습니까?
                     </Typography>

@@ -34,6 +34,9 @@ const UpdateRouteDialog = props => {
     const [imageName, setImageName] = useState('노선 이미지 업로드');
     const [changedImage, setChangedImage] = useState('');
 
+    const blank_pattern = /\s/gi;
+    const special_pattern = /[`~!@#$%^&*|'";:/={}?<>,.-]/gi;
+
     const { data } = useQuery(GET_USERS, {
         variables: { type: 'DRIVER' },
         fetchPolicy: 'no-cache',
@@ -55,6 +58,7 @@ const UpdateRouteDialog = props => {
         const { type } = props.errors;
         if (type === 'required') return '수용 인원을 입력해주세요.';
         if (type === 'isNumber') return '숫자만 입력해주세요.';
+        if (type === 'invalidForm') return '특수문자나 공백은 입력할 수 없습니다.';
     };
 
     const updateClick = async data => {
@@ -124,8 +128,19 @@ const UpdateRouteDialog = props => {
                                 variant="outlined"
                                 size="small"
                                 error={errors.route ? true : false}
-                                rules={{ required: true }}
-                                helperText={errors.route ? '노선 이름을 입력해주세요.' : ' '}
+                                rules={{
+                                    required: '노선 이름을 입력해주세요.',
+                                    validate: {
+                                        invalidForm: async value => {
+                                            const blank = await blank_pattern.test(value);
+                                            const special = await special_pattern.test(value);
+                                            if (blank || special) {
+                                                return '특수문자나 공백은 입력할 수 없습니다.';
+                                            }
+                                        },
+                                    },
+                                }}
+                                helperText={errors.route ? errors.route.message : ' '}
                             />
                         </Box>
                         <Box mb={2}>
@@ -186,14 +201,23 @@ const UpdateRouteDialog = props => {
                                 variant="outlined"
                                 size="small"
                                 error={errors.busNumber ? true : false}
-                                rules={{ required: true }}
-                                helperText={errors.busNumber ? '차량번호를 입력해주세요.' : ' '}
+                                rules={{
+                                    required: '차량번호를 입력해주세요.',
+                                    validate: {
+                                        invalidForm: async value => {
+                                            const special = await special_pattern.test(value);
+                                            if (special) return '특수문자는 입력할 수 없습니다.';
+                                        },
+                                    },
+                                }}
+                                helperText={errors.busNumber ? errors.busNumber.message : ' '}
                             />
                         </Box>
                         <Box mb={2}>
                             <Controller
                                 control={control}
                                 as={TextField}
+                                type="number"
                                 defaultValue={routeInfo.limitCount}
                                 name="limitCount"
                                 label="최대 수용인원"
@@ -203,7 +227,10 @@ const UpdateRouteDialog = props => {
                                 error={errors.limitCount ? true : false}
                                 rules={{
                                     required: true,
-                                    validate: { isNumber: value => !isNaN(value) },
+                                    validate: {
+                                        isNumber: value => !special_pattern.test(value),
+                                        invalidForm: value => !blank_pattern.test(value),
+                                    },
                                 }}
                                 helperText={
                                     errors.limitCount ? (

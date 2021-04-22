@@ -9,6 +9,7 @@ import {
     MenuItem,
     Select,
     Paper,
+    Dialog,
 } from '@material-ui/core';
 import { DataGrid } from '@material-ui/data-grid';
 import { DeleteForever, Search } from '@material-ui/icons';
@@ -34,6 +35,7 @@ const Notice = () => {
     const [selection, setSelection] = useState([]); //선택한 공지글들의 partitionKey를 담음.
     const [noticeDialog, setNoticeDialog] = useState(false); //noticeDialog의 open 여부
     const [detailDialog, setDetailDialog] = useState(false); //detailDialog의 open 여부
+    const [deleteDialog, setDeleteDialog] = useState(false); //deleteDialog의 open 여부
     const [noticeRows, setNoticeRows] = useState([]); //공지글 항목
     const [partitionKey, setPartitionKey] = useState(''); //공지글 partitionKey
     const [search, setSearch] = useState({
@@ -51,23 +53,11 @@ const Notice = () => {
         fetchPolicy: 'no-cache',
     });
 
-    const [deleteNotice] = useMutation(DELETE_NOTICE, {
-        onCompleted() {
-            refetch();
-        },
-    });
-
     const searchClick = data => {
         setPage(0);
         setSearch({
             [data.select]: data.search,
         });
-    };
-
-    const deleteUserClick = () => {
-        deleteNotice({ variables: { partitionKey: selection } });
-        setSelection([]);
-        setPage(0);
     };
 
     const handleCellClick = pk => {
@@ -111,7 +101,7 @@ const Notice = () => {
                             variant="contained"
                             color="secondary"
                             className={classes.buttonDelete}
-                            onClick={deleteUserClick}
+                            onClick={() => setDeleteDialog(true)}
                             disabled={selection.length === 0}
                         >
                             <DeleteForever /> <Typography>&nbsp;삭제</Typography>
@@ -230,7 +220,76 @@ const Notice = () => {
                 partitionKey={partitionKey}
                 refetch={refetch}
             />
+            <DeleteNoticeDialog
+                open={deleteDialog}
+                onClose={setDeleteDialog}
+                selection={selection}
+                setSelection={setSelection}
+                setPage={setPage}
+                refetch={refetch}
+            />
         </Box>
+    );
+};
+
+const DeleteNoticeDialog = props => {
+    const { open, onClose, selection, setSelection, setPage, refetch } = props;
+    const classes = NoticeStyle();
+
+    const [deleteNotice] = useMutation(DELETE_NOTICE, {
+        onCompleted() {
+            refetch();
+            onClose(false);
+        },
+    });
+
+    const handleClose = () => {
+        onClose(false);
+    };
+
+    const deleteClick = () => {
+        deleteNotice({ variables: { partitionKey: selection } });
+        setSelection([]);
+        setPage(0);
+    };
+
+    return (
+        <Dialog open={open} onClose={handleClose} fullWidth maxWidth="xs">
+            <Box px={3} py={2}>
+                <Box mb={2}>
+                    <Typography className={classes.warningTitle}>공지 삭제</Typography>
+                </Box>
+                <Box mb={3}>
+                    <Typography className={classes.warningText}>
+                        선택한 <strong>{selection.length}개</strong>의 공지가 사라집니다.
+                        <br />
+                        정말 삭제 하시겠습니까?
+                    </Typography>
+                </Box>
+                <Box display="flex" justifyContent="flex-end">
+                    <Box mr={2} width="50%">
+                        <Button
+                            variant="contained"
+                            onClick={deleteClick}
+                            className={classes.resetButton}
+                            fullWidth
+                        >
+                            삭제
+                        </Button>
+                    </Box>
+                    <Box width="50%">
+                        <Button
+                            variant="contained"
+                            onClick={() => onClose(false)}
+                            className={classes.decideButton}
+                            fullWidth
+                        >
+                            취소
+                        </Button>
+                    </Box>
+                </Box>
+            </Box>
+        </Dialog>
     );
 };
 

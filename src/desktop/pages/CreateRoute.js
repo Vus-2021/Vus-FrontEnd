@@ -223,6 +223,7 @@ const CreateRoute = props => {
                                 <Controller
                                     control={control}
                                     as={TextField}
+                                    type="number"
                                     defaultValue=""
                                     name="limitCount"
                                     label="최대 수용인원"
@@ -233,7 +234,7 @@ const CreateRoute = props => {
                                     rules={{
                                         required: true,
                                         validate: {
-                                            isNumber: value => !isNaN(value),
+                                            isNumber: value => !special_pattern.test(value),
                                             invalidForm: value => !blank_pattern.test(value),
                                         },
                                     }}

@@ -38,6 +38,7 @@ const CreateNotice = props => {
     };
 
     const createNoticeClick = data => {
+        console.log(data);
         createAdminNotice({
             variables: {
                 noticeType: 'ADMIN',
@@ -97,6 +98,11 @@ const CreateNotice = props => {
                                                 writer.setStyle(
                                                     'height',
                                                     '400px',
+                                                    editor.editing.view.document.getRoot(),
+                                                );
+                                                writer.setStyle(
+                                                    'overflow',
+                                                    'auto',
                                                     editor.editing.view.document.getRoot(),
                                                 );
                                             });

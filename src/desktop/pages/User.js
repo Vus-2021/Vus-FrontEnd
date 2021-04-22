@@ -9,6 +9,7 @@ import {
     MenuItem,
     FormControl,
     Paper,
+    Dialog,
 } from '@material-ui/core';
 import { DataGrid, GridToolbarContainer } from '@material-ui/data-grid';
 import { DeleteForever, Search } from '@material-ui/icons';
@@ -16,6 +17,7 @@ import { ExcelUpload, ExcelDownload } from '../components';
 import UserStyle from '../styles/UserStyle';
 import { useForm, Controller } from 'react-hook-form';
 import RegisterDialog from './Register';
+import DetailUserDialog from './DetailUser';
 import ExcelDialog from './Excel';
 import { GET_USERS } from '../gql/user/query';
 import { DELETE_USER } from '../gql/user/mutation';
@@ -37,6 +39,7 @@ const User = () => {
     const history = useHistory();
     const [selection, setSelection] = useState([]);
     const [registerDialog, setRegisterDialog] = useState(false); //등록 Dialog open 여부
+    const [detailUserDialog, setDetailUserDialog] = useState(false); //유저 상세정보 Dialog open 여부
     const [userRow, setUserRow] = useState([]);
     const [search, setSearch] = useState({
         name: null,
@@ -45,16 +48,13 @@ const User = () => {
     });
     const [excelName, setExcelName] = useState('바텍 통근버스_사용자 정보');
     const [page, setPage] = useState(0);
+    const [userData, setUserData] = useState({}); //유저 한명의 정보
+    const [deleteDialog, setDeleteDialog] = useState(false); //유저 삭제 확인 Dialog open 여부
 
     const { handleSubmit, control } = useForm();
 
     const { loading, data, refetch } = useQuery(GET_USERS, {
         fetchPolicy: 'no-cache',
-    });
-    const [deleteUser] = useMutation(DELETE_USER, {
-        onCompleted() {
-            refetch();
-        },
     });
 
     const searchClick = data => {
@@ -65,10 +65,9 @@ const User = () => {
         setPage(0);
     };
 
-    const deleteUserClick = () => {
-        deleteUser({ variables: { userId: selection } });
-        setSelection([]);
-        setPage(0);
+    const handleCellClick = row => {
+        setUserData(row);
+        setDetailUserDialog(true);
     };
 
     useEffect(() => {
@@ -168,13 +167,20 @@ const User = () => {
                 <Paper>
                     <Box width="100%" minHeight="500px" height="65vh">
                         <DataGrid
-                            columns={columns}
+                            columns={columns.map(column => ({
+                                ...column,
+                                disableClickEventBubbling: true,
+                            }))}
                             rows={userRow}
                             checkboxSelection
                             hideFooterSelectedRowCount
                             autoPageSize
                             onSelectionModelChange={newSelection => {
                                 setSelection(newSelection.selectionModel);
+                            }}
+                            onCellClick={cellClick => {
+                                const { field, row } = cellClick;
+                                if (field !== '__check__') handleCellClick(row);
                             }}
                             onPageChange={params => setPage(params.page)}
                             page={page}
@@ -185,7 +191,7 @@ const User = () => {
                             componentsProps={{
                                 toolbar: {
                                     selection: selection,
-                                    deleteUserClick: deleteUserClick,
+                                    deleteUserClick: () => setDeleteDialog(true),
                                     userRow: userRow,
                                     excelName: excelName,
                                     refetch: refetch,
@@ -206,6 +212,20 @@ const User = () => {
                 </Button>
             </Box>
             <RegisterDialog open={registerDialog} onClose={setRegisterDialog} refetch={refetch} />
+            <DetailUserDialog
+                open={detailUserDialog}
+                onClose={setDetailUserDialog}
+                userData={userData}
+                refetch={refetch}
+            />
+            <DeleteUsersDialog
+                open={deleteDialog}
+                onClose={setDeleteDialog}
+                setPage={setPage}
+                setSelection={setSelection}
+                refetch={refetch}
+                selection={selection}
+            />
         </Box>
     );
 };
@@ -293,6 +313,67 @@ const CustomToolbar = props => {
             </Box>
             <ExcelDialog open={excelDialog} onClose={setExcelDialog} refetch={refetch} />
         </GridToolbarContainer>
+    );
+};
+
+const DeleteUsersDialog = props => {
+    const { open, onClose, selection, refetch, setSelection, setPage } = props;
+    const classes = UserStyle();
+
+    const [deleteUser] = useMutation(DELETE_USER, {
+        onCompleted() {
+            refetch();
+            handleClose();
+        },
+    });
+
+    const handleClose = () => {
+        onClose(false);
+    };
+
+    const deleteClick = () => {
+        deleteUser({ variables: { userId: selection } });
+        setSelection([]);
+        setPage(0);
+    };
+
+    return (
+        <Dialog open={open} onClose={handleClose} fullWidth maxWidth="xs">
+            <Box px={3} py={2}>
+                <Box mb={2}>
+                    <Typography className={classes.warningTitle}>사용자 삭제</Typography>
+                </Box>
+                <Box mb={3}>
+                    <Typography className={classes.warningText}>
+                        선택한 <strong>{selection.length}명</strong>의 데이터가 사라집니다.
+                        <br />
+                        정말 삭제 하시겠습니까?
+                    </Typography>
+                </Box>
+                <Box display="flex" justifyContent="flex-end">
+                    <Box mr={2} width="50%">
+                        <Button
+                            variant="contained"
+                            onClick={deleteClick}
+                            className={classes.resetButton}
+                            fullWidth
+                        >
+                            삭제
+                        </Button>
+                    </Box>
+                    <Box width="50%">
+                        <Button
+                            variant="contained"
+                            onClick={() => onClose(false)}
+                            className={classes.decideButton}
+                            fullWidth
+                        >
+                            취소
+                        </Button>
+                    </Box>
+                </Box>
+            </Box>
+        </Dialog>
     );
 };
 

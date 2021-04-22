@@ -43,6 +43,30 @@ const UserStyle = makeStyles(theme => ({
         justifyContent: 'space-between',
         height: '30px',
     },
+    decideButton: {
+        width: '100%',
+        backgroundColor: '#008AEE',
+        color: 'white',
+        '&:hover': {
+            backgroundColor: '#008AEE',
+        },
+    },
+    resetButton: {
+        width: '100%',
+        backgroundColor: '#FF3A3A',
+        color: 'white',
+        '&:hover': {
+            backgroundColor: '#FF3A3A',
+        },
+    },
+    warningTitle: {
+        fontSize: '23px',
+        fontWeight: 600,
+    },
+    warningText: {
+        fontSize: '18px',
+        fontWeight: 400,
+    },
 }));
 
 export default UserStyle;
