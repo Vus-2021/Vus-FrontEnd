@@ -226,6 +226,26 @@ const SelectedTable = props => {
         }
     };
 
+    const LastSelection = () => {
+        let sortName = '';
+        switch (sortType) {
+            case 'registerDate':
+                sortName = '입사일';
+                break;
+            case 'applyDate':
+                sortName = '신청일';
+                break;
+            default:
+                sortName = '랜덤';
+        }
+
+        if (selected.list.length === 0) {
+            return `비어 있음 (당첨순서: ${sortName})`;
+        } else {
+            return `그 외 (당첨순서: ${sortName})`;
+        }
+    };
+
     return (
         <Box mx={1} display="flex">
             <Box width="20%" mr={0.2}>
@@ -251,6 +271,11 @@ const SelectedTable = props => {
                                     </TableCell>
                                 </TableRow>
                             ))}
+                            <TableRow>
+                                <TableCell align="center" className={classes.tableBodyCell}>
+                                    {selected.list.length + 1}
+                                </TableCell>
+                            </TableRow>
                         </TableBody>
                     </Table>
                 </TableContainer>
@@ -280,57 +305,64 @@ const SelectedTable = props => {
                                 </TableHead>
 
                                 <TableBody component="div">
-                                    {selected.list.length > 0 ? (
-                                        selected.list.map((data, index) => (
-                                            <TableRow key={data.id} component="div">
-                                                <Draggable draggableId={data.id} index={index}>
-                                                    {provided => (
-                                                        <TableCell
-                                                            ref={provided.innerRef}
-                                                            {...provided.draggableProps}
-                                                            {...provided.dragHandleProps}
-                                                            align="center"
-                                                            component="div"
-                                                            className={classes.tableBodyCell}
-                                                        >
-                                                            {data.content}
-                                                            {data.content === '입사일 기준' && (
-                                                                <React.Fragment>
-                                                                    &nbsp;(&nbsp;
-                                                                    <TextField
-                                                                        value={monthArg}
-                                                                        variant="outlined"
-                                                                        onChange={monthChange}
-                                                                        inputProps={{
-                                                                            style: {
-                                                                                padding:
-                                                                                    '2px 5px 2px 5px',
-                                                                                textAlign: 'right',
-                                                                            },
-                                                                        }}
-                                                                        className={
-                                                                            classes.monthText
-                                                                        }
-                                                                    />
-                                                                    개월 이내)
-                                                                </React.Fragment>
-                                                            )}
-                                                        </TableCell>
-                                                    )}
-                                                </Draggable>
-                                            </TableRow>
-                                        ))
-                                    ) : (
-                                        <TableRow component="div">
-                                            <TableCell
-                                                component="div"
-                                                align="center"
-                                                style={{ borderBottom: 'none' }}
-                                            >
-                                                비어 있음 (기준 : {sortType})
-                                            </TableCell>
+                                    {selected.list.map((data, index) => (
+                                        <TableRow key={data.id} component="div">
+                                            <Draggable draggableId={data.id} index={index}>
+                                                {provided => (
+                                                    <TableCell
+                                                        ref={provided.innerRef}
+                                                        {...provided.draggableProps}
+                                                        {...provided.dragHandleProps}
+                                                        align="center"
+                                                        component="div"
+                                                        className={classes.tableBodyCell}
+                                                    >
+                                                        {data.content}
+                                                        {data.content === '입사일 기준' && (
+                                                            <React.Fragment>
+                                                                &nbsp;(&nbsp;
+                                                                <TextField
+                                                                    value={monthArg}
+                                                                    variant="outlined"
+                                                                    onChange={monthChange}
+                                                                    inputProps={{
+                                                                        style: {
+                                                                            padding:
+                                                                                '2px 5px 2px 5px',
+                                                                            textAlign: 'right',
+                                                                        },
+                                                                    }}
+                                                                    className={classes.monthText}
+                                                                />
+                                                                개월 이내)
+                                                            </React.Fragment>
+                                                        )}
+                                                    </TableCell>
+                                                )}
+                                            </Draggable>
                                         </TableRow>
-                                    )}
+                                    ))}
+                                    <TableRow component="div">
+                                        <Draggable
+                                            draggableId="3"
+                                            isDragDisabled
+                                            index={selected.list.length}
+                                        >
+                                            {provided => (
+                                                <TableCell
+                                                    component="div"
+                                                    align="center"
+                                                    style={{ borderBottom: 'none' }}
+                                                    ref={provided.innerRef}
+                                                    {...provided.draggableProps}
+                                                    {...provided.dragHandleProps}
+                                                    className={classes.tableBodyCell}
+                                                >
+                                                    <LastSelection />
+                                                </TableCell>
+                                            )}
+                                        </Draggable>
+                                    </TableRow>
                                     {provided.placeholder}
                                 </TableBody>
                             </Table>

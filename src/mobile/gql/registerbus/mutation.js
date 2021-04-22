@@ -1,8 +1,18 @@
 import gql from 'graphql-tag';
 
 export const APPLY_ROUTE = gql`
-    mutation applyRoute($route: String!, $partitionKey: String!, $month: String!) {
-        applyRoute(route: $route, partitionKey: $partitionKey, month: $month) {
+    mutation applyRoute(
+        $route: String!
+        $partitionKey: String!
+        $month: String!
+        $detailPartitionKey: String!
+    ) {
+        applyRoute(
+            route: $route
+            partitionKey: $partitionKey
+            month: $month
+            detailPartitionKey: $detailPartitionKey
+        ) {
             success
             message
         }

@@ -84,7 +84,7 @@ const DetailNotice = props => {
                     <Cancel className={classes.iconStyle} />
                 </IconButton>
             </Box>
-            <Box px={6} pt={2} pb={4}>
+            <Box px={6} pt={2} pb={4} overflow="auto">
                 <form onSubmit={handleSubmit(reviseNoticeClick)}>
                     <Box height="80px" width="100%">
                         <Controller

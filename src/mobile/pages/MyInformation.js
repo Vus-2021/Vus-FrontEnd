@@ -1,12 +1,14 @@
-/* eslint-disable no-unused-vars */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Header2 from '../layout/Header2';
-import { Box, Typography, Divider, Chip } from '@material-ui/core';
+import { Box, Typography, Divider, Chip, IconButton, Collapse } from '@material-ui/core';
+import { ExpandMore, ExpandLess } from '@material-ui/icons';
 import MyInformationStyle from '../styles/MyInformationStyle';
 
 const MyInformation = ({ history, location }) => {
     const classes = MyInformationStyle();
     const { userData, userBusData } = location.state;
+
+    const [openIndex, setOpenIndex] = useState(-1);
 
     useEffect(() => {
         if (!localStorage.getItem('accessToken')) history.push('/');
@@ -63,10 +65,15 @@ const MyInformation = ({ history, location }) => {
                             <React.Fragment key={index}>
                                 <Box
                                     display="flex"
-                                    px={3}
+                                    pl={3}
+                                    pr={1}
                                     py={1}
                                     alignItems="center"
                                     justifyContent="space-between"
+                                    onClick={() => {
+                                        if (index === openIndex) setOpenIndex(-1);
+                                        else setOpenIndex(index);
+                                    }}
                                 >
                                     <Box display="flex" alignItems="center">
                                         <Typography className={classes.textTitle}>
@@ -74,14 +81,52 @@ const MyInformation = ({ history, location }) => {
                                         </Typography>
                                         <Typography>{data.month}</Typography>
                                     </Box>
-                                    <Box>
-                                        <ChipStyle
-                                            state={data.state}
-                                            cancel={data.isCancellation}
-                                        />
+                                    <Box display="flex" alignItems="center">
+                                        <Box>
+                                            <ChipStyle
+                                                state={data.state}
+                                                cancel={data.isCancellation}
+                                            />
+                                        </Box>
+                                        <IconButton className={classes.iconButton}>
+                                            {index === openIndex ? (
+                                                <ExpandLess fontSize="inherit" />
+                                            ) : (
+                                                <ExpandMore fontSize="inherit" />
+                                            )}
+                                        </IconButton>
                                     </Box>
                                 </Box>
                                 <Divider />
+                                <Collapse in={index === openIndex} timeout="auto" unmountOnExit>
+                                    <Box
+                                        pl={4}
+                                        pr={2}
+                                        pb={1}
+                                        display="flex"
+                                        justifyContent="space-between"
+                                    >
+                                        <Box display="flex" alignItems="center" width="20%">
+                                            <Typography className={classes.busStopTitle}>
+                                                정류장
+                                            </Typography>
+                                        </Box>
+
+                                        <Box
+                                            width="80%"
+                                            display="flex"
+                                            flexDirection="column"
+                                            textAlign="right"
+                                        >
+                                            <Typography className={classes.busStopContent}>
+                                                {data.location}
+                                            </Typography>
+                                            <Typography className={classes.busStopContent}>
+                                                {data.boardingTime}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                </Collapse>
                             </React.Fragment>
                         ))
                 ) : (

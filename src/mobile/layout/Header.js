@@ -17,26 +17,28 @@ const Header = props => {
                     <Box display="flex" onClick={() => window.location.reload()}>
                         <img src={logo} width="127px" height="33px" alt="nothing" />
                     </Box>
-
                     <Box display="flex" alignSelf="flex-end">
-                        <Box component={ButtonBase}>
-                            <Typography
-                                className={classes.loginText}
-                                onClick={() => {
-                                    if (isLogin) {
-                                        history.push({
-                                            pathname: '/myinfo',
-                                            state: {
-                                                userData: userData,
-                                                userBusData: userBusData,
-                                            },
-                                        });
-                                    } else setLoginDialog(true);
-                                }}
-                            >
-                                {isLogin ? '내 정보 조회' : '로그인이 필요합니다.'}
-                            </Typography>
-                        </Box>
+                        {isLogin != null && (
+                            <Box component={ButtonBase}>
+                                <Typography
+                                    className={classes.loginText}
+                                    onClick={() => {
+                                        if (isLogin) {
+                                            history.push({
+                                                pathname: '/myinfo',
+                                                state: {
+                                                    userData: userData,
+                                                    userBusData: userBusData,
+                                                },
+                                            });
+                                        } else setLoginDialog(true);
+                                    }}
+                                >
+                                    {isLogin ? '내 정보 조회' : '로그인이 필요합니다.'}
+                                </Typography>
+                            </Box>
+                        )}
+
                         {isLogin && (
                             <Box ml={1} display="flex" alignItems="center">
                                 <AccountCircle className={classes.iconSize} />

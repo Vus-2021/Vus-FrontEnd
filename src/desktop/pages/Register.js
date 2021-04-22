@@ -66,7 +66,7 @@ const companyType = [
 const Register = props => {
     const classes = RegisterStyle();
     const { open, onClose, refetch } = props;
-    const { handleSubmit, control, errors, getValues, setError, clearErrors, watch } = useForm();
+    const { handleSubmit, control, errors, setError, getValues, clearErrors, watch } = useForm();
 
     const [boardNum, setNumber] = useState(0);
     const [showPwd, setShowPwd] = useState(false); //비밀번호 입력 가시화
@@ -81,8 +81,8 @@ const Register = props => {
         },
     });
 
-    const blank_pattern = /\s/g;
-    const special_pattern = /[`~!@#$%^&*|\\'";:/=-{}?<>,.]/g;
+    const blank_pattern = /\s/gi;
+    const special_pattern = /[`~!@#$%^&*|'";:/={}?<>,.-]/gi;
 
     const registerUser = data => {
         if (boardNum !== 2) {
@@ -122,18 +122,23 @@ const Register = props => {
         setSnackbar(false);
     };
 
-    const existAlready = value => {
+    const existAlready = async value => {
+        const blank = await blank_pattern.test(value);
+        const special = await special_pattern.test(value);
+
         if (value === '') {
             setError('userId', {
                 type: 'required',
             });
-        } else if (blank_pattern.test(value) || special_pattern.test(value)) {
-            setError('userId', {
-                type: 'invalidForm',
-            });
         } else {
-            checkUser({ variables: { userId: value, sortKey: '#user' } });
-            setTmpUserId(value);
+            if (blank || special) {
+                setError('userId', {
+                    type: 'invalidForm',
+                });
+            } else {
+                checkUser({ variables: { userId: value, sortKey: '#user' } });
+                setTmpUserId(value);
+            }
         }
     };
 
@@ -156,7 +161,6 @@ const Register = props => {
 
     const UserIdHelperText = props => {
         const { errors } = props;
-
         if (errors) {
             const { type } = errors;
             if (type === 'required') return '아이디를 입력해주세요.';
@@ -180,7 +184,7 @@ const Register = props => {
 
     return (
         <Dialog open={open} onClose={handleClose} TransitionComponent={Transition}>
-            <MiniHeader handleClose={handleClose} headerText="사용자 등록" width="400px" />
+            <MiniHeader handleClose={handleClose} headerText="사용자 등록" width="410px" />
             <Box p={4}>
                 <Box mb={5}>
                     <Tabs
@@ -207,7 +211,7 @@ const Register = props => {
                 <Box mb={2}>
                     <form onSubmit={handleSubmit(registerUser)}>
                         <Box height="70px" style={{ display: 'flex' }}>
-                            <Box height="100%" width="70%" mr={1}>
+                            <Box height="100%" width="73%" mr={1}>
                                 <Controller
                                     as={TextField}
                                     name="userId"
@@ -238,14 +242,16 @@ const Register = props => {
                                                     blank_pattern.test(value) ||
                                                     special_pattern.test(value)
                                                 ) {
-                                                    return '특수문자나 공백은 입력할 수 없습니다.';
+                                                    return '특수문자나 공백은 입력할 수 없습니다!';
+                                                } else {
+                                                    return false;
                                                 }
                                             },
                                         },
                                     }}
                                 />
                             </Box>
-                            <Box height="100%" width="30%">
+                            <Box height="100%" width="27%">
                                 <Button
                                     className={classes.checkIdButton}
                                     fullWidth

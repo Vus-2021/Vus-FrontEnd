@@ -38,7 +38,6 @@ const AdminHome = ({ history }) => {
     useEffect(() => {
         if (data) {
             const { success, message, data: token } = data.signin;
-            console.log(data);
             if (success) {
                 localStorage.setItem('accessToken', token.accessToken);
                 localStorage.setItem('refreshToken', token.refreshToken);

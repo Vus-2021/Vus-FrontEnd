@@ -19,6 +19,8 @@ export const GET_MY_INFO = gql`
                     month
                     state
                     isCancellation
+                    boardingTime
+                    location
                 }
             }
         }
@@ -64,22 +66,26 @@ export const GET_ADMIN_NOTICE = gql`
 `;
 
 export const GET_DETAIL_ROUTES = gql`
-    query getDetailRoutes($route: String!) {
-        getDetailRoutes(route: $route) {
+    query getDetailRoutes($route: String!, $month: String) {
+        getDetailRoutes(route: $route, month: $month) {
             success
             message
             data {
                 partitionKey
                 boardingTime
                 location
+                passengers {
+                    name
+                    phoneNumber
+                }
             }
         }
     }
 `;
 
 export const GET_BUS_LOCATION = gql`
-    query getBusLocation($route: String!, $currentLocation: Boolean) {
-        getDetailRoutes(route: $route, currentLocation: $currentLocation) {
+    query getBusLocation($route: String!, $currentLocation: Boolean, $month: String) {
+        getDetailRoutes(route: $route, currentLocation: $currentLocation, month: $month) {
             success
             message
             data {

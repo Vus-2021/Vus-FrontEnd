@@ -15,6 +15,7 @@ import {
     Divider,
     Collapse,
     ButtonBase,
+    Button,
 } from '@material-ui/core';
 import {
     Menu,
@@ -68,7 +69,13 @@ const Header = props => {
                     )}
 
                     <Box className={classes.logoBox}>
-                        <img src={logo} width="115px" height="30px" alt="nothing" />
+                        <Button
+                            onClick={() => {
+                                window.location.reload();
+                            }}
+                        >
+                            <img src={logo} width="115px" height="30px" alt="nothing" />
+                        </Button>
                     </Box>
 
                     {adminName && (

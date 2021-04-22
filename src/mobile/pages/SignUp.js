@@ -71,8 +71,8 @@ const SignUp = props => {
     const [checkUser, { data }] = useLazyQuery(CHECK_USERID, { fetchPolicy: 'no-cache' });
     const [signupUser] = useMutation(SIGNUP_USER);
 
-    const blank_pattern = /\s/g;
-    const special_pattern = /[`~!@#$%^&*|\\'";:/()=-{}?<>,.]/g;
+    const blank_pattern = /\s/gi;
+    const special_pattern = /[`~!@#$%^&*|'";:/={}?<>,.-]/gi;
 
     //Dialog창 닫기
     const handleClose = () => {
@@ -87,19 +87,23 @@ const SignUp = props => {
     };
 
     //중복확인 여부 검사
-    const existAlready = value => {
+    const existAlready = async value => {
+        const blank = await blank_pattern.test(value);
+        const special = await special_pattern.test(value);
+
         if (value === '') {
             setError('userId', {
                 type: 'required',
             });
-        } else if (blank_pattern.test(value) || special_pattern.test(value)) {
-            setError('userId', {
-                type: 'invalidForm',
-            });
         } else {
-            checkUser({ variables: { userId: value, sortKey: '#user' } });
-            // updateQuery({ variables: { userId: value } });
-            setTmpUserId(value);
+            if (blank || special) {
+                setError('userId', {
+                    type: 'invalidForm',
+                });
+            } else {
+                checkUser({ variables: { userId: value, sortKey: '#user' } });
+                setTmpUserId(value);
+            }
         }
     };
 

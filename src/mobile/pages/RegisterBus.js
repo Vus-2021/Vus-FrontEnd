@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from 'react';
 import Header2 from '../layout/Header2';
 import {
@@ -116,13 +115,15 @@ const Register = props => {
     const classes = RegisterStyle();
 
     const [route, setRoute] = useState({
+        //applyRoute에 mutation할 state
         routeName: routeInfo.length === 0 ? '' : routeInfo[0].route,
         partitionKey: routeInfo.length === 0 ? '' : routeInfo[0].partitionKey,
+        detailPartitionKey: '',
     });
     const [month, setMonth] = useState('');
-    const [location, setLocation] = useState('');
     const [routeMonth, setRouteMonth] = useState([]); // 노선별 신청 가능 월 list
     const [locationList, setLocationList] = useState([]); // 버스 정류장 list
+    const [locationError, setLocationError] = useState(false); //버스 정류장 미선택시 에러
 
     const [getRouteByMonth, { data, refetch }] = useLazyQuery(GET_ROUTE_BY_MONTH);
     const [getDetailRoutes, { data: routeData, refetch: refetchRoute }] = useLazyQuery(
@@ -131,27 +132,36 @@ const Register = props => {
     const [applyRoute, { data: applyData }] = useMutation(APPLY_ROUTE, {
         onCompleted() {
             userRefetch();
+            setRoute({
+                routeName: routeInfo.length === 0 ? '' : routeInfo[0].route,
+                partitionKey: routeInfo.length === 0 ? '' : routeInfo[0].partitionKey,
+                detailPartitionKey: '',
+            });
         },
     });
 
     const changeRoute = e => {
         const partitionKey = e.target.value.split('+')[0];
         const routeName = e.target.value.split('+')[1];
-        setRoute({ partitionKey: partitionKey, routeName: routeName });
+        setRoute({ partitionKey: partitionKey, routeName: routeName, detailPartitionKey: '' });
         refetch({ partitionKey: partitionKey });
         refetchRoute({ route: routeName });
-        setLocation('');
     };
 
     const registerSubmit = () => {
-        console.log(route.partitionKey);
-        applyRoute({
-            variables: {
-                route: route.routeName,
-                partitionKey: route.partitionKey,
-                month: month,
-            },
-        });
+        if (route.detailPartitionKey === '') {
+            setLocationError(true);
+        } else {
+            applyRoute({
+                variables: {
+                    route: route.routeName,
+                    partitionKey: route.partitionKey,
+                    month: month,
+                    detailPartitionKey: route.detailPartitionKey,
+                },
+            });
+            setLocationError(false);
+        }
     };
 
     useEffect(() => {
@@ -247,16 +257,21 @@ const Register = props => {
                     </TextField>
                 )}
             </Box>
-            <Box mb={4}>
+            <Box mb={2}>
                 {locationList.length > 0 && (
                     <TextField
                         select
-                        value={location}
-                        onChange={e => setLocation(e.target.value)}
+                        value={route.detailPartitionKey}
+                        onChange={e => {
+                            setRoute({ ...route, detailPartitionKey: e.target.value });
+                            setLocationError(false);
+                        }}
                         variant="outlined"
                         label="정류장 명"
                         fullWidth
                         size="small"
+                        error={locationError}
+                        helperText={locationError ? '정류장을 선택해주세요.' : ' '}
                     >
                         {locationList.map((data, index) => {
                             if (index !== locationList.length - 1)
@@ -282,8 +297,9 @@ const Register = props => {
 const Cancel = props => {
     const { userBusData, userRefetch, setSnackbar } = props;
     const classes = RegisterStyle();
-    const routeName = userBusData.length === 0 ? '' : userBusData[0].route;
+    const [routeIndex, setRouteIndex] = useState(0);
     const [month, setMonth] = useState(userBusData.length === 0 ? '' : userBusData[0].month);
+    const routeName = userBusData.length === 0 ? '' : userBusData[routeIndex].route;
 
     const [cancelRoute, { data }] = useMutation(CANCEL_ROUTE, {
         onCompleted() {
@@ -333,11 +349,15 @@ const Cancel = props => {
                             fullWidth
                             variant="outlined"
                             size="small"
-                            value={month}
-                            onChange={e => setMonth(e.target.value)}
+                            value={month + '+' + routeIndex}
+                            onChange={e => {
+                                const data = e.target.value.split('+');
+                                setMonth(data[0]);
+                                setRouteIndex(data[1]);
+                            }}
                         >
-                            {userBusData.map(data => (
-                                <MenuItem key={data.month} value={data.month}>
+                            {userBusData.map((data, index) => (
+                                <MenuItem key={data.month} value={data.month + '+' + index}>
                                     {dayjs(data.month).format('YYYY년 MM월')}
                                 </MenuItem>
                             ))}

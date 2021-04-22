@@ -14,6 +14,7 @@ import * as serviceWorker from './serviceWorkerRegistration';
 
 const uploadLink = createUploadLink({
     uri: 'https://61si4rkyc6.execute-api.ap-northeast-2.amazonaws.com/dev/graphql',
+    // uri: 'http://172.31.99.49:4000',
 });
 
 const authMiddleware = new ApolloLink((operation, forward) => {

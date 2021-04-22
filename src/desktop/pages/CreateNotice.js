@@ -38,7 +38,6 @@ const CreateNotice = props => {
     };
 
     const createNoticeClick = data => {
-        console.log(data);
         createAdminNotice({
             variables: {
                 noticeType: 'ADMIN',
@@ -63,7 +62,7 @@ const CreateNotice = props => {
                     <Cancel className={classes.iconStyle} />
                 </IconButton>
             </Box>
-            <Box px={6} pt={2} pb={4}>
+            <Box px={6} pt={2} pb={4} overflow="auto">
                 <form onSubmit={handleSubmit(createNoticeClick)}>
                     <Box height="100px" width="100%">
                         <Controller

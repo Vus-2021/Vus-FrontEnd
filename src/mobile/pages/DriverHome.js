@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Header from '../layout/Header';
 import DriverHomeStyle from '../styles/DriverHomeStyle';
 import LogInDialog from './LogIn';
+import PassengersDialog from './Passengers';
 import { Box, Button, Typography, ButtonBase, Paper, CircularProgress } from '@material-ui/core';
 import {
     Timeline,
@@ -19,6 +20,7 @@ import { GET_MY_INFO, GET_DETAIL_ROUTES, GET_BUS_LOCATION } from '../gql/home/qu
 import { CREATE_DRIVER_LOCATION } from '../gql/home/mutation';
 import clsx from 'clsx';
 import { useHistory } from 'react-router-dom';
+import * as dayjs from 'dayjs';
 
 const DriverHome = ({ history }) => {
     const classes = DriverHomeStyle();
@@ -88,14 +90,19 @@ const DriverHome = ({ history }) => {
         if (localStorage.getItem('accessToken')) {
             if (myData) {
                 const { success, message, data } = myData.getMyInformation;
-                if (success) {
+                if (success && data !== null) {
                     setUserData(data);
                     if (data.routeInfo[0]) {
+                        const month = dayjs().format('YYYY-MM');
                         getDetailRoutes({
-                            variables: { route: data.routeInfo[0].route },
+                            variables: { route: data.routeInfo[0].route, month: month },
                         });
                         getBusLocation({
-                            variables: { route: data.routeInfo[0].route, currentLocation: true },
+                            variables: {
+                                route: data.routeInfo[0].route,
+                                currentLocation: true,
+                                month: month,
+                            },
                         });
                     }
                 } else console.log(message);
@@ -115,7 +122,6 @@ const DriverHome = ({ history }) => {
     useEffect(() => {
         if (busLocationData) {
             const { success, message, data } = busLocationData.getDetailRoutes;
-            console.log(data);
             if (success && data[0]) {
                 setWhere(data[0].locationIndex);
             } else console.log(message);
@@ -180,9 +186,9 @@ const DriverHome = ({ history }) => {
                                         width="100%"
                                         overflow="auto"
                                     >
-                                        <Box py={1}>
+                                        <Box py={1} width="100%">
                                             {detailRoutes.length > 0 ? (
-                                                <Timeline className={classes.timeLine}>
+                                                <Timeline>
                                                     {detailRoutes.map((data, index) => (
                                                         <TimelineItem key={data.location}>
                                                             <TimelineOppositeContent
@@ -327,6 +333,8 @@ const BusLocationTimeLine = props => {
     const classes = DriverHomeStyle();
     const timeline = useRef();
 
+    const [openDialog, setOpenDialog] = useState(false);
+
     useEffect(() => {
         if (timeline.current) {
             timeline.current.scrollIntoView({
@@ -364,7 +372,13 @@ const BusLocationTimeLine = props => {
                 {index !== length - 1 && <TimelineConnector />}
             </TimelineSeparator>
             <TimelineContent>
-                <Box minHeight="28vh">
+                <Box
+                    minHeight="30vh"
+                    display="flex"
+                    flexDirection="column"
+                    alignItems="center"
+                    width="100%"
+                >
                     <Paper
                         className={classes.timeLineContentPaper}
                         elevation={where === index ? 20 : 3}
@@ -380,8 +394,43 @@ const BusLocationTimeLine = props => {
                             </Typography>
                         </Box>
                     </Paper>
+                    {index !== length - 1 && (
+                        <Box mt={1}>
+                            <Paper className={classes.timeLineContentPaper}>
+                                <Box px={2} py={1} display="flex" flexDirection="column">
+                                    <Typography
+                                        className={
+                                            where === index
+                                                ? classes.passengerBigText
+                                                : classes.passengerText
+                                        }
+                                    >
+                                        탑승자 수 : {data.passengers ? data.passengers.length : 0}명
+                                    </Typography>
+                                    {data.passengers.length > 0 && (
+                                        <Button
+                                            className={
+                                                where === index
+                                                    ? classes.detailBigButton
+                                                    : classes.detailButton
+                                            }
+                                            onClick={() => setOpenDialog(true)}
+                                        >
+                                            자세히 보기
+                                        </Button>
+                                    )}
+                                </Box>
+                            </Paper>
+                        </Box>
+                    )}
                 </Box>
             </TimelineContent>
+            <PassengersDialog
+                open={openDialog}
+                onClose={setOpenDialog}
+                passengers={data.passengers}
+                location={data.location}
+            />
         </React.Fragment>
     );
 };

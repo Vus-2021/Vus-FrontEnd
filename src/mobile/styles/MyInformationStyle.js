@@ -55,6 +55,18 @@ const MyInformationStyle = makeStyles(theme => ({
         textAlign: 'center',
         color: 'white',
     },
+    iconButton: {
+        padding: '5px',
+    },
+    busStopTitle: {
+        fontSize: '16px',
+        fontWeight: '600',
+        color: 'grey',
+    },
+    busStopContent: {
+        fontSize: '15px',
+        color: 'grey',
+    },
 }));
 
 export default MyInformationStyle;

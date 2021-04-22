@@ -29,8 +29,8 @@ const CreateRoute = props => {
     const [imageName, setImageName] = useState('노선 이미지 업로드');
     const [imgPreview, setImgPreview] = useState('');
 
-    const blank_pattern = /\s/g;
-    const special_pattern = /[`~!@#$%^&*|\\'";:/=-{}?<>,.()]/g;
+    const blank_pattern = /\s/gi;
+    const special_pattern = /[`~!@#$%^&*|'";:/={}?<>,.-]/gi;
 
     const { data } = useQuery(GET_USERS, {
         variables: { type: 'DRIVER' },
@@ -127,11 +127,10 @@ const CreateRoute = props => {
                                     rules={{
                                         required: '노선 이름을 입력해주세요.',
                                         validate: {
-                                            invalidForm: value => {
-                                                if (
-                                                    blank_pattern.test(value) ||
-                                                    special_pattern.test(value)
-                                                ) {
+                                            invalidForm: async value => {
+                                                const blank = await blank_pattern.test(value);
+                                                const special = await special_pattern.test(value);
+                                                if (blank || special) {
                                                     return '특수문자나 공백은 입력할 수 없습니다.';
                                                 }
                                             },
@@ -210,8 +209,9 @@ const CreateRoute = props => {
                                     rules={{
                                         required: '차량번호를 입력해주세요.',
                                         validate: {
-                                            invalidForm: value => {
-                                                if (special_pattern.test(value))
+                                            invalidForm: async value => {
+                                                const special = await special_pattern.test(value);
+                                                if (special)
                                                     return '특수문자는 입력할 수 없습니다.';
                                             },
                                         },

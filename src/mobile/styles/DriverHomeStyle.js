@@ -104,6 +104,24 @@ const DriverHomeStyle = makeStyles(theme => ({
         fontSize: '20px',
         fontWeight: 600,
     },
+    passengerText: {
+        fontSize: '13px',
+        color: 'grey',
+    },
+    passengerBigText: {
+        fontSize: '16px',
+        color: 'black',
+        fontWeight: 600,
+    },
+    detailButton: {
+        padding: 0,
+        fontSize: '13px',
+        color: 'grey',
+    },
+    detailBigButton: {
+        padding: 0,
+        fontSize: '15px',
+    },
 }));
 
 export default DriverHomeStyle;

@@ -31,7 +31,6 @@ const Admin = () => {
         if (data) {
             const { success, data: routeName } = data.getRoutesInfo;
             if (success) {
-                console.log('routeName fetched');
                 setRouteItems(routeName);
             } else console.log('failure');
         }
