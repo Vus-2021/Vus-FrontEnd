@@ -18,10 +18,9 @@
             "sizes": "512x512"
         }
     ],
-    "start_url": "index.html",
+    "start_url": "https://test-vus.vsmart00.com",
     "display": "standalone",
     "theme_color": "#000000",
     "background_color": "#ffffff",
-    "scope": ".",
     "orientation": "portrait-primary"
 }
