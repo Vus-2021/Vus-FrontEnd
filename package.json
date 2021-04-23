@@ -62,9 +62,9 @@
         "xlsx": "^0.16.9"
     },
     "scripts": {
-        "start": "craco start",
-        "build": "craco build",
-        "test": "craco test",
+        "start": "react-scripts start",
+        "build": "react-scripts build",
+        "test": "react-scripts test",
         "eject": "react-scripts eject",
         "deploy": "aws s3 sync ./build s3://test-vus-frontend",
         "invalidate": "aws cloudfront create-invalidation --distribution-id E3Q16T7MHYSYQ2 --paths / /index.html /static/js /static/css /manifest.json"
