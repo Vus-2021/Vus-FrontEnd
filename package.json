@@ -32,6 +32,7 @@
         "file-saver": "^2.0.5",
         "fs": "0.0.1-security",
         "graphql": "^15.5.0",
+        "raw-loader": "^3.1.0",
         "react": "^17.0.1",
         "react-apollo": "^3.1.5",
         "react-aws-s3": "^1.5.0",
