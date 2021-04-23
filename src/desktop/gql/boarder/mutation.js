@@ -54,3 +54,22 @@ export const INIT_PASSENGERS = gql`
         }
     }
 `;
+
+export const UPDATE_APPLY_USER = gql`
+    mutation updateApplyUser(
+        $userId: String!
+        $month: String!
+        $state: String!
+        $isCancellation: Boolean!
+    ) {
+        updateApplyUser(
+            userId: $userId
+            month: $month
+            state: $state
+            isCancellation: $isCancellation
+        ) {
+            success
+            message
+        }
+    }
+`;

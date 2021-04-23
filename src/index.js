@@ -4,13 +4,12 @@ import './index.css';
 import './ckeditor.css';
 import App from './App';
 import { BrowserRouter } from 'react-router-dom';
-import reportWebVitals from './reportWebVitals';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloClient } from 'apollo-client';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { ApolloLink, concat } from 'apollo-boost';
 import { createUploadLink } from 'apollo-upload-client';
-import * as serviceWorker from './serviceWorkerRegistration';
+import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 
 const uploadLink = createUploadLink({
     uri: 'https://61si4rkyc6.execute-api.ap-northeast-2.amazonaws.com/dev/graphql',
@@ -42,6 +41,4 @@ ReactDOM.render(
     </ApolloProvider>,
     document.getElementById('root'),
 );
-serviceWorker.unregister();
-
-reportWebVitals();
+serviceWorkerRegistration.register();

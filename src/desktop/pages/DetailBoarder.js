@@ -13,26 +13,49 @@ import {
 } from '@material-ui/core';
 import MiniHeader from '../layout/MiniHeader';
 import BoarderStyle from '../styles/BoarderStyle';
+import { useMutation } from '@apollo/react-hooks';
+import { UPDATE_APPLY_USER } from '../gql/boarder/mutation';
 
 const DetailBoarder = props => {
-    const { open, onClose, boarderData } = props;
+    const { open, onClose, boarderData, month, refetch } = props;
     const classes = BoarderStyle();
 
     const [state, setState] = useState(boarderData.state);
+
+    const [updateApplyUser, { data }] = useMutation(UPDATE_APPLY_USER, {
+        onCompleted() {
+            refetch();
+            handleClose();
+        },
+    });
 
     const handleClose = () => {
         onClose(false);
     };
 
     useEffect(() => {
-        if (boarderData.isCancellation === 'true') {
+        if (boarderData.isCancellation) {
             setState('cancel');
         } else setState(boarderData.state);
     }, [boarderData]);
 
     const updateClick = () => {
-        console.log(state);
+        updateApplyUser({
+            variables: {
+                userId: boarderData.userId,
+                month: month,
+                state: state === 'cancel' ? 'pending' : state,
+                isCancellation: state === 'cancel' ? true : false,
+            },
+        });
     };
+
+    useEffect(() => {
+        if (data) {
+            const { success, message } = data.updateApplyUser;
+            if (!success) console.log(message);
+        }
+    }, [data]);
 
     return (
         <Dialog open={open} onClose={handleClose}>

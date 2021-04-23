@@ -496,6 +496,7 @@ const Boarder = props => {
                 onClose={setDetailDialog}
                 refetch={refetch}
                 boarderData={boarderData}
+                month={standard.month}
             />
         </Box>
     );

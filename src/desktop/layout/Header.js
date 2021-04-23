@@ -82,7 +82,7 @@ const Header = props => {
                         <React.Fragment>
                             <Box mr={3} display="flex" alignItems="center">
                                 <Typography className={classes.adminId}>
-                                    {adminName} 관리자님 &nbsp;
+                                    바텍 통근버스(V-us) 관리자용 &nbsp;
                                 </Typography>
                                 <AccountCircle fontSize="large" />
                             </Box>
