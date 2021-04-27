@@ -255,12 +255,14 @@ const UpdateRouteDialog = props => {
                                             style={{ display: 'none' }}
                                             onChange={e => {
                                                 const file = e.target.files[0];
-                                                const reader = new FileReader();
-                                                props.onChange(file);
-                                                setImageName(file.name);
-                                                reader.onloadend = () =>
-                                                    setChangedImage(reader.result);
-                                                reader.readAsDataURL(file);
+                                                if (file) {
+                                                    const reader = new FileReader();
+                                                    props.onChange(file);
+                                                    setImageName(file.name);
+                                                    reader.onloadend = () =>
+                                                        setChangedImage(reader.result);
+                                                    reader.readAsDataURL(file);
+                                                }
                                             }}
                                         />
                                         <label htmlFor="contained-button-file">
@@ -492,11 +494,14 @@ const CreateDialog = props => {
                                         style={{ display: 'none' }}
                                         onChange={e => {
                                             const file = e.target.files[0];
-                                            const reader = new FileReader();
-                                            props.onChange(file);
-                                            setImageName(file.name);
-                                            reader.onloadend = () => setImgPreview(reader.result);
-                                            reader.readAsDataURL(file);
+                                            if (file) {
+                                                const reader = new FileReader();
+                                                props.onChange(file);
+                                                setImageName(file.name);
+                                                reader.onloadend = () =>
+                                                    setImgPreview(reader.result);
+                                                reader.readAsDataURL(file);
+                                            }
                                         }}
                                     />
                                     <label htmlFor="contained-button-file">
@@ -662,11 +667,14 @@ const UpdateDialog = props => {
                                         style={{ display: 'none' }}
                                         onChange={e => {
                                             const file = e.target.files[0];
-                                            const reader = new FileReader();
-                                            props.onChange(file);
-                                            setImageName(file.name);
-                                            reader.onloadend = () => setChangedImage(reader.result);
-                                            reader.readAsDataURL(file);
+                                            if (file) {
+                                                const reader = new FileReader();
+                                                props.onChange(file);
+                                                setImageName(file.name);
+                                                reader.onloadend = () =>
+                                                    setChangedImage(reader.result);
+                                                reader.readAsDataURL(file);
+                                            }
                                         }}
                                     />
                                     <label htmlFor="contained-button-file">

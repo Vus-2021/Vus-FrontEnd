@@ -184,7 +184,7 @@ const Register = props => {
 
     return (
         <Dialog open={open} onClose={handleClose} TransitionComponent={Transition}>
-            <MiniHeader handleClose={handleClose} headerText="사용자 등록" width="410px" />
+            <MiniHeader handleClose={handleClose} headerText="사용자 등록" width="415px" />
             <Box p={4}>
                 <Box mb={5}>
                     <Tabs
@@ -243,8 +243,6 @@ const Register = props => {
                                                     special_pattern.test(value)
                                                 ) {
                                                     return '특수문자나 공백은 입력할 수 없습니다!';
-                                                } else {
-                                                    return false;
                                                 }
                                             },
                                         },

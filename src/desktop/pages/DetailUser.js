@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Dialog,
     Box,
@@ -10,12 +10,16 @@ import {
     MenuItem,
     FormHelperText,
     Typography,
+    Snackbar,
 } from '@material-ui/core';
 import { DatePicker } from '@material-ui/pickers';
+import { Alert } from '@material-ui/lab';
 import { useForm, Controller } from 'react-hook-form';
 import MiniHeader from '../layout/MiniHeader';
 import RegisterStyle from '../styles/RegisterStyle';
 import * as dayjs from 'dayjs';
+import { useMutation } from '@apollo/react-hooks';
+import { INIT_PASSWORD } from '../gql/user/mutation';
 
 const companyType = [
     {
@@ -59,6 +63,10 @@ const DetailUser = props => {
 
     const { handleSubmit, control, errors, watch } = useForm();
     const [resetPasswordDialog, setResetPasswordDialog] = useState(false);
+    const [openSnackbar, setSnackbar] = useState(false);
+    const [snackbarText, setSnackbarText] = useState('');
+
+    const [initPassword, { data }] = useMutation(INIT_PASSWORD);
 
     const blank_pattern = /\s/gi;
     const special_pattern = /[`~!@#$%^&*|'";:/={}?<>,.-]/gi;
@@ -75,12 +83,28 @@ const DetailUser = props => {
     };
 
     const resetPassword = () => {
-        console.log(1234);
+        setSnackbarText('비밀번호 변경이 완료되었습니다.');
+        setSnackbar(true);
+        initPassword({
+            variables: {
+                userId: userId,
+                password: '1234',
+            },
+        });
     };
 
     const updateUser = data => {
         console.log(data);
     };
+
+    useEffect(() => {
+        if (data) {
+            const { success, message } = data.initPassword;
+            if (success) {
+                setSnackbar(false);
+            } else console.log(message);
+        }
+    }, [data]);
 
     return (
         <Dialog open={open} onClose={() => onClose(false)}>
@@ -292,6 +316,20 @@ const DetailUser = props => {
                     </Box>
                 </Box>
             </Dialog>
+            <Snackbar
+                open={openSnackbar}
+                autoHideDuration={1500}
+                style={{ height: '60%' }}
+                onClose={() => {
+                    setSnackbar(false);
+                }}
+                onClick={() => {
+                    setSnackbar(false);
+                }}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert severity="success">{snackbarText}</Alert>
+            </Snackbar>
         </Dialog>
     );
 };

@@ -78,6 +78,7 @@ export const GET_DETAIL_ROUTES = gql`
                     name
                     phoneNumber
                 }
+                route
             }
         }
     }

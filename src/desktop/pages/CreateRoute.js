@@ -107,9 +107,9 @@ const CreateRoute = props => {
     }, [checkData, setError, clearErrors]);
 
     return (
-        <Box display="flex" justifyContent="center" py={5} minHeight="530px">
+        <Box display="flex" justifyContent="center" height="90%" alignItems="center">
             <Paper elevation={10} className={classes.registerPaper}>
-                <Box width="380px">
+                <Box width="380px" height="500px">
                     <MiniHeader headerText="노선 등록" />
                     <Box px={4} pt={6} pb={4}>
                         <form onSubmit={handleSubmit(registerRoute)} encType="multipart/form-data">
@@ -264,12 +264,14 @@ const CreateRoute = props => {
                                                 style={{ display: 'none' }}
                                                 onChange={e => {
                                                     const file = e.target.files[0];
-                                                    const reader = new FileReader();
-                                                    props.onChange(file);
-                                                    setImageName(file.name);
-                                                    reader.onloadend = () =>
-                                                        setImgPreview(reader.result);
-                                                    reader.readAsDataURL(file);
+                                                    if (file) {
+                                                        const reader = new FileReader();
+                                                        props.onChange(file);
+                                                        setImageName(file.name);
+                                                        reader.onloadend = () =>
+                                                            setImgPreview(reader.result);
+                                                        reader.readAsDataURL(file);
+                                                    }
                                                 }}
                                             />
                                             <label htmlFor="contained-button-file">

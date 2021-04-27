@@ -123,7 +123,7 @@
         "build": "node scripts/build.js",
         "test": "node scripts/test.js",
         "deploy": "aws s3 sync ./build s3://test-vus-frontend",
-        "invalidate": "aws cloudfront create-invalidation --distribution-id E3Q16T7MHYSYQ2 --paths / /index.html /static/js /static/css /manifest.json /service-worker.js"
+        "invalidate": "aws cloudfront create-invalidation --distribution-id E3Q16T7MHYSYQ2 --paths / /index.html /static/js /static/css /manifest.json /service-worker.js /favicon.ico"
     },
     "eslintConfig": {
         "extends": [

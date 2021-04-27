@@ -22,8 +22,8 @@ import { useHistory, useLocation } from 'react-router-dom';
 import * as dayjs from 'dayjs';
 
 const Notice = props => {
-    const history = useHistory();
     const location = useLocation();
+    const history = useHistory();
     const partitionKey = location.state ? location.state.partitionKey : '';
 
     const [notice, setNotice] = useState([]);
@@ -37,10 +37,6 @@ const Notice = props => {
     const { control, handleSubmit } = useForm();
 
     const { loading, data, refetch } = useQuery(GET_ADMIN_NOTICE, { fetchPolicy: 'no-cache' });
-
-    const handleClose = () => {
-        history.push('/');
-    };
 
     const accordionChange = panel => (e, newExpanded) => {
         setExpanded(newExpanded ? panel : false);
@@ -71,7 +67,7 @@ const Notice = props => {
 
     return (
         <Box height="100%">
-            <Header2 handleClose={handleClose} headerText="공지사항" />
+            <Header2 handleClose={() => history.goBack()} headerText="공지사항" />
             <Box px={3} py={2} height="90%">
                 <Box mb={1} height="7%" minHeight="40px">
                     <form onSubmit={handleSubmit(data => searchClick(data))}>

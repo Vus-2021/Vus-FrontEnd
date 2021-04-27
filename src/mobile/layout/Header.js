@@ -18,8 +18,8 @@ const Header = props => {
                         <img src={logo} width="127px" height="33px" alt="nothing" />
                     </Box>
                     <Box display="flex" alignSelf="flex-end">
-                        {isLogin != null && (
-                            <Box component={ButtonBase}>
+                        <Box component={ButtonBase}>
+                            {isLogin != null ? (
                                 <Typography
                                     className={classes.loginText}
                                     onClick={() => {
@@ -36,8 +36,20 @@ const Header = props => {
                                 >
                                     {isLogin ? '내 정보 조회' : '로그인이 필요합니다.'}
                                 </Typography>
-                            </Box>
-                        )}
+                            ) : (
+                                localStorage.getItem('accessToken') && (
+                                    <Typography
+                                        className={classes.loginText}
+                                        onClick={() => {
+                                            localStorage.clear();
+                                            window.location.reload();
+                                        }}
+                                    >
+                                        로그아웃
+                                    </Typography>
+                                )
+                            )}
+                        </Box>
 
                         {isLogin && (
                             <Box ml={1} display="flex" alignItems="center">

@@ -11,7 +11,7 @@ const DriverHomeStyle = makeStyles(theme => ({
     requireLogin: {
         fontStyle: 'normal',
         fontWeight: 'normal',
-        fontSize: '20px',
+        fontSize: '25px',
         lineHeight: '19px',
         display: 'flex',
         alignItems: 'center',

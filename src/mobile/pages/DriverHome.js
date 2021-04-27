@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import Header from '../layout/Header';
 import DriverHomeStyle from '../styles/DriverHomeStyle';
 import LogInDialog from './LogIn';
@@ -21,9 +21,12 @@ import { CREATE_DRIVER_LOCATION } from '../gql/home/mutation';
 import clsx from 'clsx';
 import { useHistory } from 'react-router-dom';
 import * as dayjs from 'dayjs';
+import { WebSocketContext } from '../../App';
 
 const DriverHome = ({ history }) => {
     const classes = DriverHomeStyle();
+    const ws = useContext(WebSocketContext);
+
     const [userData, setUserData] = useState({});
     const [openLogin, setOpenLogin] = useState(false);
     const [detailRoutes, setDetailRoutes] = useState([]);
@@ -34,20 +37,18 @@ const DriverHome = ({ history }) => {
     });
 
     const [getDetailRoutes, { data: detailRouteData }] = useLazyQuery(GET_DETAIL_ROUTES);
-    const [getBusLocation, { data: busLocationData }] = useLazyQuery(GET_BUS_LOCATION);
+    const [getBusLocation, { data: busLocationData }] = useLazyQuery(GET_BUS_LOCATION, {
+        fetchPolicy: 'no-cache',
+    });
     const [createDriverLocation, { data: createLocationData }] = useMutation(
         CREATE_DRIVER_LOCATION,
         {
             onCompleted() {
+                console.log('Bus Location changed');
                 if (where === detailRoutes.length) window.location.reload();
             },
         },
     );
-
-    const logoutClick = () => {
-        localStorage.clear();
-        window.location.reload();
-    };
 
     const handleLogInClose = value => {
         setOpenLogin(false);
@@ -65,6 +66,7 @@ const DriverHome = ({ history }) => {
                     destinationKey:
                         next === detailRoutes.length ? null : detailRoutes[next].partitionKey,
                     locationIndex: next === detailRoutes.length ? -1 : next,
+                    route: detailRoutes[0].route,
                 },
             },
         });
@@ -81,9 +83,14 @@ const DriverHome = ({ history }) => {
                             : detailRoutes[prev + 1].partitionKey,
                     destinationKey: prev === -1 ? null : detailRoutes[prev].partitionKey,
                     locationIndex: prev,
+                    route: detailRoutes[0].route,
                 },
             },
         });
+    };
+
+    ws.current.onmessage = e => {
+        console.log(e.data);
     };
 
     useEffect(() => {
@@ -146,9 +153,9 @@ const DriverHome = ({ history }) => {
                         <React.Fragment>
                             <Box height="4%" className={classes.requireLogin} mb={1.5}>
                                 <Box mr={1}>
-                                    <AccountCircle fontSize="large" />
+                                    <AccountCircle fontSize="inherit" />
                                 </Box>
-                                환영합니다. {userData.name} 기사님
+                                <Typography>환영합니다. {userData.name} 기사님</Typography>
                             </Box>
                             <Box height="3%" display="flex" justifyContent="flex-end" mb={1}>
                                 <Box component={ButtonBase} className={classes.buttonBase}>
@@ -167,8 +174,11 @@ const DriverHome = ({ history }) => {
                                     </Typography>
                                 </Box>
                                 <Box component={ButtonBase} className={classes.buttonBase}>
-                                    <Typography className={classes.subButton} onClick={logoutClick}>
-                                        로그아웃
+                                    <Typography
+                                        className={classes.subButton}
+                                        onClick={() => history.push('/notice')}
+                                    >
+                                        공지보기
                                     </Typography>
                                 </Box>
                             </Box>
@@ -208,7 +218,9 @@ const DriverHome = ({ history }) => {
                                                     ))}
                                                 </Timeline>
                                             ) : (
-                                                <CircularProgress color="secondary" />
+                                                <Box display="flex" justifyContent="center">
+                                                    <CircularProgress color="secondary" />
+                                                </Box>
                                             )}
                                         </Box>
                                     </Box>
@@ -256,6 +268,7 @@ const DriverHome = ({ history }) => {
 const BeforeLogin = props => {
     const { setOpenLogin } = props;
     const classes = DriverHomeStyle();
+    const history = useHistory();
     return (
         <Box
             display="flex"
@@ -269,11 +282,22 @@ const BeforeLogin = props => {
                     <strong>버스 기사용</strong> 페이지입니다.
                 </Typography>
             </Box>
+            <Box width="70%" mb={1}>
+                <Button
+                    variant="contained"
+                    size="large"
+                    fullWidth
+                    className={classes.loginButton}
+                    onClick={() => history.push('/')}
+                >
+                    사용자용 페이지
+                </Button>
+            </Box>
             <Box width="70%">
                 <Button
                     variant="contained"
                     size="large"
-                    className={classes.loginButton}
+                    className={classes.signUpButton}
                     fullWidth
                     onClick={() => setOpenLogin(true)}
                 >
@@ -307,7 +331,7 @@ const NotAuthorized = () => {
                     className={classes.loginButton}
                     onClick={() => history.push('/')}
                 >
-                    홈페이지로 돌아가기
+                    사용자용 페이지로
                 </Button>
             </Box>
             <Box width="70%">
@@ -318,7 +342,7 @@ const NotAuthorized = () => {
                     className={classes.signUpButton}
                     onClick={() => {
                         localStorage.clear();
-                        window.location.href = '/driver';
+                        window.location.reload();
                     }}
                 >
                     로그아웃

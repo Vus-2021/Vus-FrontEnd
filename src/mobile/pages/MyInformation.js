@@ -1,22 +1,66 @@
 import React, { useEffect, useState } from 'react';
 import Header2 from '../layout/Header2';
-import { Box, Typography, Divider, Chip, IconButton, Collapse } from '@material-ui/core';
-import { ExpandMore, ExpandLess } from '@material-ui/icons';
+import {
+    Box,
+    Typography,
+    Divider,
+    Chip,
+    IconButton,
+    Collapse,
+    Button,
+    Dialog,
+    TextField,
+    InputAdornment,
+    Snackbar,
+} from '@material-ui/core';
+import { ExpandMore, ExpandLess, Visibility, VisibilityOff } from '@material-ui/icons';
+import { Alert } from '@material-ui/lab';
 import MyInformationStyle from '../styles/MyInformationStyle';
+import { useForm, Controller } from 'react-hook-form';
+import { useMutation } from '@apollo/react-hooks';
+import { INIT_PASSWORD } from '../gql/myinfo/mutation';
 
 const MyInformation = ({ history, location }) => {
     const classes = MyInformationStyle();
     const { userData, userBusData } = location.state;
+    const { handleSubmit, control, errors, watch } = useForm();
 
+    const [openDialog, setOpenDialog] = useState(false);
+    const [openSnackbar, setSnackbar] = useState(false);
     const [openIndex, setOpenIndex] = useState(-1);
+    const [showPwd, setShowPwd] = useState(false); //비밀번호 입력 가시화
+
+    const [initPassword, { data }] = useMutation(INIT_PASSWORD);
+
+    const blank_pattern = /\s/gi;
+
+    const changePassword = data => {
+        initPassword({
+            variables: {
+                userId: userData.userId,
+                password: data.password,
+            },
+        });
+    };
 
     useEffect(() => {
         if (!localStorage.getItem('accessToken')) history.push('/');
     }, [history]);
 
+    useEffect(() => {
+        if (data) {
+            const { success, message } = data.initPassword;
+            if (success) {
+                setSnackbar(true);
+            } else {
+                console.log(message);
+            }
+        }
+    }, [data]);
+
     return (
         <Box height="100%">
-            <Header2 handleClose={() => history.push('/')} headerText="내 정보" />
+            <Header2 handleClose={() => history.goBack()} headerText="내 정보" />
             <Box overflow="auto" height={`calc(100% - 37px)`}>
                 <Box height="3%" width="100%" pl={3} py={1} className={classes.accountText}>
                     계정 정보
@@ -53,6 +97,18 @@ const MyInformation = ({ history, location }) => {
                 >
                     <Typography className={classes.textTitle}>소속</Typography>
                     <Typography className={classes.textContent}>{userData.type}</Typography>
+                </Box>
+                <Divider />
+                <Box
+                    display="flex"
+                    px={3}
+                    py={1}
+                    alignItems="center"
+                    justifyContent="space-between"
+                >
+                    <Button variant="outlined" fullWidth onClick={() => setOpenDialog(true)}>
+                        <Typography color="error">비밀번호 변경하기</Typography>
+                    </Button>
                 </Box>
                 <Box height="3%" width="100%" pl={3} py={1} className={classes.accountText}>
                     노선 이용 정보
@@ -144,6 +200,103 @@ const MyInformation = ({ history, location }) => {
                     </React.Fragment>
                 )}
             </Box>
+            <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="xs">
+                <Header2 handleClose={() => setOpenDialog(false)} headerText="비밀번호 변경" />
+                <Box px={3} pt={3}>
+                    <form onSubmit={handleSubmit(changePassword)}>
+                        <Box mb={1} className="password">
+                            <Controller
+                                as={TextField}
+                                name="password"
+                                control={control}
+                                defaultValue=""
+                                label="비밀번호"
+                                fullWidth
+                                variant="outlined"
+                                size="small"
+                                type={showPwd ? 'text' : 'password'}
+                                rules={{
+                                    required: '비밀번호를 입력해주세요.',
+                                    validate: {
+                                        invalidForm: value => {
+                                            if (blank_pattern.test(value))
+                                                return '공백은 입력할 수 없습니다.';
+                                        },
+                                    },
+                                }}
+                                error={errors.password ? true : false}
+                                helperText={errors.password ? errors.password.message : ' '}
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                aria-label="toggle password visibility"
+                                                onClick={() => setShowPwd(!showPwd)}
+                                            >
+                                                {showPwd ? <Visibility /> : <VisibilityOff />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }}
+                            />
+                        </Box>
+                        <Box mb={1} className="passwordConfirm">
+                            <Controller
+                                as={TextField}
+                                name="confirmPassword"
+                                control={control}
+                                defaultValue=""
+                                label="비밀번호 확인"
+                                fullWidth
+                                variant="outlined"
+                                size="small"
+                                type={showPwd ? 'text' : 'password'}
+                                rules={{
+                                    required: true,
+                                    validate: value => value === watch('password'),
+                                }}
+                                error={errors.confirmPassword ? true : false}
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                aria-label="toggle password visibility"
+                                                onClick={() => setShowPwd(!showPwd)}
+                                            >
+                                                {showPwd ? <Visibility /> : <VisibilityOff />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }}
+                                helperText={
+                                    errors.confirmPassword ? '비밀번호가 일치하지 않습니다.' : ' '
+                                }
+                            />
+                        </Box>
+                        <Box width="100%" className={classes.registerBox} mb={2}>
+                            <Button type="submit" variant="contained" fullWidth>
+                                비밀번호 변경
+                            </Button>
+                        </Box>
+                    </form>
+                </Box>
+                <Snackbar
+                    open={openSnackbar}
+                    autoHideDuration={1500}
+                    style={{ height: '60%' }}
+                    onClose={() => {
+                        setSnackbar(false);
+                        setOpenDialog(false);
+                    }}
+                    onClick={() => {
+                        setSnackbar(false);
+                        setOpenDialog(false);
+                    }}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                >
+                    <Alert severity="success">비밀번호 변경이 완료되었습니다.</Alert>
+                </Snackbar>
+            </Dialog>
         </Box>
     );
 };

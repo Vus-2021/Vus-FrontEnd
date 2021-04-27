@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import {
     Box,
     Tabs,
@@ -39,10 +39,12 @@ import SPRITE_IMAGE from '../images/MarkerImages.png';
 import ARRIVAL_IMAGE from '../images/ArrivalMarker.png';
 import * as dayjs from 'dayjs';
 import clsx from 'clsx';
+import { WebSocketContext } from '../../App';
 
 const { kakao } = window;
 
 const BusInfo = ({ history, location }) => {
+    const ws = useContext(WebSocketContext);
     const classes = BusInfoStyle();
     const { route: busName, busNumber, driver } = location.state.busData;
     const [boardNum, setNumber] = useState(0);
@@ -51,17 +53,19 @@ const BusInfo = ({ history, location }) => {
     const [departFrom, setDepartFrom] = useState(0);
     const [currentMin, setCurrentMin] = useState(dayjs().minute() + dayjs().hour() * 60 - 1);
 
-    const handleClose = () => {
-        history.goBack();
-    };
     const { loading, data } = useQuery(GET_DETAIL_ROUTES, {
         variables: { route: busName },
     });
 
-    const { data: driverData } = useQuery(GET_DRIVER_NOTICE, {
+    const { data: driverData, refetch } = useQuery(GET_DRIVER_NOTICE, {
         variables: { route: busName },
         fetchPolicy: 'no-cache',
     });
+
+    ws.current.onmessage = e => {
+        console.log(e.data);
+        refetch({ variables: { route: busName } });
+    };
 
     useEffect(() => {
         const tick = () => {
@@ -93,7 +97,7 @@ const BusInfo = ({ history, location }) => {
 
     return (
         <Box height="100%">
-            <Header2 handleClose={handleClose} headerText={`${busName}노선`} />
+            <Header2 handleClose={() => history.goBack()} headerText={`${busName}노선`} />
             <Box>
                 <AppBar color="transparent" position="static">
                     <Tabs

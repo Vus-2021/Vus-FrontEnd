@@ -4,9 +4,10 @@ import { Backspace } from '@material-ui/icons';
 import { createUseStyles } from 'react-jss';
 
 const Header2 = props => {
-    const { handleClose, headerText, height } = props;
+    const { headerText, height, handleClose } = props;
     const headerHeight = height ? height : '5%';
     const classes = useStyles();
+
     return (
         <Box height={headerHeight} minHeight="30px" className={classes.headerBox}>
             <Box width="20%">

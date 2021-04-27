@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { SignUpDialog, LogInDialog, RegisterBusDialog } from './index';
 import HomeStyle from '../styles/HomeStyle';
 import {
@@ -19,6 +19,7 @@ import {
     Select,
     MenuItem,
     Chip,
+    Backdrop,
 } from '@material-ui/core';
 import BusAlert from '../components/BusAlert';
 import { Header } from '../layout';
@@ -35,6 +36,7 @@ import { useHistory } from 'react-router-dom';
 import { useMediaQuery } from '@material-ui/core';
 import SwipeableViews from 'react-swipeable-views';
 import { autoPlay } from 'react-swipeable-views-utils';
+import { WebSocketContext } from '../../App';
 
 const BusSwipeableViews = autoPlay(SwipeableViews);
 
@@ -58,9 +60,12 @@ const UserHome = ({ history }) => {
     const [notice, setNotice] = useState([]);
     const [month, setMonth] = useState(dayjs().format('YYYY-MM'));
 
-    const [getMyInfo, { data: myData, refetch: userRefetch }] = useLazyQuery(GET_MY_INFO, {
-        fetchPolicy: 'no-cache',
-    });
+    const [getMyInfo, { loading: infoLoading, data: myData, refetch: userRefetch }] = useLazyQuery(
+        GET_MY_INFO,
+        {
+            fetchPolicy: 'no-cache',
+        },
+    );
     const { loading, data: busData, refetch } = useQuery(GET_ROUTES_INFO, {
         variables: { month: month },
     });
@@ -111,6 +116,9 @@ const UserHome = ({ history }) => {
                 });
                 setUserApplyData(routeInfo);
                 setUserBusData(routeStates);
+                if (type === 'DRIVER') {
+                    history.push('/driver');
+                }
             }
         }
 
@@ -120,7 +128,7 @@ const UserHome = ({ history }) => {
                 userId: '',
                 type: '',
             });
-    }, [myData]);
+    }, [myData, history]);
 
     //버스 데이터를 불러옴
     useEffect(() => {
@@ -147,6 +155,9 @@ const UserHome = ({ history }) => {
 
     return (
         <div>
+            <Backdrop open={infoLoading}>
+                <CircularProgress color="secondary" />
+            </Backdrop>
             <Header
                 isLogin={isLogin}
                 userData={userData}
@@ -280,7 +291,7 @@ const UserHome = ({ history }) => {
                         className={clsx(classes.buttonCommon, classes.loginButton)}
                         variant="contained"
                         onClick={firstButtonClick}
-                        disabled={isLogin && loading}
+                        disabled={(isLogin && loading) || userData.type === 'DRIVER'}
                     >
                         {isLogin ? '노선 신청/취소' : '로그인'}
                     </Button>
@@ -439,13 +450,19 @@ const BusList = props => {
 
 const BusNoticeForm = () => {
     const classes = HomeStyle();
+    const ws = useContext(WebSocketContext);
 
     const [departMin, setDepartMin] = useState([]);
     const [currentMin, setCurrentMin] = useState(dayjs().minute() + dayjs().hour() * 60);
     const [departFrom, setDepartFrom] = useState([]);
     const [busNotice, setBusNotice] = useState([]);
 
-    const { data } = useQuery(GET_DRIVER_NOTICE, { fetchPolicy: 'no-cache' });
+    const { data, refetch } = useQuery(GET_DRIVER_NOTICE, { fetchPolicy: 'no-cache' });
+
+    ws.current.onmessage = e => {
+        console.log(e.data);
+        refetch();
+    };
 
     useEffect(() => {
         if (data) {

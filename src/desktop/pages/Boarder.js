@@ -534,7 +534,7 @@ const ApplyResetDialog = props => {
     }, [resetData, onClose]);
 
     return (
-        <Dialog open={open} onClose={() => onClose(false)} fullWidth maxWidth="xs">
+        <Dialog open={open} onClose={() => onClose(false)}>
             <Box px={3} py={2}>
                 <Box mb={2}>
                     <Typography className={classes.warningTitle}>
