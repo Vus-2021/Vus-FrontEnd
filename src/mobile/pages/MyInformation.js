@@ -43,6 +43,11 @@ const MyInformation = ({ history, location }) => {
         });
     };
 
+    const logoutClick = () => {
+        localStorage.clear();
+        window.location.href = '/';
+    };
+
     useEffect(() => {
         if (!localStorage.getItem('accessToken')) history.push('/');
     }, [history]);
@@ -60,148 +65,171 @@ const MyInformation = ({ history, location }) => {
 
     return (
         <Box height="100%">
-            <Header2 handleClose={() => history.goBack()} headerText="내 정보" />
+            <Header2 handleClose={() => history.goBack()} headerText="내 정보" logout={true} />
             <Box overflow="auto" height={`calc(100% - 37px)`}>
-                <Box height="3%" width="100%" pl={3} py={1} className={classes.accountText}>
-                    계정 정보
+                <Box height="210px">
+                    <Box height="5%" width="100%" pl={3} py={1} className={classes.accountText}>
+                        계정 정보
+                    </Box>
+                    <Box
+                        display="flex"
+                        px={3}
+                        alignItems="center"
+                        justifyContent="space-between"
+                        height="20%"
+                    >
+                        <Typography className={classes.textTitle}>이름</Typography>
+                        <Typography className={classes.textContent}>{userData.name}</Typography>
+                    </Box>
+                    <Divider />
+                    <Box
+                        display="flex"
+                        px={3}
+                        alignItems="center"
+                        justifyContent="space-between"
+                        height="20%"
+                    >
+                        <Typography className={classes.textTitle}>아이디</Typography>
+                        <Typography className={classes.textContent}>{userData.userId}</Typography>
+                    </Box>
+                    <Divider />
+                    <Box
+                        display="flex"
+                        px={3}
+                        alignItems="center"
+                        justifyContent="space-between"
+                        height="20%"
+                    >
+                        <Typography className={classes.textTitle}>소속</Typography>
+                        <Typography className={classes.textContent}>{userData.type}</Typography>
+                    </Box>
+                    <Divider />
+                    <Box
+                        display="flex"
+                        px={3}
+                        alignItems="center"
+                        justifyContent="space-between"
+                        height="20%"
+                    >
+                        <Button
+                            variant="outlined"
+                            fullWidth
+                            onClick={() => setOpenDialog(true)}
+                            style={{ height: '90%' }}
+                        >
+                            <Typography color="error">비밀번호 변경하기</Typography>
+                        </Button>
+                    </Box>
                 </Box>
-                {}
-                <Box
-                    display="flex"
-                    px={3}
-                    py={1}
-                    alignItems="center"
-                    justifyContent="space-between"
-                >
-                    <Typography className={classes.textTitle}>이름</Typography>
-                    <Typography className={classes.textContent}>{userData.name}</Typography>
+                <Box height={'calc(100% - 255px)'} overflow="auto">
+                    <Box height="3%" width="100%" pl={3} py={1} className={classes.accountText}>
+                        노선 이용 정보
+                    </Box>
+                    {userBusData.length > 0 ? (
+                        userBusData
+                            .slice(0)
+                            .reverse()
+                            .map((data, index) => (
+                                <React.Fragment key={index}>
+                                    <Box
+                                        display="flex"
+                                        pl={3}
+                                        pr={1}
+                                        alignItems="center"
+                                        justifyContent="space-between"
+                                        height="13%"
+                                        onClick={() => {
+                                            if (index === openIndex) setOpenIndex(-1);
+                                            else setOpenIndex(index);
+                                        }}
+                                    >
+                                        <Box display="flex" alignItems="center">
+                                            <Typography className={classes.textTitle}>
+                                                {data.route}노선
+                                            </Typography>
+                                            <Typography>{data.month}</Typography>
+                                        </Box>
+                                        <Box display="flex" alignItems="center">
+                                            <Box>
+                                                <ChipStyle
+                                                    state={data.state}
+                                                    cancel={data.isCancellation}
+                                                />
+                                            </Box>
+                                            <IconButton className={classes.iconButton}>
+                                                {index === openIndex ? (
+                                                    <ExpandLess fontSize="inherit" />
+                                                ) : (
+                                                    <ExpandMore fontSize="inherit" />
+                                                )}
+                                            </IconButton>
+                                        </Box>
+                                    </Box>
+                                    <Divider />
+                                    <Collapse in={index === openIndex} timeout="auto" unmountOnExit>
+                                        <Box
+                                            pl={4}
+                                            pr={2}
+                                            pb={1}
+                                            display="flex"
+                                            justifyContent="space-between"
+                                        >
+                                            <Box display="flex" alignItems="center" width="20%">
+                                                <Typography className={classes.busStopTitle}>
+                                                    정류장
+                                                </Typography>
+                                            </Box>
+
+                                            <Box
+                                                width="80%"
+                                                display="flex"
+                                                flexDirection="column"
+                                                textAlign="right"
+                                            >
+                                                <Typography className={classes.busStopContent}>
+                                                    {data.location}
+                                                </Typography>
+                                                <Typography className={classes.busStopContent}>
+                                                    {data.boardingTime}
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+                                    </Collapse>
+                                </React.Fragment>
+                            ))
+                    ) : (
+                        <React.Fragment>
+                            <Box
+                                display="flex"
+                                px={3}
+                                py={1}
+                                alignItems="center"
+                                justifyContent="center"
+                            >
+                                신청 정보 없음
+                            </Box>
+                            <Divider />
+                        </React.Fragment>
+                    )}
                 </Box>
-                <Divider />
-                <Box
-                    display="flex"
-                    px={3}
-                    py={1}
-                    alignItems="center"
-                    justifyContent="space-between"
-                >
-                    <Typography className={classes.textTitle}>아이디</Typography>
-                    <Typography className={classes.textContent}>{userData.userId}</Typography>
-                </Box>
-                <Divider />
-                <Box
-                    display="flex"
-                    px={3}
-                    py={1}
-                    alignItems="center"
-                    justifyContent="space-between"
-                >
-                    <Typography className={classes.textTitle}>소속</Typography>
-                    <Typography className={classes.textContent}>{userData.type}</Typography>
-                </Box>
-                <Divider />
-                <Box
-                    display="flex"
-                    px={3}
-                    py={1}
-                    alignItems="center"
-                    justifyContent="space-between"
-                >
-                    <Button variant="outlined" fullWidth onClick={() => setOpenDialog(true)}>
-                        <Typography color="error">비밀번호 변경하기</Typography>
+                <Box height="35px" px={3}>
+                    <Button
+                        variant="contained"
+                        fullWidth
+                        style={{ height: '100%' }}
+                        onClick={logoutClick}
+                        className={classes.logoutButton}
+                    >
+                        로그아웃
                     </Button>
                 </Box>
-                <Box height="3%" width="100%" pl={3} py={1} className={classes.accountText}>
-                    노선 이용 정보
-                </Box>
-                {userBusData.length > 0 ? (
-                    userBusData
-                        .slice(0)
-                        .reverse()
-                        .map((data, index) => (
-                            <React.Fragment key={index}>
-                                <Box
-                                    display="flex"
-                                    pl={3}
-                                    pr={1}
-                                    py={1}
-                                    alignItems="center"
-                                    justifyContent="space-between"
-                                    onClick={() => {
-                                        if (index === openIndex) setOpenIndex(-1);
-                                        else setOpenIndex(index);
-                                    }}
-                                >
-                                    <Box display="flex" alignItems="center">
-                                        <Typography className={classes.textTitle}>
-                                            {data.route}노선
-                                        </Typography>
-                                        <Typography>{data.month}</Typography>
-                                    </Box>
-                                    <Box display="flex" alignItems="center">
-                                        <Box>
-                                            <ChipStyle
-                                                state={data.state}
-                                                cancel={data.isCancellation}
-                                            />
-                                        </Box>
-                                        <IconButton className={classes.iconButton}>
-                                            {index === openIndex ? (
-                                                <ExpandLess fontSize="inherit" />
-                                            ) : (
-                                                <ExpandMore fontSize="inherit" />
-                                            )}
-                                        </IconButton>
-                                    </Box>
-                                </Box>
-                                <Divider />
-                                <Collapse in={index === openIndex} timeout="auto" unmountOnExit>
-                                    <Box
-                                        pl={4}
-                                        pr={2}
-                                        pb={1}
-                                        display="flex"
-                                        justifyContent="space-between"
-                                    >
-                                        <Box display="flex" alignItems="center" width="20%">
-                                            <Typography className={classes.busStopTitle}>
-                                                정류장
-                                            </Typography>
-                                        </Box>
-
-                                        <Box
-                                            width="80%"
-                                            display="flex"
-                                            flexDirection="column"
-                                            textAlign="right"
-                                        >
-                                            <Typography className={classes.busStopContent}>
-                                                {data.location}
-                                            </Typography>
-                                            <Typography className={classes.busStopContent}>
-                                                {data.boardingTime}
-                                            </Typography>
-                                        </Box>
-                                    </Box>
-                                </Collapse>
-                            </React.Fragment>
-                        ))
-                ) : (
-                    <React.Fragment>
-                        <Box
-                            display="flex"
-                            px={3}
-                            py={1}
-                            alignItems="center"
-                            justifyContent="center"
-                        >
-                            신청 정보 없음
-                        </Box>
-                        <Divider />
-                    </React.Fragment>
-                )}
             </Box>
             <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="xs">
-                <Header2 handleClose={() => setOpenDialog(false)} headerText="비밀번호 변경" />
+                <Header2
+                    handleClose={() => setOpenDialog(false)}
+                    headerText="비밀번호 변경"
+                    height="30px"
+                />
                 <Box px={3} pt={3}>
                     <form onSubmit={handleSubmit(changePassword)}>
                         <Box mb={1} className="password">

@@ -67,6 +67,17 @@ const MyInformationStyle = makeStyles(theme => ({
         fontSize: '15px',
         color: 'grey',
     },
+    logoutButton: {
+        '&.MuiButton-root': {
+            color: 'white',
+            backgroundColor: '#FD3434',
+            fontSize: '16px',
+        },
+        '&.MuiButton-root:hover': {
+            color: 'white',
+            backgroundColor: '#FD3434',
+        },
+    },
 }));
 
 export default MyInformationStyle;

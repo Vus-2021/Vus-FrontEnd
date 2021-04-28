@@ -170,10 +170,10 @@ const SignUp = props => {
     return (
         <Dialog fullScreen onClose={handleClose} open={open} TransitionComponent={Transition}>
             <Header2 handleClose={handleClose} headerText="회원가입" />
-            <Box pl={3} pr={3} pt={2} height="94%">
+            <Box pt={2} height="94%" px="10%">
                 <form onSubmit={handleSubmit(registerUser)}>
-                    <Box mt={3} mb={1} className="userId" style={{ display: 'flex' }}>
-                        <Box height="100%" width="70%" mr={2}>
+                    <Box mt={3} mb={1} className="userId" style={{ display: 'flex' }} width="100%">
+                        <Box height="100%" width="75%" mr={2}>
                             <Controller
                                 as={TextField}
                                 name="userId"
@@ -222,7 +222,7 @@ const SignUp = props => {
                             </Button>
                         </Box>
                     </Box>
-                    <Box mb={1} className="password">
+                    <Box mb={1} className="password" width="100%">
                         <Controller
                             as={TextField}
                             name="password"
@@ -258,7 +258,7 @@ const SignUp = props => {
                             }}
                         />
                     </Box>
-                    <Box mb={1} className="passwordConfirm">
+                    <Box mb={1} className="passwordConfirm" width="100%">
                         <Controller
                             as={TextField}
                             name="confirmPassword"
@@ -291,7 +291,7 @@ const SignUp = props => {
                             }
                         />
                     </Box>
-                    <Box mb={1} className="name">
+                    <Box mb={1} className="name" width="100%">
                         <Controller
                             as={TextField}
                             name="name"
@@ -318,7 +318,7 @@ const SignUp = props => {
                             helperText={errors.name ? errors.name.message : ' '}
                         />
                     </Box>
-                    <Box mb={1} className="phoneNumber">
+                    <Box mb={1} className="phoneNumber" width="100%">
                         <Controller
                             as={TextField}
                             name="phoneNumber"
@@ -347,7 +347,7 @@ const SignUp = props => {
                             }
                         />
                     </Box>
-                    <Box mb={1} className="type">
+                    <Box mb={1} className="type" width="100%">
                         <Controller
                             as={
                                 <TextField
@@ -374,7 +374,7 @@ const SignUp = props => {
                             error={errors.type ? true : false}
                         />
                     </Box>
-                    <Box mb={1} className="registerDate">
+                    <Box mb={1} className="registerDate" width="100%">
                         <Controller
                             name="registerDate"
                             control={control}

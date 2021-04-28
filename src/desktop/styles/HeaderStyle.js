@@ -11,14 +11,37 @@ const HeaderStyle = makeStyles(theme => ({
     logoBox: {
         flexGrow: 1,
     },
+    logoutButton: {
+        height: '35px',
+        backgroundColor: '#D81717',
+        color: 'white',
+        '&:hover': {
+            backgroundColor: '#D81717',
+        },
+    },
+    menuIcon: {
+        fontSize: '36px',
+        color: 'white',
+    },
+    menuIconSmall: {
+        fontSize: '25px',
+        color: 'white',
+    },
     adminId: {
         fontSize: '18px',
         fontWeight: '700',
+        marginRight: '3px',
+    },
+    adminIdSmall: {
+        fontSize: '16px',
+        fontWeight: '700',
+        marginRight: '3px',
     },
     toolbar: theme.mixins.toolbar,
     menuDrawer: {
         flexShrink: 0,
         width: drawerWidth,
+        zIndex: 9999,
     },
     drawerPaper: {
         width: drawerWidth,

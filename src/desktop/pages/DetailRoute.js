@@ -336,7 +336,7 @@ const DeleteRouteDialog = props => {
     }, [deleteData]);
 
     return (
-        <Dialog open={open} onClose={() => onClose(false)} style={{ zIndex: 6000 }}>
+        <Dialog open={open} onClose={() => onClose(false)} style={{ zIndex: 600 }}>
             <Box px={3} py={2}>
                 <Box mb={2}>
                     <Typography className={classes.deleteRouteTitle}>노선 삭제</Typography>
@@ -425,7 +425,7 @@ const CreateDialog = props => {
     }, [data, onClose]);
 
     return (
-        <Dialog open={open} onClose={handleClose} style={{ zIndex: 6000 }}>
+        <Dialog open={open} onClose={handleClose} style={{ zIndex: 600 }}>
             <MiniHeader handleClose={handleClose} headerText="정류장 생성" />
             <Box p={4}>
                 <form
@@ -619,7 +619,7 @@ const UpdateDialog = props => {
     }, [deleteData, onClose]);
 
     return (
-        <Dialog open={open} onClose={handleClose} style={{ zIndex: 6000 }}>
+        <Dialog open={open} onClose={handleClose} style={{ zIndex: 600 }}>
             <MiniHeader handleClose={handleClose} headerText="정류장 수정/삭제" />
             <Box p={4}>
                 <form onSubmit={handleSubmit(data => reviseRouteClick(data))}>

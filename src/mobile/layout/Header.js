@@ -10,31 +10,44 @@ const Header = props => {
     const { isLogin, setLoginDialog, userData, userBusData } = props;
     const history = useHistory();
 
+    const headerButtonClick = () => {
+        if (isLogin) {
+            if (userData.type === 'ADMIN') {
+                history.push('/admin');
+            } else {
+                history.push({
+                    pathname: '/myinfo',
+                    state: {
+                        userData: userData,
+                        userBusData: userBusData,
+                    },
+                });
+            }
+        } else setLoginDialog(true);
+    };
+
     return (
         <AppBar position="static" className={classes.headerBar}>
-            <Toolbar style={{ height: '95%' }}>
+            <Toolbar style={{ height: '100%' }}>
                 <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
                     <Box display="flex" onClick={() => window.location.reload()}>
-                        <img src={logo} width="127px" height="33px" alt="nothing" />
+                        <ButtonBase>
+                            <img src={logo} width="127px" height="33px" alt="nothing" />
+                        </ButtonBase>
                     </Box>
-                    <Box display="flex" alignSelf="flex-end">
+
+                    <Box display="flex" alignItems="center">
                         <Box component={ButtonBase}>
                             {isLogin != null ? (
                                 <Typography
                                     className={classes.loginText}
-                                    onClick={() => {
-                                        if (isLogin) {
-                                            history.push({
-                                                pathname: '/myinfo',
-                                                state: {
-                                                    userData: userData,
-                                                    userBusData: userBusData,
-                                                },
-                                            });
-                                        } else setLoginDialog(true);
-                                    }}
+                                    onClick={headerButtonClick}
                                 >
-                                    {isLogin ? '내 정보 조회' : '로그인이 필요합니다.'}
+                                    {isLogin
+                                        ? userData.type === 'ADMIN'
+                                            ? '관리자모드 열기'
+                                            : '내 정보 조회'
+                                        : '로그인'}
                                 </Typography>
                             ) : (
                                 localStorage.getItem('accessToken') && (
@@ -51,7 +64,7 @@ const Header = props => {
                             )}
                         </Box>
 
-                        {isLogin && (
+                        {isLogin && userData.type !== 'ADMIN' && (
                             <Box ml={1} display="flex" alignItems="center">
                                 <AccountCircle className={classes.iconSize} />
                             </Box>
@@ -68,7 +81,7 @@ const useStyles = makeStyles(theme => ({
         backgroundColor: '#E43131',
         zIndex: theme.zIndex.drawer + 1,
         padding: 0,
-        height: '9vh',
+        height: '60px',
     },
     iconSize: {
         fontSize: '28px',
@@ -76,6 +89,10 @@ const useStyles = makeStyles(theme => ({
     loginText: {
         fontWeight: '600',
         fontSize: '18px',
+    },
+    menuIcon: {
+        color: 'white',
+        fontSize: '30px',
     },
 }));
 

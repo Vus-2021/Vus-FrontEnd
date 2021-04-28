@@ -315,21 +315,21 @@ const DetailUser = props => {
                         </Box>
                     </Box>
                 </Box>
+                <Snackbar
+                    open={openSnackbar}
+                    autoHideDuration={1500}
+                    style={{ height: '60%' }}
+                    onClose={() => {
+                        setSnackbar(false);
+                    }}
+                    onClick={() => {
+                        setSnackbar(false);
+                    }}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                >
+                    <Alert severity="success">{snackbarText}</Alert>
+                </Snackbar>
             </Dialog>
-            <Snackbar
-                open={openSnackbar}
-                autoHideDuration={1500}
-                style={{ height: '60%' }}
-                onClose={() => {
-                    setSnackbar(false);
-                }}
-                onClick={() => {
-                    setSnackbar(false);
-                }}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
-                <Alert severity="success">{snackbarText}</Alert>
-            </Snackbar>
         </Dialog>
     );
 };

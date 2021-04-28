@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import HeaderStyle from '../styles/HeaderStyle';
 import logo from '../images/Vatech_logo.png';
 import {
@@ -14,13 +14,12 @@ import {
     ListItemText,
     Divider,
     Collapse,
-    ButtonBase,
     Button,
+    ButtonBase,
 } from '@material-ui/core';
 import {
     Menu,
     Clear,
-    AccountCircle,
     AssignmentInd,
     DirectionsBus,
     NotificationsActive,
@@ -29,11 +28,11 @@ import {
     ExpandMore,
     PlaylistAdd,
 } from '@material-ui/icons';
+import { DeviceMode } from '../pages/Admin';
 import { useHistory } from 'react-router-dom';
 
 const Header = props => {
     const {
-        adminName,
         openDrawer,
         setOpenDrawer,
         setState,
@@ -42,8 +41,10 @@ const Header = props => {
         setPartitionKey,
         loading,
     } = props;
-    const history = useHistory();
     const classes = HeaderStyle();
+    const history = useHistory();
+
+    const deviceMode = useContext(DeviceMode);
 
     const menuClick = () => {
         setOpenDrawer(!openDrawer);
@@ -51,22 +52,24 @@ const Header = props => {
 
     const logoutClick = () => {
         localStorage.clear();
-        history.push('/');
+        window.location.href = '/';
     };
 
     return (
         <React.Fragment>
             <AppBar position="fixed" className={classes.headerBar}>
                 <Toolbar>
-                    {adminName && (
-                        <IconButton edge="start" onClick={menuClick}>
-                            {openDrawer ? (
-                                <Clear style={{ color: 'white' }} fontSize="large" />
-                            ) : (
-                                <Menu style={{ color: 'white' }} fontSize="large" />
-                            )}
-                        </IconButton>
-                    )}
+                    <IconButton edge="start" onClick={menuClick} style={{ padding: 5 }}>
+                        {openDrawer ? (
+                            <Clear
+                                className={deviceMode ? classes.menuIconSmall : classes.menuIcon}
+                            />
+                        ) : (
+                            <Menu
+                                className={deviceMode ? classes.menuIconSmall : classes.menuIcon}
+                            />
+                        )}
+                    </IconButton>
 
                     <Box className={classes.logoBox}>
                         <Button
@@ -74,48 +77,75 @@ const Header = props => {
                                 window.location.reload();
                             }}
                         >
-                            <img src={logo} width="115px" height="30px" alt="nothing" />
+                            {deviceMode ? (
+                                <img src={logo} width="96px" height="25px" alt="nothing" />
+                            ) : (
+                                <img src={logo} width="115px" height="30px" alt="nothing" />
+                            )}
                         </Button>
                     </Box>
 
-                    {adminName && (
-                        <React.Fragment>
-                            <Box mr={3} display="flex" alignItems="center">
-                                <Typography className={classes.adminId}>
-                                    바텍 통근버스(V-us) 관리자용 &nbsp;
-                                </Typography>
-                                <AccountCircle fontSize="large" />
-                            </Box>
+                    <React.Fragment>
+                        <Box display="flex" alignItems="center">
+                            <Typography
+                                component={ButtonBase}
+                                onClick={() => history.goBack()}
+                                className={deviceMode ? classes.adminIdSmall : classes.adminId}
+                            >
+                                유저모드 열기
+                            </Typography>
 
-                            <Box component={ButtonBase} onClick={logoutClick}>
-                                <Typography className={classes.adminId}>로그아웃</Typography>
-                            </Box>
-                        </React.Fragment>
-                    )}
+                            {!deviceMode && (
+                                <Box ml={2}>
+                                    <Box component={ButtonBase} onClick={logoutClick}>
+                                        <Typography className={classes.adminId}>
+                                            로그아웃
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                            )}
+                        </Box>
+                    </React.Fragment>
                 </Toolbar>
             </AppBar>
-            {adminName && (
-                <Drawer
-                    anchor="left"
-                    variant="persistent"
-                    open={openDrawer}
-                    ModalProps={{ keepMounted: true }}
-                    className={classes.menuDrawer}
-                    classes={{
-                        paper: classes.drawerPaper,
-                    }}
-                >
-                    <Box mb={1} className={classes.toolbar} />
-                    <MenuItems
-                        classes={classes}
-                        routeItems={routeItems}
-                        setState={setState}
-                        setRouteName={setRouteName}
-                        setPartitionKey={setPartitionKey}
-                        loading={loading}
-                    />
-                </Drawer>
-            )}
+
+            <Drawer
+                anchor="left"
+                variant={deviceMode ? 'temporary' : 'persistent'}
+                open={openDrawer}
+                ModalProps={{ keepMounted: true }}
+                className={classes.menuDrawer}
+                classes={{
+                    paper: classes.drawerPaper,
+                }}
+            >
+                <Box mb={1} className={classes.toolbar} display="flex" alignItems="center">
+                    <Box width="50%">
+                        <IconButton onClick={() => setOpenDrawer(false)}>
+                            <Clear style={{ fontSize: '30px' }} />
+                        </IconButton>
+                    </Box>
+                    <Box width="50%" mr={2}>
+                        <Button
+                            variant="contained"
+                            onClick={logoutClick}
+                            className={classes.logoutButton}
+                            fullWidth
+                        >
+                            로그아웃
+                        </Button>
+                    </Box>
+                </Box>
+                <MenuItems
+                    classes={classes}
+                    routeItems={routeItems}
+                    setState={setState}
+                    setRouteName={setRouteName}
+                    setPartitionKey={setPartitionKey}
+                    loading={loading}
+                />
+            </Drawer>
+
             <Box height="64px"></Box>
         </React.Fragment>
     );

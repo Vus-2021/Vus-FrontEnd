@@ -18,12 +18,14 @@ import LogInStyle from '../styles/LogInStyle';
 import { VisibilityOff, Visibility } from '@material-ui/icons';
 import { SIGNIN } from '../gql/login/mutation';
 import { useMutation } from '@apollo/react-hooks';
+import SignUpDialog from './SignUp';
 
 const LogIn = props => {
     const classes = LogInStyle();
     const { open, onClose } = props;
     const [showPwd, setShowPwd] = useState(false);
     const [openSnackbar, setSnackbar] = useState(false);
+    const [openSignUp, setOpenSignUp] = useState(false);
 
     const { errors, handleSubmit, control } = useForm();
 
@@ -124,9 +126,18 @@ const LogIn = props => {
                             )}
                         />
                     </Box>
-                    <Box width="100%">
+                    <Box width="100%" mb={1}>
                         <Button type="submit" className={classes.registerButton}>
                             로그인
+                        </Button>
+                    </Box>
+                    <Box width="100%">
+                        <Button
+                            fullWidth
+                            className={classes.signUpButton}
+                            onClick={() => setOpenSignUp(true)}
+                        >
+                            회원가입
                         </Button>
                     </Box>
                 </form>
@@ -141,6 +152,7 @@ const LogIn = props => {
             >
                 <Alert severity="error">잘못된 아이디 혹은 비밀번호 입니다.</Alert>
             </Snackbar>
+            <SignUpDialog open={openSignUp} onClose={setOpenSignUp} />
         </Dialog>
     );
 };

@@ -178,7 +178,7 @@ const Notice = () => {
             </Box>
             <Box mb={1}>
                 <Paper>
-                    <Box width="100%" minHeight="500px" height="65vh">
+                    <Box width="100%" minHeight="540px" height="65vh">
                         <DataGrid
                             columns={columns.map(column => ({
                                 ...column,

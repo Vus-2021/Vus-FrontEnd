@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { SignUpDialog, LogInDialog, RegisterBusDialog } from './index';
+import { LogInDialog, RegisterBusDialog } from './index';
 import HomeStyle from '../styles/HomeStyle';
 import {
     Box,
@@ -45,7 +45,6 @@ const UserHome = ({ history }) => {
     const smallDevice = useMediaQuery('(max-height: 600px)');
 
     const [isLogin, setIsLogin] = useState(false); //로그인 상태 여부
-    const [signUpDialog, setSignUpDialog] = useState(false); //회원가입 Dialog open 여부
     const [loginDialog, setLoginDialog] = useState(false); //로그인 Dialog open 여부
     const [registerBusDialog, setRegisterBusDialog] = useState(false); //버스신청 Dialog open 여부
     const [userData, setUserData] = useState({
@@ -66,7 +65,7 @@ const UserHome = ({ history }) => {
             fetchPolicy: 'no-cache',
         },
     );
-    const { loading, data: busData, refetch } = useQuery(GET_ROUTES_INFO, {
+    const { data: busData, refetch } = useQuery(GET_ROUTES_INFO, {
         variables: { month: month },
     });
 
@@ -74,10 +73,6 @@ const UserHome = ({ history }) => {
         fetchPolicy: 'no-cache',
         variables: { limit: 3 },
     });
-
-    const handleSignUpClose = value => {
-        setSignUpDialog(false);
-    };
 
     const handleLogInClose = value => {
         setLoginDialog(false);
@@ -91,16 +86,11 @@ const UserHome = ({ history }) => {
 
     const firstButtonClick = () => {
         if (isLogin) {
-            setRegisterBusDialog(true);
+            if (userData.type === 'ADMIN' || userData.type === 'DRIVER') {
+                localStorage.clear();
+                window.location.reload();
+            } else setRegisterBusDialog(true);
         } else setLoginDialog(true);
-    };
-
-    const secondButtonClick = () => {
-        if (isLogin) {
-            localStorage.clear();
-            setIsLogin(false);
-            window.location.reload();
-        } else setSignUpDialog(true);
     };
 
     // 로그인 성공 후 유저의 데이터를 불러옴
@@ -166,7 +156,7 @@ const UserHome = ({ history }) => {
             />
             <Box px={3} py={2} className={classes.mainBox}>
                 <Box height="5%" display="flex" className={classes.requireLogin}>
-                    <Box display="flex" alignItems="flex-start" mr={1}>
+                    <Box display="flex" alignItems="center" mr={1}>
                         <FormControl variant="outlined" size="small" fullWidth>
                             <InputLabel color="secondary">월 선택</InputLabel>
                             <Select
@@ -192,7 +182,7 @@ const UserHome = ({ history }) => {
                         </Box>
                     )}
                 </Box>
-                <Box mt={2} height="38%" className={classes.chooseBus}>
+                <Box mt={2} height="38%" minHeight="180px" className={classes.chooseBus}>
                     <BusList routeInfo={routeInfo} />
                 </Box>
                 <Box mb={1} px={2} height="40px" className={classes.busNotify} display="flex">
@@ -291,19 +281,13 @@ const UserHome = ({ history }) => {
                         className={clsx(classes.buttonCommon, classes.loginButton)}
                         variant="contained"
                         onClick={firstButtonClick}
-                        disabled={(isLogin && loading) || userData.type === 'DRIVER'}
+                        disabled={!isLogin}
                     >
-                        {isLogin ? '노선 신청/취소' : '로그인'}
-                    </Button>
-                    <Button
-                        className={clsx(classes.buttonCommon, classes.signUpButton)}
-                        variant="contained"
-                        onClick={secondButtonClick}
-                    >
-                        {isLogin ? '로그아웃' : '회원가입'}
+                        {userData.type === 'ADMIN' || userData.type === 'DRIVER'
+                            ? '로그아웃'
+                            : '노선 신청/취소'}
                     </Button>
                     <LogInDialog open={loginDialog} onClose={handleLogInClose} />
-                    <SignUpDialog open={signUpDialog} onClose={handleSignUpClose} />
                     <RegisterBusDialog
                         open={registerBusDialog}
                         onClose={handleRegisterBusClose}
@@ -395,11 +379,11 @@ const BusList = props => {
     const classes = HomeStyle();
     const history = useHistory();
     const { routeInfo } = props;
-
     const smallDevice = useMediaQuery('(max-height: 600px)');
+
     const busList = routeInfo.map((data, index) => (
-        <GridListTile key={index}>
-            <Box minHeight="150px" height="100%" overflow="auto">
+        <GridListTile key={index} style={{ maxWidth: '200px' }}>
+            <Box minHeight="180px" height="100%" overflow="auto">
                 <Card elevation={5} className={classes.busCard}>
                     <CardActionArea
                         className={classes.cardAction}
@@ -410,11 +394,12 @@ const BusList = props => {
                             })
                         }
                     >
-                        <Paper elevation={3}>
+                        <Paper elevation={3} style={{ display: 'flex', justifyContent: 'center' }}>
                             <CardMedia
                                 component="img"
                                 src={data.imageUrl}
                                 title={data.route + '노선'}
+                                style={{ maxWidth: '160px' }}
                             />
                         </Paper>
                         <CardContent>
@@ -442,7 +427,7 @@ const BusList = props => {
         </GridListTile>
     ));
     return (
-        <GridList cellHeight="auto" className={classes.busList} cols={2.1}>
+        <GridList cellHeight="auto" className={classes.busList} cols={0}>
             {busList}
         </GridList>
     );

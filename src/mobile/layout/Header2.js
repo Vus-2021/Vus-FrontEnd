@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography } from '@material-ui/core';
+import { Box, Typography, IconButton } from '@material-ui/core';
 import { Backspace } from '@material-ui/icons';
 import { createUseStyles } from 'react-jss';
 
@@ -11,8 +11,10 @@ const Header2 = props => {
     return (
         <Box height={headerHeight} minHeight="30px" className={classes.headerBox}>
             <Box width="20%">
-                &nbsp;&nbsp;
-                <Backspace onClick={handleClose} />
+                <IconButton color="inherit" onClick={handleClose}>
+                    &nbsp;&nbsp;
+                    <Backspace />
+                </IconButton>
             </Box>
             <Box width="60%">
                 <Typography align="center" className={classes.headerTitle}>

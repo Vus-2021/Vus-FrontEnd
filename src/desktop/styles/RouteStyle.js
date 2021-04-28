@@ -9,7 +9,7 @@ const RouteStyle = makeStyles(theme => ({
         position: 'absolute',
         top: '40%',
         height: '50px',
-        zIndex: '5600',
+        zIndex: '560',
         display: 'flex',
         alignItems: 'center',
         transition: theme.transitions.create('left', {
@@ -35,7 +35,7 @@ const RouteStyle = makeStyles(theme => ({
     },
     routePaper: {
         position: 'absolute',
-        zIndex: '5500',
+        zIndex: '550',
         top: '60px',
         backgroundColor: 'rgba(255,255,255,0.9)',
         width: '325px',

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext } from 'react';
 import Header from '../layout/Header';
 import AdminStyle from '../styles/AdminStyle';
 import { Box, Typography } from '@material-ui/core';
@@ -11,10 +11,14 @@ import Route from './Route';
 import Notice from './Notice';
 import CreateRoute from './CreateRoute';
 import Boarder from './Boarder';
+import { useMediaQuery } from '@material-ui/core';
+
+export const DeviceMode = createContext(null);
 
 const Admin = () => {
     const classes = AdminStyle();
-    const [adminName] = useState('김바텍');
+    const device = useMediaQuery('(max-width: 540px)');
+
     const [openDrawer, setOpenDrawer] = useState(false);
     const [state, setState] = useState({
         titleName: '사용자 관리',
@@ -37,10 +41,9 @@ const Admin = () => {
     }, [data]);
 
     return (
-        <React.Fragment>
+        <DeviceMode.Provider value={device}>
             <div className={classes.rootBox}>
                 <Header
-                    adminName={adminName}
                     openDrawer={openDrawer}
                     setOpenDrawer={setOpenDrawer}
                     setState={setState}
@@ -50,7 +53,12 @@ const Admin = () => {
                     loading={loading}
                 />
 
-                <Box className={clsx(classes.mainBox, { [classes.mainBoxShift]: openDrawer })}>
+                <Box
+                    className={clsx(
+                        classes.mainBox,
+                        !device && { [classes.mainBoxShift]: openDrawer },
+                    )}
+                >
                     <Box height="40px" ml={5}>
                         <Typography className={classes.titleText}>{state.titleName}</Typography>
                     </Box>
@@ -65,7 +73,7 @@ const Admin = () => {
                     </Box>
                 </Box>
             </div>
-        </React.Fragment>
+        </DeviceMode.Provider>
     );
 };
 

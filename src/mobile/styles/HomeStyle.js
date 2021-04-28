@@ -6,7 +6,7 @@ const HomeStyle = makeStyles(theme => ({
         backgroundImage: `url(${background})`,
         backgroundRepeat: 'no-repeat',
         backgroundSize: 'cover',
-        height: '91vh',
+        height: '100vh',
     },
     applyText: {
         '&.MuiTypography-body1': {
@@ -62,6 +62,8 @@ const HomeStyle = makeStyles(theme => ({
     },
     busInfo: {
         border: '1px solid',
+        display: 'flex',
+        justifyContent: 'center',
     },
     busNumber: {
         '&.MuiTypography-body1': {

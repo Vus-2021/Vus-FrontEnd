@@ -298,7 +298,7 @@ const Route = props => {
                 </Drawer>
                 <Box
                     position="absolute"
-                    zIndex={updateRouteDialog ? '0' : '4000'}
+                    zIndex={updateRouteDialog ? '0' : '400'}
                     display="flex"
                     width="100%"
                     justifyContent="flex-end"
@@ -325,7 +325,7 @@ const Route = props => {
                 </Box>
                 <Box
                     position="absolute"
-                    zIndex={updateRouteDialog ? '0' : '5000'}
+                    zIndex={updateRouteDialog ? '0' : '500'}
                     minWidth="325px"
                     pt={0.5}
                 >
@@ -382,7 +382,7 @@ const Route = props => {
                                 )}
                             </Box>
                         </form>
-                        <Box overflow="auto" maxHeight="500px" maxWidth="340px">
+                        <Box overflow="auto" maxHeight="540px" maxWidth="340px">
                             <Collapse in={openList} timeout="auto" unmountOnExit>
                                 {listData.length > 0 &&
                                     listData.map(data => (

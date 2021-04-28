@@ -396,7 +396,7 @@ const Boarder = props => {
             </Box>
             <Box mb={1}>
                 <Paper>
-                    <Box width="100%" minHeight="500px" height="60vh">
+                    <Box width="100%" minHeight="540px" height="60vh">
                         <DataGrid
                             columns={columns.map(column => ({
                                 ...column,

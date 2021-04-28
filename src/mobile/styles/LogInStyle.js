@@ -15,6 +15,18 @@ const LogInStyle = createUseStyles({
             backgroundColor: '#FD3434',
         },
     },
+    signUpButton: {
+        '&.MuiButton-root': {
+            borderRadius: 50,
+            color: 'white',
+            backgroundColor: '#9640D9',
+            fontSize: '16px',
+        },
+        '&.MuiButton-root:hover': {
+            color: 'white',
+            backgroundColor: '#9640D9',
+        },
+    },
 });
 
 export default LogInStyle;

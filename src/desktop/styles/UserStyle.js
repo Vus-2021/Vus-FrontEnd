@@ -67,6 +67,13 @@ const UserStyle = makeStyles(theme => ({
         fontSize: '18px',
         fontWeight: 400,
     },
+
+    deleteIcon: {
+        fontSize: '18px',
+    },
+    deleteText: {
+        fontSize: '13px',
+    },
 }));
 
 export default UserStyle;

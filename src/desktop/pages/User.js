@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
     Box,
     Button,
@@ -25,6 +25,7 @@ import { useQuery, useMutation } from '@apollo/react-hooks';
 import { useHistory } from 'react-router-dom';
 import XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import { DeviceMode } from '../pages/Admin';
 
 const columns = [
     { field: 'name', headerName: '이름', width: 130 },
@@ -35,6 +36,9 @@ const columns = [
 ];
 
 const User = () => {
+    // eslint-disable-next-line no-unused-vars
+    const deviceMode = useContext(DeviceMode);
+
     const classes = UserStyle();
     const history = useHistory();
     const [selection, setSelection] = useState([]);
@@ -96,9 +100,9 @@ const User = () => {
     }, [data, history]);
 
     return (
-        <Box px={15} pt={2} minWidth="600px">
+        <Box px={deviceMode ? 0 : 15} pt={2} minWidth={deviceMode ? null : '600px'}>
             <Box className={classes.mainBox} mb={1}>
-                <Box>
+                <Box maxWidth={deviceMode ? '270px' : null}>
                     <form onSubmit={handleSubmit(searchClick)}>
                         <Box className={classes.searchBox}>
                             <Box width="230px" mr={1}>
@@ -165,7 +169,7 @@ const User = () => {
             </Box>
             <Box mb={1}>
                 <Paper>
-                    <Box width="100%" minHeight="500px" height="65vh">
+                    <Box width="100%" minHeight={deviceMode ? null : '540px'} height="65vh">
                         <DataGrid
                             columns={columns.map(column => ({
                                 ...column,
@@ -234,6 +238,7 @@ const CustomToolbar = props => {
     const { selection, deleteUserClick, userRow, excelName, refetch } = props;
     const classes = UserStyle();
     const [excelDialog, setExcelDialog] = useState(false); //엑셀 Dialog open 여부
+    const deviceMode = useContext(DeviceMode);
 
     const s2ab = s => {
         const buf = new ArrayBuffer(s.length);
@@ -280,11 +285,16 @@ const CustomToolbar = props => {
                         disabled={selection.length === 0}
                         onClick={deleteUserClick}
                     >
-                        <DeleteForever /> <Typography>&nbsp;삭제</Typography>
+                        <DeleteForever className={deviceMode ? classes.deleteIcon : null} />{' '}
+                        <Typography className={deviceMode ? classes.deleteText : null}>
+                            &nbsp;삭제
+                        </Typography>
                     </Button>
                 </Box>
                 <Box>
-                    <Typography>{selection.length}개 선택됨</Typography>
+                    <Typography className={deviceMode ? classes.deleteText : null}>
+                        {selection.length}개 선택됨
+                    </Typography>
                 </Box>
             </Box>
             <Box display="flex" alignItems="center">
@@ -296,7 +306,9 @@ const CustomToolbar = props => {
                         size="small"
                     >
                         <ExcelUpload fontSize="small" />
-                        <Typography>업로드</Typography>
+                        <Typography className={deviceMode ? classes.deleteText : null}>
+                            업로드
+                        </Typography>
                     </Button>
                 </Box>
                 <Box>
@@ -307,7 +319,9 @@ const CustomToolbar = props => {
                         size="small"
                     >
                         <ExcelDownload fontSize="small" />
-                        <Typography>다운로드</Typography>
+                        <Typography className={deviceMode ? classes.deleteText : null}>
+                            다운로드
+                        </Typography>
                     </Button>
                 </Box>
             </Box>
