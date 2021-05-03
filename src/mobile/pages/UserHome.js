@@ -106,9 +106,6 @@ const UserHome = ({ history }) => {
                 });
                 setUserApplyData(routeInfo);
                 setUserBusData(routeStates);
-                if (type === 'DRIVER') {
-                    history.push('/driver');
-                }
             }
         }
 
@@ -182,7 +179,13 @@ const UserHome = ({ history }) => {
                         </Box>
                     )}
                 </Box>
-                <Box mt={2} height="38%" minHeight="180px" className={classes.chooseBus}>
+                <Box
+                    mt={2}
+                    height="38%"
+                    minHeight="180px"
+                    className={classes.chooseBus}
+                    overflow="hidden"
+                >
                     <BusList routeInfo={routeInfo} />
                 </Box>
                 <Box mb={1} px={2} height="40px" className={classes.busNotify} display="flex">
@@ -383,7 +386,7 @@ const BusList = props => {
 
     const busList = routeInfo.map((data, index) => (
         <GridListTile key={index} style={{ maxWidth: '200px' }}>
-            <Box minHeight="180px" height="100%" overflow="auto">
+            <Box minHeight="180px" height="100%">
                 <Card elevation={5} className={classes.busCard}>
                     <CardActionArea
                         className={classes.cardAction}
@@ -411,14 +414,25 @@ const BusList = props => {
                                 </Paper>
                             </Box>
                             <Box>
-                                <Typography
-                                    align="center"
-                                    className={smallDevice ? classes.countText : null}
-                                >
-                                    {data.month.registerCount !== null
-                                        ? `신청자: ${data.month.registerCount} / ${data.limitCount}`
-                                        : '신청 미개시'}
-                                </Typography>
+                                {data.month.month === dayjs().format('YYYY-MM') ? (
+                                    <Typography
+                                        align="center"
+                                        className={smallDevice ? classes.countText : null}
+                                    >
+                                        {data.month.boardingCount !== null
+                                            ? `탑승객: ${data.month.boardingCount} / ${data.limitCount}`
+                                            : '신청 미개시'}
+                                    </Typography>
+                                ) : (
+                                    <Typography
+                                        align="center"
+                                        className={smallDevice ? classes.countText : null}
+                                    >
+                                        {data.month.registerCount !== null
+                                            ? `신청자: ${data.month.registerCount} / ${data.limitCount}`
+                                            : '신청 미개시'}
+                                    </Typography>
+                                )}
                             </Box>
                         </CardContent>
                     </CardActionArea>

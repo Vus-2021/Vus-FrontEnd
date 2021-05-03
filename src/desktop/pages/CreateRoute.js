@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Box, Paper } from '@material-ui/core';
 import MiniHeader from '../layout/MiniHeader';
 import RouteStyle from '../styles/RouteStyle';
@@ -19,10 +19,13 @@ import { useQuery, useMutation, useLazyQuery } from '@apollo/react-hooks';
 import { GET_USERS, CHECK_USERID } from '../gql/route/query';
 import { CREATE_ROUTE } from '../gql/route/mutation';
 import fileUpload from '../components/FileUpload';
+import { DeviceMode } from '../../App';
 
 const CreateRoute = props => {
     const { refetch } = props;
     const classes = RouteStyle();
+    const deviceMode = useContext(DeviceMode);
+
     const { control, handleSubmit, errors, reset, setValue, setError, clearErrors } = useForm();
     const [drivers, setDrivers] = useState([]);
     const [openSnackbar, setSnackbar] = useState(false);
@@ -109,8 +112,8 @@ const CreateRoute = props => {
     return (
         <Box display="flex" justifyContent="center" height="90%" alignItems="center">
             <Paper elevation={10} className={classes.registerPaper}>
-                <Box width="380px" height="500px">
-                    <MiniHeader headerText="노선 등록" />
+                <Box width={deviceMode ? null : '380px'} height="500px">
+                    <MiniHeader headerText="노선 생성" />
                     <Box px={4} pt={6} pb={4}>
                         <form onSubmit={handleSubmit(registerRoute)} encType="multipart/form-data">
                             <Box mb={1}>
@@ -289,6 +292,7 @@ const CreateRoute = props => {
                                                         display="flex"
                                                         flexDirection="column"
                                                         alignItems="center"
+                                                        maxWidth="280px"
                                                     >
                                                         <Typography className={classes.imageText}>
                                                             {errors.image
@@ -298,8 +302,13 @@ const CreateRoute = props => {
                                                         {imgPreview !== '' && (
                                                             <img
                                                                 src={imgPreview}
-                                                                width="140px"
+                                                                width="100%"
                                                                 alt="nothing"
+                                                                style={{
+                                                                    maxWidth: deviceMode
+                                                                        ? '220px'
+                                                                        : '280px',
+                                                                }}
                                                             />
                                                         )}
                                                     </Box>

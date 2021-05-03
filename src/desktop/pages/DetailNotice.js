@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
     Dialog,
     Box,
@@ -19,9 +19,11 @@ import { UPDATE_ADMIN_NOTICE, DELETE_NOTICE } from '../gql/notice/mutation';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor';
 import editorConfiguration from './customTextEditor';
+import { DeviceMode } from '../../App';
 
 const DetailNotice = props => {
     const { open, onClose, noticeData, partitionKey, refetch } = props;
+    const deviceMode = useContext(DeviceMode);
     const classes = NoticeStyle();
     const { handleSubmit, control, errors, setValue } = useForm();
     const [notice, setNotice] = useState({
@@ -96,9 +98,11 @@ const DetailNotice = props => {
                             fullWidth
                             variant="outlined"
                             size="medium"
-                            rules={{ required: true }}
+                            rules={{
+                                required: '제목을 입력해주세요.',
+                            }}
                             error={errors.notice ? true : false}
-                            helperText={errors.notice ? '제목을 입력해주세요.' : ' '}
+                            helperText={errors.notice ? errors.notice.message : ' '}
                         />
                     </Box>
                     <Box height="80px" width="100%">
@@ -118,7 +122,7 @@ const DetailNotice = props => {
                     <Box width="100%" mb={3}>
                         <Controller
                             name="content"
-                            defaultValue=""
+                            defaultValue={notice.content}
                             control={control}
                             rules={{ required: true }}
                             render={() => (
@@ -130,11 +134,13 @@ const DetailNotice = props => {
                                         config={editorConfiguration}
                                         onReady={editor => {
                                             if (editor) {
-                                                editor.ui.view.element.style.width = '504px';
+                                                editor.ui.view.element.style.width = deviceMode
+                                                    ? '100%'
+                                                    : '504px';
                                                 editor.editing.view.change(writer => {
                                                     writer.setStyle(
                                                         'height',
-                                                        '350px',
+                                                        deviceMode ? '220px' : '350px',
                                                         editor.editing.view.document.getRoot(),
                                                     );
                                                     writer.setStyle(

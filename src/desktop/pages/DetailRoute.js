@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
     Box,
     Button,
@@ -24,9 +24,11 @@ import { useForm, Controller } from 'react-hook-form';
 import MiniHeader from '../layout/MiniHeader';
 import RouteStyle from '../styles/RouteStyle';
 import fileUpload from '../components/FileUpload';
+import { DeviceMode } from '../../App';
 
 const UpdateRouteDialog = props => {
     const { open, onClose, routeName } = props;
+    const deviceMode = useContext(DeviceMode);
     const classes = RouteStyle();
     const { control, handleSubmit, errors, setError } = useForm();
     const [drivers, setDrivers] = useState([]);
@@ -63,7 +65,8 @@ const UpdateRouteDialog = props => {
 
     const updateClick = async data => {
         const driverData = data.driver.split('+');
-        const fileLocation = changedImage !== '' ? await fileUpload(data.image) : null;
+        const fileLocation =
+            changedImage !== '' && data.image !== '' ? await fileUpload(data.image) : null;
         updateRoute({
             variables: {
                 partitionKey: routeInfo.partitionKey,
@@ -109,9 +112,14 @@ const UpdateRouteDialog = props => {
     }, [updateData, onClose, setError]);
 
     return (
-        <Dialog open={open} onClose={handleClose}>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            fullWidth={deviceMode}
+            maxWidth={deviceMode ? 'xs' : null}
+        >
             <MiniHeader handleClose={handleClose} headerText="노선 수정" />
-            <Box p={4}>
+            <Box p={deviceMode ? 3 : 4}>
                 {routeInfo.driver && (
                     <form
                         onSubmit={handleSubmit(data => updateClick(data))}
@@ -276,6 +284,7 @@ const UpdateRouteDialog = props => {
                                                     display="flex"
                                                     flexDirection="column"
                                                     alignItems="center"
+                                                    maxWidth="280px"
                                                 >
                                                     <Typography className={classes.imageText}>
                                                         {imageName}
@@ -286,8 +295,13 @@ const UpdateRouteDialog = props => {
                                                                 ? routeInfo.imageUrl
                                                                 : changedImage
                                                         }
-                                                        width="140px"
+                                                        width="100%"
                                                         alt="nothing"
+                                                        style={{
+                                                            maxWidth: deviceMode
+                                                                ? '220px'
+                                                                : '280px',
+                                                        }}
                                                     />
                                                 </Box>
                                             </Button>
@@ -336,7 +350,7 @@ const DeleteRouteDialog = props => {
     }, [deleteData]);
 
     return (
-        <Dialog open={open} onClose={() => onClose(false)} style={{ zIndex: 600 }}>
+        <Dialog open={open} onClose={() => onClose(false)} style={{ zIndex: 6000 }}>
             <Box px={3} py={2}>
                 <Box mb={2}>
                     <Typography className={classes.deleteRouteTitle}>노선 삭제</Typography>
@@ -375,6 +389,7 @@ const DeleteRouteDialog = props => {
 
 const CreateDialog = props => {
     const { open, onClose, routeName, latlng, refetch } = props;
+    const deviceMode = useContext(DeviceMode);
     const classes = RouteStyle();
     const { control, handleSubmit, errors } = useForm();
 
@@ -425,9 +440,15 @@ const CreateDialog = props => {
     }, [data, onClose]);
 
     return (
-        <Dialog open={open} onClose={handleClose} style={{ zIndex: 600 }}>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            style={{ zIndex: 6000 }}
+            fullWidth={deviceMode}
+            maxWidth={deviceMode ? 'xs' : null}
+        >
             <MiniHeader handleClose={handleClose} headerText="정류장 생성" />
-            <Box p={4}>
+            <Box p={deviceMode ? 3 : 4}>
                 <form
                     onSubmit={handleSubmit(data => createRoute(data))}
                     encType="multipart/form-data"
@@ -519,6 +540,7 @@ const CreateDialog = props => {
                                                 display="flex"
                                                 flexDirection="column"
                                                 alignItems="center"
+                                                maxWidth="280px"
                                             >
                                                 <Typography className={classes.imageText}>
                                                     {errors.image
@@ -528,8 +550,13 @@ const CreateDialog = props => {
                                                 {imgPreview !== '' && (
                                                     <img
                                                         src={imgPreview}
-                                                        width="280px"
+                                                        width="100%"
                                                         alt="nothing"
+                                                        style={{
+                                                            maxWidth: deviceMode
+                                                                ? '220px'
+                                                                : '280px',
+                                                        }}
                                                     />
                                                 )}
                                             </Box>
@@ -552,6 +579,7 @@ const CreateDialog = props => {
 
 const UpdateDialog = props => {
     const { open, onClose, marker, route, refetch } = props;
+    const deviceMode = useContext(DeviceMode);
     const classes = RouteStyle();
     const { control, handleSubmit, errors } = useForm();
 
@@ -586,7 +614,8 @@ const UpdateDialog = props => {
     };
 
     const reviseRouteClick = async data => {
-        const fileLocation = changedImage !== '' ? await fileUpload(data.image) : null;
+        const fileLocation =
+            changedImage !== '' && data.image !== '' ? await fileUpload(data.image) : null;
         updateDetailRoute({
             variables: {
                 partitionKey: route.partitionKey,
@@ -619,9 +648,15 @@ const UpdateDialog = props => {
     }, [deleteData, onClose]);
 
     return (
-        <Dialog open={open} onClose={handleClose} style={{ zIndex: 600 }}>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            style={{ zIndex: 6000 }}
+            fullWidth={deviceMode}
+            maxWidth={deviceMode ? 'xs' : null}
+        >
             <MiniHeader handleClose={handleClose} headerText="정류장 수정/삭제" />
-            <Box p={4}>
+            <Box p={deviceMode ? 3 : 4}>
                 <form onSubmit={handleSubmit(data => reviseRouteClick(data))}>
                     <Box mb={1} width="100%">
                         <Controller
@@ -688,6 +723,7 @@ const UpdateDialog = props => {
                                                 display="flex"
                                                 flexDirection="column"
                                                 alignItems="center"
+                                                maxWidth="280px"
                                             >
                                                 <Typography className={classes.imageText}>
                                                     {imageName}
@@ -698,8 +734,11 @@ const UpdateDialog = props => {
                                                             ? route.imageUrl
                                                             : changedImage
                                                     }
-                                                    width="280px"
+                                                    width="100%"
                                                     alt="nothing"
+                                                    style={{
+                                                        maxWidth: deviceMode ? '220px' : '280px',
+                                                    }}
                                                 />
                                             </Box>
                                         </Button>

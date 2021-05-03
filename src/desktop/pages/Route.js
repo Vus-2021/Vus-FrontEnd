@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import {
     Box,
     Button,
@@ -41,13 +41,15 @@ import SPRITE_IMAGE from '../../mobile/images/MarkerImages.png';
 import ARRIVAL_IMAGE from '../../mobile/images/ArrivalMarker.png';
 import RouteStyle from '../styles/RouteStyle';
 import { CreateDialog, UpdateRouteDialog, UpdateDialog, DeleteRouteDialog } from './DetailRoute';
+import { DeviceMode } from '../../App';
 
 const { kakao } = window;
 
 const Route = props => {
     const { routeName, partitionKey, refetchRouteName } = props;
+    const deviceMode = useContext(DeviceMode);
     const { control, handleSubmit } = useForm();
-    const classes = RouteStyle();
+    const classes = RouteStyle(deviceMode);
 
     const map = useRef();
     const createMarker = useRef();
@@ -249,7 +251,7 @@ const Route = props => {
     }, [data]);
 
     return (
-        <Box px={2} pt={1} minWidth="600px" width="95%" height="98%">
+        <Box pt={1} minWidth={deviceMode ? null : '600px'} width="95%" height="98%">
             <Box id="kakaoMap" width="100%" height="100%">
                 <Box
                     className={clsx(classes.menuButton, { [classes.menuButtonShift]: openRoute })}
@@ -275,7 +277,10 @@ const Route = props => {
                     ModalProps={{ className: classes.routeModal }}
                     PaperProps={{
                         className: classes.routePaper,
-                        style: { height: `calc(100% - 60px)` },
+                        style: {
+                            height: `calc(100% - 60px)`,
+                            width: deviceMode ? '245px' : '325px',
+                        },
                     }}
                     className={classes.menuDrawer}
                 >
@@ -296,13 +301,15 @@ const Route = props => {
                         />
                     )}
                 </Drawer>
+
                 <Box
                     position="absolute"
                     zIndex={updateRouteDialog ? '0' : '400'}
-                    display="flex"
-                    width="100%"
-                    justifyContent="flex-end"
+                    top={deviceMode ? null : 5}
+                    bottom={deviceMode ? 5 : null}
+                    right={0}
                     pt={0.5}
+                    display="flex"
                 >
                     <Box mr={1}>
                         <Button
@@ -323,10 +330,11 @@ const Route = props => {
                         </Button>
                     </Box>
                 </Box>
+
                 <Box
                     position="absolute"
                     zIndex={updateRouteDialog ? '0' : '500'}
-                    minWidth="325px"
+                    minWidth={deviceMode ? '245px' : '325px'}
                     pt={0.5}
                 >
                     <Box p={1} className={classes.searchField}>
@@ -340,7 +348,7 @@ const Route = props => {
                             })}
                         >
                             <Box display="flex" flexDirection="row" alignItems="center">
-                                <Box width="230px" mr={1}>
+                                <Box width={deviceMode ? '150px' : '230px'} mr={1}>
                                     <Controller
                                         name="search"
                                         control={control}

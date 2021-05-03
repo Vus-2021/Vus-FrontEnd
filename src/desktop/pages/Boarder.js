@@ -10,20 +10,17 @@ import {
     InputLabel,
     Paper,
     Chip,
-    Tabs,
-    Tab,
     Typography,
     Dialog,
 } from '@material-ui/core';
-import { Search, Add } from '@material-ui/icons';
-import { DataGrid } from '@material-ui/data-grid';
+import { Search, DeleteForever } from '@material-ui/icons';
+import { DataGrid, GridToolbarContainer } from '@material-ui/data-grid';
 import { useForm, Controller } from 'react-hook-form';
 import BoarderStyle from '../styles/BoarderStyle';
-import { GET_BUS_APPLICANT, GET_ROUTE_BY_MONTH } from '../gql/boarder/query';
-import { ADD_MONTHLY_ROUTE, RESET_MONTH_ROUTE, INIT_PASSENGERS } from '../gql/boarder/mutation';
+import { GET_BUS_APPLICANT } from '../gql/boarder/query';
+import { RESET_MONTH_ROUTE, INIT_PASSENGERS } from '../gql/boarder/mutation';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import * as dayjs from 'dayjs';
-import MiniHeader from '../layout/MiniHeader';
 import BoarderSelectionDialog from './BoarderSelection';
 
 import DetailBoarderDialog from './DetailBoarder';
@@ -95,7 +92,7 @@ const ChipStyle = props => {
 };
 
 const Boarder = props => {
-    const { routeItems } = props;
+    const { routeItems, month } = props;
     const classes = BoarderStyle();
     const { control, handleSubmit } = useForm();
 
@@ -104,7 +101,6 @@ const Boarder = props => {
     const [standard, setStandard] = useState({
         partitionKey: routeItems[0].partitionKey,
         route: routeItems[0].route,
-        month: '',
         state: '',
         isCancellation: null,
     }); //  분류 기준(대기자, 노선, 월별)
@@ -113,8 +109,6 @@ const Boarder = props => {
         userId: null,
         type: null,
     }); //검색 기준(이름, 아이디, 소속)
-    const [monthSelect, setMonthSelect] = useState([]); //getRouteByMonth의 데이터를 담을 state
-    const [openAddDialog, setOpenAddDialog] = useState(false); // 월 추가 Dialog의 open여부
     const [openApplyDialog, setOpenApplyDialog] = useState(false); //탑승 신청 초기화 Dialog의 open여부
     const [openResetSelectionDialog, setOpenResetSelectionDialog] = useState(false); //대기자 선별 초기화 Dialog의 open여부
     const [openSelectionDialog, setOpenSelectionDialog] = useState(false); //대기자 선별 Dialog open여부
@@ -126,20 +120,12 @@ const Boarder = props => {
     const { loading, data, refetch } = useQuery(GET_BUS_APPLICANT, {
         variables: {
             route: standard.route,
-            month: standard.month,
+            month: month,
             state: null,
             isCancellation: null,
         },
         fetchPolicy: 'no-cache',
     });
-
-    const { loading: monthLoading, data: monthData, refetch: refetchMonth } = useQuery(
-        GET_ROUTE_BY_MONTH,
-        {
-            variables: { partitionKey: standard.partitionKey },
-            fetchPolicy: 'no-cache',
-        },
-    );
 
     const boardList = [
         {
@@ -186,14 +172,6 @@ const Boarder = props => {
         const partitionKey = e.target.value.split('+')[0];
         const routeName = e.target.value.split('+')[1];
         setStandard({ ...standard, partitionKey: partitionKey, route: routeName });
-        refetchMonth({ partitionKey: standard.partitionKey });
-    };
-
-    const monthChange = e => {
-        if (e.target.value !== 'add') {
-            setPage(0);
-            setStandard({ ...standard, month: e.target.value });
-        }
     };
 
     const changeBoardType = index => {
@@ -230,58 +208,17 @@ const Boarder = props => {
         //분류 및 검색기준이 바뀌었을 때
         refetch({
             route: standard.route,
-            month: standard.month,
+            month: month,
             state: standard.state,
             name: search.name,
             userId: search.userId,
             type: search.type,
             isCancellation: standard.isCancellation,
         });
-    }, [standard, search, refetch]);
-
-    useEffect(() => {
-        // 월 선택이 바뀌었을 때
-        if (monthData) {
-            const { success, message, data } = monthData.getRouteByMonth;
-            if (success) {
-                setMonthSelect(data);
-                if (data.length > 0 && data[0].month)
-                    setStandard(standard => ({ ...standard, month: data[data.length - 1].month }));
-            } else console.log(message);
-        }
-        return () => {
-            setMonthSelect([]);
-        };
-    }, [monthData]);
+    }, [standard, search, refetch, month]);
 
     return (
-        <Box px={15} pb={2} minWidth="600px">
-            <Box mb={3} width="100%" minWidth="600px" display="flex" justifyContent="center">
-                <Paper elevation={2}>
-                    <Tabs
-                        value={boardType}
-                        onChange={(e, newValue) => {
-                            changeBoardType(newValue);
-                        }}
-                        aria-label="register tabs"
-                        textColor="primary"
-                        indicatorColor="primary"
-                    >
-                        {boardList.map((data, index) => (
-                            <Tab
-                                key={data.listName}
-                                value={index}
-                                classes={{ root: classes.tab }}
-                                label={
-                                    <Typography className={classes.tabText}>
-                                        {data.listName}
-                                    </Typography>
-                                }
-                            />
-                        ))}
-                    </Tabs>
-                </Paper>
-            </Box>
+        <Box px={15} pt={2} minWidth="600px">
             <Box display="flex" justifyContent="space-between" alignItems="flex-end" mb={1}>
                 <Box display="flex" flexDirection="row" alignItems="center">
                     <Box mr={1}>
@@ -304,30 +241,22 @@ const Boarder = props => {
                             </Select>
                         </FormControl>
                     </Box>
-                    <Box mr={2} width="106px">
+                    <Box mr={2}>
                         <FormControl variant="outlined" size="small" fullWidth>
-                            <InputLabel>월 선택</InputLabel>
+                            <InputLabel>선별 여부</InputLabel>
                             <Select
-                                onChange={monthChange}
-                                label="월 선택"
-                                value={monthSelect.length > 0 ? standard.month : ''}
+                                onChange={e => changeBoardType(e.target.value)}
+                                label="선별 여부"
+                                defaultValue={0}
                             >
-                                {monthSelect.map(data => (
-                                    <MenuItem
-                                        key={data.month}
-                                        value={dayjs(data.month).format('YYYY-MM')}
-                                    >
-                                        {dayjs(data.month).format('YYYY-MM')}
+                                {boardList.map((data, index) => (
+                                    <MenuItem key={data.listName} value={index}>
+                                        {data.listName}
                                     </MenuItem>
                                 ))}
-                                <MenuItem value="add" onClick={() => setOpenAddDialog(true)}>
-                                    <Add />
-                                    추가
-                                </MenuItem>
                             </Select>
                         </FormControl>
                     </Box>
-                    <Box>{boardRow.length}명 등록됨.</Box>
                 </Box>
                 <Box>
                     <form onSubmit={handleSubmit(searchClick)}>
@@ -396,7 +325,7 @@ const Boarder = props => {
             </Box>
             <Box mb={1}>
                 <Paper>
-                    <Box width="100%" minHeight="540px" height="60vh">
+                    <Box width="100%" minHeight="540px" height="65vh">
                         <DataGrid
                             columns={columns.map(column => ({
                                 ...column,
@@ -415,59 +344,23 @@ const Boarder = props => {
                             localeText={{
                                 footerRowSelected: count => `${count}명 선택됨.`,
                             }}
-                            loading={loading || monthLoading}
+                            loading={loading}
                             onPageChange={params => setPage(params.page)}
                             page={page}
+                            components={{ Toolbar: CustomToolbar }}
+                            componentsProps={{
+                                toolbar: {
+                                    selection: selection,
+                                    deleteBoarderClick: () => setOpenApplyDialog(true),
+                                    selectionClick: selectionClick,
+                                    setOpenResetSelectionDialog: setOpenResetSelectionDialog,
+                                    boardType: boardType,
+                                },
+                            }}
                         />
                     </Box>
                 </Paper>
             </Box>
-
-            <Box display="flex" justifyContent="space-between" mb={2}>
-                {boardType === 0 && (
-                    <React.Fragment>
-                        <Box>
-                            <Button
-                                variant="contained"
-                                className={classes.resetAllButton}
-                                disabled={selection.length === 0 ? true : false}
-                                onClick={() => setOpenApplyDialog(true)}
-                            >
-                                탑승 신청 초기화
-                            </Button>
-                        </Box>
-                        <Box display="flex">
-                            <Box mr={1}>
-                                <Button
-                                    variant="contained"
-                                    className={classes.decideButton}
-                                    onClick={selectionClick}
-                                >
-                                    대기자 선별
-                                </Button>
-                            </Box>
-                            <Box>
-                                <Button
-                                    variant="contained"
-                                    className={classes.resetButton}
-                                    onClick={() => setOpenResetSelectionDialog(true)}
-                                >
-                                    선별 초기화
-                                </Button>
-                            </Box>
-                        </Box>
-                    </React.Fragment>
-                )}
-            </Box>
-
-            <AddMonthDialog
-                open={openAddDialog}
-                onClose={setOpenAddDialog}
-                monthSelect={monthSelect}
-                refetchMonth={refetchMonth}
-                currentRoute={standard.route}
-                currentKey={standard.partitionKey}
-            />
             <ApplyResetDialog
                 open={openApplyDialog}
                 onClose={setOpenApplyDialog}
@@ -476,6 +369,7 @@ const Boarder = props => {
                 setPage={setPage}
                 selection={selection}
                 setSelection={setSelection}
+                month={month}
             />
             <BoarderSelectionDialog
                 open={openSelectionDialog}
@@ -483,6 +377,7 @@ const Boarder = props => {
                 refetch={refetch}
                 standard={standard}
                 setPage={setPage}
+                month={month}
             />
             <SelectionResetDialog
                 open={openResetSelectionDialog}
@@ -490,20 +385,86 @@ const Boarder = props => {
                 refetch={refetch}
                 standard={standard}
                 setPage={setPage}
+                month={month}
             />
             <DetailBoarderDialog
                 open={detailDialog}
                 onClose={setDetailDialog}
                 refetch={refetch}
                 boarderData={boarderData}
-                month={standard.month}
+                month={month}
             />
         </Box>
     );
 };
 
+const CustomToolbar = props => {
+    const {
+        selection,
+        deleteNoticeClick,
+        selectionClick,
+        setOpenResetSelectionDialog,
+        boardType,
+    } = props;
+    const classes = BoarderStyle();
+    // const deviceMode = useContext(DeviceMode);
+
+    return (
+        <GridToolbarContainer className={classes.customToolBar}>
+            <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+                width={boardType === 0 ? '100%' : null}
+            >
+                <Box display="flex" alignItems="center">
+                    <Box mr={2}>
+                        <Button
+                            size="small"
+                            variant="contained"
+                            color="secondary"
+                            className={classes.buttonDelete}
+                            onClick={deleteNoticeClick}
+                            disabled={selection.length === 0}
+                        >
+                            <DeleteForever /> <Typography>&nbsp;삭제</Typography>
+                        </Button>
+                    </Box>
+                    <Box>
+                        <Typography>{selection.length}명 선택됨</Typography>
+                    </Box>
+                </Box>
+                {boardType === 0 && (
+                    <Box>
+                        <Box display="flex" alignItems="center">
+                            <Box mr={1}>
+                                <Button
+                                    variant="contained"
+                                    className={classes.selectionDecideButton}
+                                    onClick={selectionClick}
+                                >
+                                    대기자 선별
+                                </Button>
+                            </Box>
+                            <Box>
+                                <Button
+                                    variant="contained"
+                                    className={classes.selectionResetButton}
+                                    onClick={() => setOpenResetSelectionDialog(true)}
+                                >
+                                    선별 초기화
+                                </Button>
+                            </Box>
+                        </Box>
+                    </Box>
+                )}
+            </Box>
+        </GridToolbarContainer>
+    );
+};
+
 const ApplyResetDialog = props => {
-    const { open, onClose, refetch, standard, setPage, selection, setSelection } = props;
+    const { open, onClose, refetch, standard, setPage, selection, setSelection, month } = props;
     const classes = BoarderStyle();
 
     const [resetMonthRoute, { data: resetData }] = useMutation(RESET_MONTH_ROUTE, {
@@ -515,7 +476,7 @@ const ApplyResetDialog = props => {
     const resetAll = () => {
         resetMonthRoute({
             variables: {
-                month: standard.month,
+                month: month,
                 route: standard.route,
                 busId: standard.partitionKey,
                 userId: selection,
@@ -544,7 +505,7 @@ const ApplyResetDialog = props => {
                 <Box mb={3}>
                     <Typography className={classes.warningText}>
                         선택한 <strong>{selection.length}명</strong>의{' '}
-                        <strong>{dayjs(standard.month).format('YYYY년 MM월')}</strong> 신청 정보가
+                        <strong>{dayjs(month).format('YYYY년 MM월')}</strong> 신청 정보가
                         사라집니다.
                         <br />
                         정말 초기화 하시겠습니까?
@@ -578,7 +539,7 @@ const ApplyResetDialog = props => {
 };
 
 const SelectionResetDialog = props => {
-    const { open, onClose, standard, setPage, refetch } = props;
+    const { open, onClose, standard, setPage, refetch, month } = props;
     const classes = BoarderStyle();
 
     const [initPassengers, { data }] = useMutation(INIT_PASSENGERS, {
@@ -590,7 +551,7 @@ const SelectionResetDialog = props => {
     const resetAll = () => {
         initPassengers({
             variables: {
-                month: standard.month,
+                month: month,
                 route: standard.route,
                 busId: standard.partitionKey,
             },
@@ -616,8 +577,8 @@ const SelectionResetDialog = props => {
                 </Box>
                 <Box mb={3}>
                     <Typography className={classes.warningText}>
-                        <strong>{dayjs(standard.month).format('YYYY년 MM월')}</strong>의 모든 선별
-                        정보가 사라집니다.
+                        <strong>{dayjs(month).format('YYYY년 MM월')}</strong>의 모든 선별 정보가
+                        사라집니다.
                         <br />
                         정말 초기화 하시겠습니까?
                     </Typography>
@@ -649,73 +610,73 @@ const SelectionResetDialog = props => {
     );
 };
 
-const AddMonthDialog = props => {
-    const { open, onClose, monthSelect, currentRoute, currentKey, refetchMonth } = props;
-    const classes = BoarderStyle();
+// const AddMonthDialog = props => {
+//     const { open, onClose, monthSelect, currentRoute, currentKey, refetchMonth } = props;
+//     const classes = BoarderStyle();
 
-    const lastMonth =
-        monthSelect.length === 0
-            ? dayjs(new Date()).subtract(1, 'month')
-            : monthSelect[monthSelect.length - 1].month;
-    const newMonth = dayjs(lastMonth).add(1, 'month').format('YYYY-MM');
+//     const lastMonth =
+//         monthSelect.length === 0
+//             ? dayjs(new Date()).subtract(1, 'month')
+//             : monthSelect[monthSelect.length - 1].month;
+//     const newMonth = dayjs(lastMonth).add(1, 'month').format('YYYY-MM');
 
-    const [addMonthlyRoute] = useMutation(ADD_MONTHLY_ROUTE, {
-        onCompleted() {
-            refetchMonth();
-        },
-        fetchPolicy: 'no-cache',
-    });
+//     const [addMonthlyRoute] = useMutation(ADD_MONTHLY_ROUTE, {
+//         onCompleted() {
+//             refetchMonth();
+//         },
+//         fetchPolicy: 'no-cache',
+//     });
 
-    const addButtonClick = () => {
-        addMonthlyRoute({
-            variables: { partitionKey: currentKey, route: currentRoute, month: newMonth },
-        });
-        refetchMonth({ variables: { partitionKey: currentKey } });
-        onClose(false);
-    };
+//     const addButtonClick = () => {
+//         addMonthlyRoute({
+//             variables: { partitionKey: currentKey, route: currentRoute, month: newMonth },
+//         });
+//         refetchMonth({ variables: { partitionKey: currentKey } });
+//         onClose(false);
+//     };
 
-    return (
-        <Dialog open={open} onClose={() => onClose(false)}>
-            <MiniHeader
-                height="35px"
-                headerText="노선 월 추가"
-                handleClose={() => onClose(false)}
-            />
-            <Box p={4}>
-                <Box mb={2} display="flex" width="316px">
-                    <Box mr={1} width="35%">
-                        <TextField
-                            variant="outlined"
-                            size="small"
-                            defaultValue={currentRoute}
-                            disabled
-                            fullWidth
-                            label="노선 명"
-                        />
-                    </Box>
-                    <Box width="65%">
-                        <TextField
-                            variant="outlined"
-                            size="small"
-                            defaultValue={newMonth}
-                            disabled
-                            fullWidth
-                            label="월 추가"
-                        />
-                    </Box>
-                </Box>
-                <Box display="flex" justifyContent="flex-end">
-                    <Button
-                        onClick={addButtonClick}
-                        variant="contained"
-                        className={classes.addButton}
-                    >
-                        월 추가하기
-                    </Button>
-                </Box>
-            </Box>
-        </Dialog>
-    );
-};
+//     return (
+//         <Dialog open={open} onClose={() => onClose(false)}>
+//             <MiniHeader
+//                 height="35px"
+//                 headerText="노선 월 추가"
+//                 handleClose={() => onClose(false)}
+//             />
+//             <Box p={4}>
+//                 <Box mb={2} display="flex" width="316px">
+//                     <Box mr={1} width="35%">
+//                         <TextField
+//                             variant="outlined"
+//                             size="small"
+//                             defaultValue={currentRoute}
+//                             disabled
+//                             fullWidth
+//                             label="노선 명"
+//                         />
+//                     </Box>
+//                     <Box width="65%">
+//                         <TextField
+//                             variant="outlined"
+//                             size="small"
+//                             defaultValue={newMonth}
+//                             disabled
+//                             fullWidth
+//                             label="월 추가"
+//                         />
+//                     </Box>
+//                 </Box>
+//                 <Box display="flex" justifyContent="flex-end">
+//                     <Button
+//                         onClick={addButtonClick}
+//                         variant="contained"
+//                         className={classes.addButton}
+//                     >
+//                         월 추가하기
+//                     </Button>
+//                 </Box>
+//             </Box>
+//         </Dialog>
+//     );
+// };
 
 export default Boarder;

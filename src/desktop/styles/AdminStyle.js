@@ -11,7 +11,6 @@ const AdminStyle = makeStyles(theme => ({
         overflow: 'auto',
     },
     mainBox: {
-        padding: '10px',
         height: 'calc(100% - 84px)',
         overflow: 'auto',
         flexGrow: 1,
@@ -30,7 +29,6 @@ const AdminStyle = makeStyles(theme => ({
     },
     viewBox: {
         height: `calc(100% - 40px)`,
-        paddingLeft: '30px',
     },
     titleText: {
         fontSize: '23px',

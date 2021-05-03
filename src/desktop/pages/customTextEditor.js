@@ -18,6 +18,13 @@ import TextTransformation from '@ckeditor/ckeditor5-typing/src/texttransformatio
 import List from '@ckeditor/ckeditor5-list/src/list';
 import ToDoList from '@ckeditor/ckeditor5-list/src/todolist';
 import Indent from '@ckeditor/ckeditor5-indent/src/indent';
+import CKFinder from '@ckeditor/ckeditor5-ckfinder/src/ckfinder';
+import Image from '@ckeditor/ckeditor5-image/src/image';
+import Link from '@ckeditor/ckeditor5-link/src/link';
+import CKFinderUploadAdapter from '@ckeditor/ckeditor5-adapter-ckfinder/src/uploadadapter';
+import ImageUpload from '@ckeditor/ckeditor5-image/src/imageupload';
+import ImageStyle from '@ckeditor/ckeditor5-image/src/imagestyle';
+import ImageResize from '@ckeditor/ckeditor5-image/src/imageresize';
 
 const editorConfiguration = {
     plugins: [
@@ -41,6 +48,13 @@ const editorConfiguration = {
         List,
         ToDoList,
         Indent,
+        CKFinder,
+        Image,
+        Link,
+        CKFinderUploadAdapter,
+        ImageUpload,
+        ImageStyle,
+        ImageResize,
     ],
     toolbar: {
         items: [
@@ -63,6 +77,7 @@ const editorConfiguration = {
             'BlockQuote',
             'Alignment',
             'insertTable',
+            'imageUpload',
             '|',
             'undo',
             'redo',
@@ -83,6 +98,10 @@ const editorConfiguration = {
             'tableProperties',
             'tableCellProperties',
         ],
+    },
+    ckfinder: {
+        uploadUrl: 'https://tz6nuyyauc.execute-api.ap-northeast-2.amazonaws.com/dev/image/',
+        resourceType: 'Images',
     },
     typing: {
         transformations: {

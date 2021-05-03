@@ -17,7 +17,6 @@ const FileUpload = async file => {
     const ReactS3Client = new S3(config);
     let location = '';
     await ReactS3Client.uploadFile(file, file.name).then(data => {
-        console.log(data.location);
         if (data.status === 204) {
             location = data.location;
         } else {

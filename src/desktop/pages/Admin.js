@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import Header from '../layout/Header';
 import AdminStyle from '../styles/AdminStyle';
 import { Box, Typography } from '@material-ui/core';
@@ -11,13 +11,11 @@ import Route from './Route';
 import Notice from './Notice';
 import CreateRoute from './CreateRoute';
 import Boarder from './Boarder';
-import { useMediaQuery } from '@material-ui/core';
-
-export const DeviceMode = createContext(null);
+import { DeviceMode } from '../../App';
 
 const Admin = () => {
     const classes = AdminStyle();
-    const device = useMediaQuery('(max-width: 540px)');
+    const device = useContext(DeviceMode);
 
     const [openDrawer, setOpenDrawer] = useState(false);
     const [state, setState] = useState({
@@ -58,13 +56,15 @@ const Admin = () => {
                         classes.mainBox,
                         !device && { [classes.mainBoxShift]: openDrawer },
                     )}
+                    padding="10px"
                 >
-                    <Box height="40px" ml={5}>
+                    <Box height="40px" ml={device ? '10px' : '30px'}>
                         <Typography className={classes.titleText}>{state.titleName}</Typography>
                     </Box>
-                    <Box className={classes.viewBox}>
+                    <Box className={classes.viewBox} paddingLeft={device ? '10px' : '30px'}>
                         <SelectView
                             view={state.view}
+                            boardMonth={state.month}
                             routeItems={routeItems}
                             routeName={routeName}
                             partitionKey={partitionKey}
@@ -78,7 +78,7 @@ const Admin = () => {
 };
 
 const SelectView = props => {
-    const { view, routeItems, routeName, partitionKey, refetch } = props;
+    const { view, boardMonth, routeItems, routeName, partitionKey, refetch } = props;
 
     switch (view) {
         case 'userDefault':
@@ -90,7 +90,7 @@ const SelectView = props => {
         case 'noticeDefault':
             return <Notice />;
         case 'boarderDefault':
-            return <Boarder routeItems={routeItems} />;
+            return <Boarder routeItems={routeItems} month={boardMonth} />;
         default:
             return <div>default!</div>;
     }

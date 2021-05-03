@@ -1,15 +1,21 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Box, Typography, IconButton } from '@material-ui/core';
 import { Backspace } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
+import { DeviceMode } from '../../App';
 
 const MiniHeader = props => {
     const { handleClose, headerText, height, width } = props;
+    const deviceMode = useContext(DeviceMode);
     const headerHeight = height ? height : '40px';
     const headerWidth = width ? width : '380px';
     const classes = UseStyles();
     return (
-        <Box height={headerHeight} className={classes.headerBox} width={headerWidth}>
+        <Box
+            height={headerHeight}
+            className={classes.headerBox}
+            width={deviceMode ? null : headerWidth}
+        >
             <Box width="20%">
                 {handleClose && (
                     <IconButton color="inherit" onClick={handleClose}>

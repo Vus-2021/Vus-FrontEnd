@@ -100,6 +100,38 @@ const ApplicantStyle = makeStyles(theme => ({
         fontSize: '18px',
         fontWeight: 400,
     },
+    customToolBar: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        height: '30px',
+    },
+    buttonDelete: {
+        backgroundColor: '#F63434',
+        height: '30px',
+        '&:hover': {
+            backgroundColor: '#F63434',
+        },
+    },
+    selectionDecideButton: {
+        width: '100%',
+        height: '30px',
+        fontWeight: 400,
+        backgroundColor: '#008AEE',
+        color: 'white',
+        '&:hover': {
+            backgroundColor: '#008AEE',
+        },
+    },
+    selectionResetButton: {
+        width: '100%',
+        height: '30px',
+        fontWeight: 400,
+        backgroundColor: '#FF3A3A',
+        color: 'white',
+        '&:hover': {
+            backgroundColor: '#FF3A3A',
+        },
+    },
 }));
 
 export default ApplicantStyle;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import {
     Box,
     Dialog,
@@ -19,9 +19,11 @@ import { CREATE_ADMIN_NOTICE } from '../gql/notice/mutation';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor';
 import editorConfiguration from './customTextEditor';
+import { DeviceMode } from '../../App';
 
 const CreateNotice = props => {
     const { open, onClose, refetch } = props;
+    const deviceMode = useContext(DeviceMode);
     const classes = NoticeStyle();
     const { handleSubmit, control, errors, setValue } = useForm();
     const [openSnackbar, setSnackbar] = useState(false);
@@ -75,9 +77,11 @@ const CreateNotice = props => {
                             fullWidth
                             variant="outlined"
                             size="medium"
-                            rules={{ required: true }}
+                            rules={{
+                                required: '제목을 입력해주세요.',
+                            }}
                             error={errors.notice ? true : false}
-                            helperText={errors.notice ? '제목을 입력해주세요.' : ' '}
+                            helperText={errors.notice ? errors.notice.message : ' '}
                         />
                     </Box>
                     <Box width="100%" mb={1}>
@@ -93,11 +97,13 @@ const CreateNotice = props => {
                                         editor={ClassicEditor}
                                         config={editorConfiguration}
                                         onReady={editor => {
-                                            editor.ui.view.element.style.width = '504px';
+                                            editor.ui.view.element.style.width = deviceMode
+                                                ? '100%'
+                                                : '504px';
                                             editor.editing.view.change(writer => {
                                                 writer.setStyle(
                                                     'height',
-                                                    '400px',
+                                                    deviceMode ? '220px' : '400px',
                                                     editor.editing.view.document.getRoot(),
                                                 );
                                                 writer.setStyle(

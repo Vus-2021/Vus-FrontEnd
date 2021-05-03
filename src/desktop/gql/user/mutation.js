@@ -18,3 +18,25 @@ export const INIT_PASSWORD = gql`
         }
     }
 `;
+
+export const UPDATE_USER = gql`
+    mutation updateUser(
+        $userId: ID!
+        $name: String!
+        $phoneNumber: String!
+        $type: UserType!
+        $registerDate: Date!
+    ) {
+        updateUser(
+            userId: $userId
+            name: $name
+            phoneNumber: $phoneNumber
+            type: $type
+            registerDate: $registerDate
+        ) {
+            success
+            message
+            code
+        }
+    }
+`;

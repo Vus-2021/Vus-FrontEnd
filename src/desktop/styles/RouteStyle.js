@@ -24,7 +24,7 @@ const RouteStyle = makeStyles(theme => ({
             easing: theme.transitions.easing.easeOut,
             duration: theme.transitions.duration.enteringScreen,
         }),
-        left: 290,
+        left: props => (props ? 210 : 290),
         borderRadius: '50px 0 0 50px',
     },
 
@@ -38,7 +38,6 @@ const RouteStyle = makeStyles(theme => ({
         zIndex: '550',
         top: '60px',
         backgroundColor: 'rgba(255,255,255,0.9)',
-        width: '325px',
     },
     timeLineOpposite: {
         padding: '1px 6px 0 0',

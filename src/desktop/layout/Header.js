@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import HeaderStyle from '../styles/HeaderStyle';
 import logo from '../images/Vatech_logo.png';
 import {
@@ -28,8 +28,11 @@ import {
     ExpandMore,
     PlaylistAdd,
 } from '@material-ui/icons';
-import { DeviceMode } from '../pages/Admin';
+import AddCalendar from '../components/AddCalendar';
+import { DeviceMode } from '../../App';
 import { useHistory } from 'react-router-dom';
+import { useQuery } from '@apollo/react-hooks';
+import { GET_ROUTE_BY_MONTH } from '../gql/header/query';
 
 const Header = props => {
     const {
@@ -92,7 +95,7 @@ const Header = props => {
                                 onClick={() => history.goBack()}
                                 className={deviceMode ? classes.adminIdSmall : classes.adminId}
                             >
-                                유저모드 열기
+                                사용자용 열기
                             </Typography>
 
                             {!deviceMode && (
@@ -113,6 +116,7 @@ const Header = props => {
                 anchor="left"
                 variant={deviceMode ? 'temporary' : 'persistent'}
                 open={openDrawer}
+                onClose={() => setOpenDrawer(false)}
                 ModalProps={{ keepMounted: true }}
                 className={classes.menuDrawer}
                 classes={{
@@ -136,14 +140,17 @@ const Header = props => {
                         </Button>
                     </Box>
                 </Box>
-                <MenuItems
-                    classes={classes}
-                    routeItems={routeItems}
-                    setState={setState}
-                    setRouteName={setRouteName}
-                    setPartitionKey={setPartitionKey}
-                    loading={loading}
-                />
+                {routeItems.length > 0 && (
+                    <MenuItems
+                        classes={classes}
+                        routeItems={routeItems}
+                        setState={setState}
+                        setRouteName={setRouteName}
+                        setPartitionKey={setPartitionKey}
+                        loading={loading}
+                        setOpenDrawer={setOpenDrawer}
+                    />
+                )}
             </Drawer>
 
             <Box height="64px"></Box>
@@ -152,8 +159,25 @@ const Header = props => {
 };
 
 const MenuItems = props => {
-    const { classes, routeItems, setState, setRouteName, setPartitionKey, loading } = props;
-    const [open, setOpen] = useState(false);
+    const {
+        classes,
+        routeItems,
+        setState,
+        setRouteName,
+        setPartitionKey,
+        loading,
+        setOpenDrawer,
+    } = props;
+    const [date, setDate] = useState({});
+    const [select, setSelect] = useState('사용자 관리');
+    const [openRoute, setOpenRoute] = useState(false); //노선 관리 세부 list open 여부
+    const [openBoarder, setOpenBoarder] = useState(false); //탑승객 관리 세부 list open 여부
+    const [yearIndex, setYearIndex] = useState(-1);
+    const deviceMode = useContext(DeviceMode);
+
+    const { data } = useQuery(GET_ROUTE_BY_MONTH, {
+        variables: { partitionKey: routeItems[0].partitionKey },
+    });
 
     const menuItems = [
         {
@@ -178,15 +202,19 @@ const MenuItems = props => {
         switch (index) {
             case 0: //사용자 관리
                 setState({ titleName: '사용자 관리', view: 'userDefault' });
+                setSelect('사용자 관리');
+                setOpenDrawer(!deviceMode || false);
                 break;
             case 1: //노선 관리
-                setOpen(!open);
+                setOpenRoute(!openRoute);
                 break;
             case 2: //공지 관리
                 setState({ titleName: '공지 관리', view: 'noticeDefault' });
+                setSelect('공지 관리');
+                setOpenDrawer(!deviceMode || false);
                 break;
             case 3: //신청자 관리/선별
-                setState({ titleName: '탑승객 관리', view: 'boarderDefault' });
+                setOpenBoarder(!openBoarder);
                 break;
             default:
                 break;
@@ -197,7 +225,28 @@ const MenuItems = props => {
         setState({ titleName: `${routeName}노선`, view: 'routeDefault' });
         setRouteName(routeName);
         setPartitionKey(partitionKey);
+        setOpenDrawer(!deviceMode || false);
     };
+
+    const monthSelectClick = (year, month) => {
+        setState({ titleName: '탑승객 관리', view: 'boarderDefault', month: year + '-' + month });
+        setOpenDrawer(!deviceMode || false);
+    };
+
+    useEffect(() => {
+        if (data) {
+            const { success, message, data: monthData } = data.getRouteByMonth;
+            if (success) {
+                const obj = {};
+                monthData.forEach(monthList => {
+                    const date = monthList.month.split('-');
+                    if (!(date[0] in obj)) obj[date[0]] = [];
+                    obj[date[0]].push(date[1]);
+                });
+                setDate(obj);
+            } else console.log(message);
+        }
+    }, [data]);
 
     return menuItems.map((data, index) => (
         <React.Fragment key={index}>
@@ -208,22 +257,37 @@ const MenuItems = props => {
                 </React.Fragment>
             )}
             <List disablePadding>
-                <ListItem button onClick={() => managementClick(index)} disabled={loading}>
+                <ListItem
+                    button
+                    onClick={() => {
+                        managementClick(index);
+                    }}
+                    disabled={loading}
+                    style={{
+                        backgroundColor: select === data.text ? 'rgba(255,0,0,0.2)' : null,
+                    }}
+                >
                     <ListItemIcon>{data.icon}</ListItemIcon>
                     <ListItemText>
                         <Typography className={classes.listText}>{data.text}</Typography>
                     </ListItemText>
-                    {index === 1 && (open ? <ExpandLess /> : <ExpandMore />)}
+                    {index === 1 && (openRoute ? <ExpandLess /> : <ExpandMore />)}
+                    {index === 3 && (openBoarder ? <ExpandLess /> : <ExpandMore />)}
                 </ListItem>
                 {index === 1 && (
-                    <Collapse in={open} timeout="auto" unmountOnExit>
+                    <Collapse in={openRoute} timeout="auto" unmountOnExit>
                         <List disablePadding>
                             <ListItem
                                 button
                                 onClick={() => {
                                     setState({ titleName: '노선 생성', view: 'routeCreate' });
+                                    setSelect('노선 생성');
                                 }}
                                 className={classes.nested}
+                                style={{
+                                    backgroundColor:
+                                        select === '노선 생성' ? 'rgba(255,0,0,0.2)' : null,
+                                }}
                             >
                                 <ListItemIcon>
                                     <PlaylistAdd className={classes.nestedIcon} />
@@ -239,10 +303,15 @@ const MenuItems = props => {
                             <List key={routeIndex} disablePadding>
                                 <ListItem
                                     button
-                                    onClick={() =>
-                                        routeClick(routeData.route, routeData.partitionKey)
-                                    }
+                                    onClick={() => {
+                                        routeClick(routeData.route, routeData.partitionKey);
+                                        setSelect(routeData.route);
+                                    }}
                                     className={classes.nested}
+                                    style={{
+                                        backgroundColor:
+                                            select === routeData.route ? 'rgba(255,0,0,0.2)' : null,
+                                    }}
                                 >
                                     <ListItemIcon>{routeIndex + 1}.</ListItemIcon>
                                     <ListItemText>
@@ -253,6 +322,72 @@ const MenuItems = props => {
                                 </ListItem>
                             </List>
                         ))}
+                    </Collapse>
+                )}
+                {index === 3 && (
+                    <Collapse in={openBoarder} timeout="auto" unmountOnExit>
+                        <List disablePadding>
+                            <ListItem
+                                button
+                                className={classes.nested}
+                                onClick={() => {
+                                    setSelect('신청월 추가');
+                                }}
+                                style={{
+                                    backgroundColor:
+                                        select === '신청월 추가' ? 'rgba(255,0,0,0.2)' : null,
+                                }}
+                            >
+                                <ListItemIcon>
+                                    <AddCalendar className={classes.monthNestedIcon} />
+                                </ListItemIcon>
+                                <ListItemText>
+                                    <Typography className={classes.nestedText}>
+                                        신청월 추가
+                                    </Typography>
+                                </ListItemText>
+                            </ListItem>
+                            {Object.keys(date).map((year, index) => (
+                                <List key={year} disablePadding>
+                                    <ListItem
+                                        button
+                                        onClick={() =>
+                                            index === yearIndex
+                                                ? setYearIndex(-1)
+                                                : setYearIndex(index)
+                                        }
+                                        className={classes.nested}
+                                    >
+                                        <ListItemIcon></ListItemIcon>
+                                        <ListItemText>{year}년</ListItemText>
+                                        {index === yearIndex ? <ExpandLess /> : <ExpandMore />}
+                                    </ListItem>
+                                    <Collapse in={index === yearIndex}>
+                                        {date[year].map(month => (
+                                            <List disablePadding key={year + month}>
+                                                <ListItem
+                                                    button
+                                                    className={classes.doubleNested}
+                                                    onClick={() => {
+                                                        monthSelectClick(year, month);
+                                                        setSelect(year + month);
+                                                    }}
+                                                    style={{
+                                                        backgroundColor:
+                                                            year + month === select
+                                                                ? 'rgba(255,0,0,0.2)'
+                                                                : null,
+                                                    }}
+                                                >
+                                                    <ListItemIcon></ListItemIcon>
+                                                    <ListItemText>{month}월</ListItemText>
+                                                </ListItem>
+                                            </List>
+                                        ))}
+                                    </Collapse>
+                                </List>
+                            ))}
+                        </List>
                     </Collapse>
                 )}
             </List>

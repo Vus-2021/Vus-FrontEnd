@@ -43,7 +43,7 @@ const radioList = [
 ];
 
 const BoarderSelection = props => {
-    const { open, onClose, setPage, standard, refetch } = props;
+    const { open, onClose, setPage, standard, refetch, month } = props;
     const classes = BoarderSelectionStyle();
 
     const defaultColumn = {
@@ -88,7 +88,7 @@ const BoarderSelection = props => {
 
         triggerPassengers({
             variables: {
-                month: standard.month,
+                month: month,
                 route: standard.route,
                 busId: standard.partitionKey,
                 methodList: methodList,
@@ -147,7 +147,7 @@ const BoarderSelection = props => {
     return (
         <Dialog open={open} onClose={handleClose}>
             <MiniHeader
-                headerText={`${standard.month}월 ${standard.route}노선 선별`}
+                headerText={`${month}월 ${standard.route}노선 선별`}
                 handleClose={handleClose}
                 width="500px"
             />

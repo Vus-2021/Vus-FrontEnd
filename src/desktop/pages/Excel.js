@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Dialog, Button, Typography, Box } from '@material-ui/core';
 import xlsx from 'xlsx';
 import MiniHeader from '../layout/MiniHeader';
@@ -6,9 +6,11 @@ import ExcelStyle from '../styles/ExcelStyle';
 import { SIGNUP_FOR_EXCEL } from '../gql/register/mutation';
 import { useMutation } from '@apollo/react-hooks';
 import * as dayjs from 'dayjs';
+import { DeviceMode } from '../../App';
 
 const Excel = props => {
     const { open, onClose, refetch } = props;
+    const deviceMode = useContext(DeviceMode);
     const classes = ExcelStyle();
     const [file, setFile] = useState(null);
 
@@ -73,7 +75,12 @@ const Excel = props => {
     }, [data]);
 
     return (
-        <Dialog open={open} onClose={handleClose}>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            fullWidth={deviceMode}
+            maxWidth={deviceMode ? 'xs' : null}
+        >
             <MiniHeader handleClose={handleClose} headerText="엑셀 업로드" />
             <Box p={4} display="flex" justifyContent="space-between">
                 <Box width="80%" mr={2}>

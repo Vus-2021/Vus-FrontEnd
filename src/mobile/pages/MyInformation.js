@@ -68,7 +68,7 @@ const MyInformation = ({ history, location }) => {
             <Header2 handleClose={() => history.goBack()} headerText="내 정보" logout={true} />
             <Box overflow="auto" height={`calc(100% - 37px)`}>
                 <Box height="210px">
-                    <Box height="5%" width="100%" pl={3} py={1} className={classes.accountText}>
+                    <Box height="5%" pl={3} py={1} className={classes.accountText}>
                         계정 정보
                     </Box>
                     <Box
@@ -122,7 +122,7 @@ const MyInformation = ({ history, location }) => {
                     </Box>
                 </Box>
                 <Box height={'calc(100% - 255px)'} overflow="auto">
-                    <Box height="3%" width="100%" pl={3} py={1} className={classes.accountText}>
+                    <Box height="3%" pl={3} py={1} className={classes.accountText}>
                         노선 이용 정보
                     </Box>
                     {userBusData.length > 0 ? (
@@ -137,7 +137,7 @@ const MyInformation = ({ history, location }) => {
                                         pr={1}
                                         alignItems="center"
                                         justifyContent="space-between"
-                                        height="13%"
+                                        height="50px"
                                         onClick={() => {
                                             if (index === openIndex) setOpenIndex(-1);
                                             else setOpenIndex(index);

@@ -63,6 +63,12 @@ const HeaderStyle = makeStyles(theme => ({
         fontSize: '17px',
         fontWeight: '400',
     },
+    doubleNested: {
+        paddingLeft: theme.spacing(8),
+    },
+    monthNestedIcon: {
+        fontSize: 22,
+    },
 }));
 
 export default HeaderStyle;

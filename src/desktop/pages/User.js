@@ -25,7 +25,7 @@ import { useQuery, useMutation } from '@apollo/react-hooks';
 import { useHistory } from 'react-router-dom';
 import XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { DeviceMode } from '../pages/Admin';
+import { DeviceMode } from '../../App';
 
 const columns = [
     { field: 'name', headerName: '이름', width: 130 },
@@ -92,9 +92,9 @@ const User = () => {
                 });
                 setUserRow(userDataChange);
             } else {
-                history.push('/');
                 localStorage.clear();
                 console.log(message);
+                window.location.href = '/';
             }
         }
     }, [data, history]);
@@ -276,7 +276,7 @@ const CustomToolbar = props => {
     return (
         <GridToolbarContainer className={classes.customToolBar}>
             <Box className={classes.searchBox}>
-                <Box mr={2} display="flex" alignItems="center">
+                <Box mr={deviceMode ? 0.5 : 2} display="flex" alignItems="center">
                     <Button
                         size="small"
                         variant="contained"

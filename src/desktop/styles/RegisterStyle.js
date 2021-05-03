@@ -2,11 +2,11 @@ import { makeStyles } from '@material-ui/core/styles';
 
 const RegisterStyle = makeStyles(theme => ({
     tab: {
-        minWidth: 90,
+        minWidth: props => (props ? 60 : 90),
         alignItems: 'center',
     },
     tabText: {
-        fontSize: '17px',
+        fontSize: props => (props ? '15px' : '17px'),
         fontWeight: '500',
     },
     checkIdButton: {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
     Dialog,
     Slide,
@@ -27,6 +27,7 @@ import { CHECK_USERID } from '../gql/register/query';
 import { SIGNUP_USER } from '../gql/register/mutation';
 import { useLazyQuery, useMutation } from '@apollo/react-hooks';
 import * as dayjs from 'dayjs';
+import { DeviceMode } from '../../App';
 
 const companyType = [
     {
@@ -64,7 +65,8 @@ const companyType = [
 ];
 
 const Register = props => {
-    const classes = RegisterStyle();
+    const deviceMode = useContext(DeviceMode);
+    const classes = RegisterStyle(deviceMode);
     const { open, onClose, refetch } = props;
     const { handleSubmit, control, errors, setError, getValues, clearErrors, watch } = useForm();
 
@@ -179,13 +181,18 @@ const Register = props => {
             if (type === 'maxLength' || type === 'minLength') return '11자리를 입력해주세요.';
             if (type === 'isNumber' || type === 'invalidForm') return '숫자만 입력해주세요.';
         }
-        return '';
     };
 
     return (
-        <Dialog open={open} onClose={handleClose} TransitionComponent={Transition}>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            TransitionComponent={Transition}
+            fullWidth={deviceMode}
+            maxWidth={deviceMode ? 'xs' : null}
+        >
             <MiniHeader handleClose={handleClose} headerText="사용자 등록" width="415px" />
-            <Box p={4}>
+            <Box p={deviceMode ? 2 : 4}>
                 <Box mb={5}>
                     <Tabs
                         value={boardNum}
@@ -210,8 +217,8 @@ const Register = props => {
 
                 <Box mb={2}>
                     <form onSubmit={handleSubmit(registerUser)}>
-                        <Box height="70px" style={{ display: 'flex' }}>
-                            <Box height="100%" width="73%" mr={1}>
+                        <Box height="70px" display="flex" width="100%">
+                            <Box height="100%" width={deviceMode ? '65%' : '70%'} mr={1}>
                                 <Controller
                                     as={TextField}
                                     name="userId"
@@ -249,7 +256,7 @@ const Register = props => {
                                     }}
                                 />
                             </Box>
-                            <Box height="100%" width="27%">
+                            <Box height="100%" width={deviceMode ? '35%' : '30%'}>
                                 <Button
                                     className={classes.checkIdButton}
                                     fullWidth

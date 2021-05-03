@@ -3,9 +3,15 @@ import { makeStyles } from '@material-ui/core/styles';
 const NoticeStyle = makeStyles(theme => ({
     buttonDelete: {
         backgroundColor: '#F63434',
+        height: '30px',
         '&:hover': {
             backgroundColor: '#F63434',
         },
+    },
+    customToolBar: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        height: '30px',
     },
     searchButton: {
         color: '#FA8700',
@@ -84,6 +90,13 @@ const NoticeStyle = makeStyles(theme => ({
     warningText: {
         fontSize: '18px',
         fontWeight: 400,
+    },
+
+    deleteIcon: {
+        fontSize: '18px',
+    },
+    deleteText: {
+        fontSize: '13px',
     },
 }));
 export default NoticeStyle;

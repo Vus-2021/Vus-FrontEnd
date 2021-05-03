@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import {
     Box,
     Button,
@@ -11,7 +11,7 @@ import {
     Paper,
     Dialog,
 } from '@material-ui/core';
-import { DataGrid } from '@material-ui/data-grid';
+import { DataGrid, GridToolbarContainer } from '@material-ui/data-grid';
 import { DeleteForever, Search } from '@material-ui/icons';
 import NoticeStyle from '../styles/NoticeStyle';
 import { useForm, Controller } from 'react-hook-form';
@@ -21,17 +21,20 @@ import { useQuery, useLazyQuery, useMutation } from '@apollo/react-hooks';
 import { GET_ADMIN_NOTICE, GET_ONE_ADMIN_NOTICE } from '../gql/notice/query';
 import { DELETE_NOTICE } from '../gql/notice/mutation';
 import * as dayjs from 'dayjs';
-
-const columns = [
-    { field: 'notice', headerName: '제목', width: 250 },
-    { field: 'author', headerName: '작성자', width: 100 },
-    { field: 'userId', headerName: '아이디', width: 130 },
-    { field: 'createdAt', headerName: '생성날짜', width: 120 },
-    { field: 'updatedAt', headerName: '수정날짜', width: 120 },
-];
+import { DeviceMode } from '../../App';
 
 const Notice = () => {
     const classes = NoticeStyle();
+    const deviceMode = useContext(DeviceMode);
+
+    const columns = [
+        { field: 'notice', headerName: '제목', width: deviceMode ? 180 : 250 },
+        { field: 'author', headerName: '작성자', width: 100 },
+        { field: 'userId', headerName: '아이디', width: 130 },
+        { field: 'createdAt', headerName: '생성날짜', width: 120 },
+        { field: 'updatedAt', headerName: '수정날짜', width: 120 },
+    ];
+
     const [selection, setSelection] = useState([]); //선택한 공지글들의 partitionKey를 담음.
     const [noticeDialog, setNoticeDialog] = useState(false); //noticeDialog의 open 여부
     const [detailDialog, setDetailDialog] = useState(false); //detailDialog의 open 여부
@@ -92,26 +95,9 @@ const Notice = () => {
     }, [data]);
 
     return (
-        <Box px={15} pt={5} minWidth="600px">
-            <Box mb={1} display="flex" justifyContent="space-between" alignItems="flex-end">
-                <Box display="flex" flexDirection="row" alignItems="center">
-                    <Box mr={2}>
-                        <Button
-                            size="small"
-                            variant="contained"
-                            color="secondary"
-                            className={classes.buttonDelete}
-                            onClick={() => setDeleteDialog(true)}
-                            disabled={selection.length === 0}
-                        >
-                            <DeleteForever /> <Typography>&nbsp;삭제</Typography>
-                        </Button>
-                    </Box>
-                    <Box>
-                        <Typography>{selection.length}개 선택됨</Typography>
-                    </Box>
-                </Box>
-                <Box>
+        <Box px={deviceMode ? 0 : 15} pt={2} minWidth={deviceMode ? null : '600px'}>
+            <Box mb={1} display="flex" justifyContent="flex-end" alignItems="flex-end">
+                <Box maxWidth={deviceMode ? '270px' : null}>
                     <form onSubmit={handleSubmit(searchClick)}>
                         <Box display="flex" flexDirection="row" alignItems="center">
                             <Box width="230px" mr={1}>
@@ -178,7 +164,7 @@ const Notice = () => {
             </Box>
             <Box mb={1}>
                 <Paper>
-                    <Box width="100%" minHeight="540px" height="65vh">
+                    <Box width="100%" minHeight={deviceMode ? null : '540px'} height="65vh">
                         <DataGrid
                             columns={columns.map(column => ({
                                 ...column,
@@ -198,6 +184,15 @@ const Notice = () => {
                             onPageChange={params => setPage(params.page)}
                             page={page}
                             loading={loading}
+                            components={{
+                                Toolbar: CustomToolbar,
+                            }}
+                            componentsProps={{
+                                toolbar: {
+                                    selection: selection,
+                                    deleteNoticeClick: () => setDeleteDialog(true),
+                                },
+                            }}
                         />
                     </Box>
                 </Paper>
@@ -229,6 +224,39 @@ const Notice = () => {
                 refetch={refetch}
             />
         </Box>
+    );
+};
+
+const CustomToolbar = props => {
+    const { selection, deleteNoticeClick } = props;
+    const classes = NoticeStyle();
+    const deviceMode = useContext(DeviceMode);
+
+    return (
+        <GridToolbarContainer className={classes.customToolBar}>
+            <Box display="flex" flexDirection="row" alignItems="center">
+                <Box mr={deviceMode ? 0.5 : 2}>
+                    <Button
+                        size="small"
+                        variant="contained"
+                        color="secondary"
+                        className={classes.buttonDelete}
+                        onClick={deleteNoticeClick}
+                        disabled={selection.length === 0}
+                    >
+                        <DeleteForever className={deviceMode ? classes.deleteIcon : null} />{' '}
+                        <Typography className={deviceMode ? classes.deleteText : null}>
+                            &nbsp;삭제
+                        </Typography>
+                    </Button>
+                </Box>
+                <Box>
+                    <Typography className={deviceMode ? classes.deleteText : null}>
+                        {selection.length}개 선택됨
+                    </Typography>
+                </Box>
+            </Box>
+        </GridToolbarContainer>
     );
 };
 

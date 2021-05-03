@@ -43,6 +43,7 @@ export const GET_ROUTES_INFO = gql`
                 }
                 month {
                     registerCount
+                    boardingCount
                     month
                 }
                 imageUrl

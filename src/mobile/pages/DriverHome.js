@@ -144,7 +144,7 @@ const DriverHome = ({ history }) => {
 
     return (
         <div>
-            <Header />
+            <Header userData={userData} />
             <Box px={3} py={2} className={classes.mainBox}>
                 {userData.type === 'DRIVER' || userData.type == null ? (
                     userData.type == null ? (
@@ -162,23 +162,11 @@ const DriverHome = ({ history }) => {
                                     <Typography
                                         className={classes.subButton}
                                         onClick={() => {
-                                            history.push({
-                                                pathname: '/businfo',
-                                                state: {
-                                                    busData: { route: userData.routeInfo[0].route },
-                                                },
-                                            });
+                                            localStorage.clear();
+                                            window.location.href = '/';
                                         }}
                                     >
-                                        노선보기
-                                    </Typography>
-                                </Box>
-                                <Box component={ButtonBase} className={classes.buttonBase}>
-                                    <Typography
-                                        className={classes.subButton}
-                                        onClick={() => history.push('/notice')}
-                                    >
-                                        공지보기
+                                        로그아웃
                                     </Typography>
                                 </Box>
                             </Box>

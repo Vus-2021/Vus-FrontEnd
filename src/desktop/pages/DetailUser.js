@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import {
     Dialog,
     Box,
@@ -19,7 +19,8 @@ import MiniHeader from '../layout/MiniHeader';
 import RegisterStyle from '../styles/RegisterStyle';
 import * as dayjs from 'dayjs';
 import { useMutation } from '@apollo/react-hooks';
-import { INIT_PASSWORD } from '../gql/user/mutation';
+import { INIT_PASSWORD, UPDATE_USER } from '../gql/user/mutation';
+import { DeviceMode } from '../../App';
 
 const companyType = [
     {
@@ -57,7 +58,8 @@ const companyType = [
 ];
 
 const DetailUser = props => {
-    const { open, onClose, userData } = props;
+    const { open, onClose, userData, refetch } = props;
+    const deviceMode = useContext(DeviceMode);
     const classes = RegisterStyle();
     const { name, type, userId, phoneNumber, registerDate } = userData;
 
@@ -67,6 +69,11 @@ const DetailUser = props => {
     const [snackbarText, setSnackbarText] = useState('');
 
     const [initPassword, { data }] = useMutation(INIT_PASSWORD);
+    const [updateUser, { data: updateData }] = useMutation(UPDATE_USER, {
+        onCompleted() {
+            refetch();
+        },
+    });
 
     const blank_pattern = /\s/gi;
     const special_pattern = /[`~!@#$%^&*|'";:/={}?<>,.-]/gi;
@@ -93,24 +100,47 @@ const DetailUser = props => {
         });
     };
 
-    const updateUser = data => {
-        console.log(data);
+    const updateUserClick = data => {
+        updateUser({
+            variables: {
+                userId: data.userId,
+                name: data.name,
+                phoneNumber: data.phoneNumber,
+                type: type === 'ADMIN' || type === 'DRIVER' ? type : data.type,
+                registerDate:
+                    type === 'ADMIN' || type === 'DRIVER' ? registerDate : data.registerDate,
+            },
+        });
     };
 
     useEffect(() => {
         if (data) {
             const { success, message } = data.initPassword;
             if (success) {
-                setSnackbar(false);
+                setSnackbar(true);
             } else console.log(message);
         }
     }, [data]);
 
+    useEffect(() => {
+        if (updateData) {
+            const { success, message } = updateData.updateUser;
+            if (success) {
+                onClose(false);
+            } else console.log(message);
+        }
+    }, [updateData, onClose]);
+
     return (
-        <Dialog open={open} onClose={() => onClose(false)}>
-            <MiniHeader handleClose={() => onClose(false)} headerText="사용자 수정" width="380px" />
+        <Dialog
+            open={open}
+            onClose={() => onClose(false)}
+            fullWidth={deviceMode}
+            maxWidth={deviceMode ? 'xs' : null}
+        >
+            <MiniHeader handleClose={() => onClose(false)} headerText="사용자 수정" />
             <Box p={4}>
-                <form onSubmit={handleSubmit(updateUser)}>
+                <form onSubmit={handleSubmit(updateUserClick)}>
                     <Box height="70px" style={{ display: 'flex' }}>
                         <Controller
                             as={TextField}
@@ -263,6 +293,7 @@ const DetailUser = props => {
                                 size="medium"
                                 className={classes.passwordButton}
                                 onClick={() => setResetPasswordDialog(true)}
+                                style={{ fontSize: deviceMode ? '12px' : null }}
                             >
                                 비밀번호 초기화
                             </Button>
@@ -272,6 +303,7 @@ const DetailUser = props => {
                                 variant="contained"
                                 type="submit"
                                 size="medium"
+                                style={{ fontSize: deviceMode ? '12px' : null }}
                                 className={classes.registerButton}
                             >
                                 수정하기
@@ -280,8 +312,13 @@ const DetailUser = props => {
                     </Box>
                 </form>
             </Box>
-            <Dialog open={resetPasswordDialog} onClose={() => setResetPasswordDialog(false)}>
-                <Box px={3} py={2} width="380px">
+            <Dialog
+                open={resetPasswordDialog}
+                onClose={() => setResetPasswordDialog(false)}
+                fullWidth={deviceMode}
+                maxWidth={deviceMode ? 'xs' : null}
+            >
+                <Box px={3} py={2} width={deviceMode ? null : '380px'}>
                     <Box mb={2}>
                         <Typography className={classes.warningTitle}>비밀번호 초기화</Typography>
                     </Box>
@@ -321,9 +358,11 @@ const DetailUser = props => {
                     style={{ height: '60%' }}
                     onClose={() => {
                         setSnackbar(false);
+                        setResetPasswordDialog(false);
                     }}
                     onClick={() => {
                         setSnackbar(false);
+                        setResetPasswordDialog(false);
                     }}
                     anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
                 >
