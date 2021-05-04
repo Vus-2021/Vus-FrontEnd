@@ -23,11 +23,11 @@ const NoticeStyle = makeStyles(theme => ({
     },
     registerButton: {
         color: 'white',
-        backgroundColor: '#0078CE',
+        backgroundColor: '#FA8700',
         height: '40px',
         '&:hover': {
             color: 'white',
-            backgroundColor: '#0078CE',
+            backgroundColor: '#FA8700',
         },
         alignItems: 'center',
     },

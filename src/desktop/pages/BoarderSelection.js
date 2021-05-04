@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
     Box,
     Dialog,
@@ -26,6 +26,7 @@ import BoarderSelectionStyle from '../styles/BoarderSelectionStyle';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { useMutation } from '@apollo/react-hooks';
 import { TRIGGER_PASSENGERS } from '../gql/boarder/mutation';
+import { DeviceMode } from '../../App';
 
 const radioList = [
     {
@@ -44,6 +45,7 @@ const radioList = [
 
 const BoarderSelection = props => {
     const { open, onClose, setPage, standard, refetch, month } = props;
+    const deviceMode = useContext(DeviceMode);
     const classes = BoarderSelectionStyle();
 
     const defaultColumn = {
@@ -60,7 +62,6 @@ const BoarderSelection = props => {
         },
     };
 
-    // eslint-disable-next-line no-unused-vars
     const [columns, setColumns] = useState(defaultColumn);
 
     const [sortType, setSortType] = useState(radioList[0].value);
@@ -145,11 +146,11 @@ const BoarderSelection = props => {
     }, [passengersData, onClose, setPage]);
 
     return (
-        <Dialog open={open} onClose={handleClose}>
+        <Dialog open={open} onClose={handleClose} fullWidth maxWidth="xs">
             <MiniHeader
                 headerText={`${month}월 ${standard.route}노선 선별`}
                 handleClose={handleClose}
-                width="500px"
+                width={deviceMode ? null : '444px'}
             />
             <Box minHeight="500px" px={3}>
                 <Box mt={3} mb={1} display="flex" justifyContent="center">
@@ -216,6 +217,7 @@ const SelectionRadio = props => {
 };
 
 const SelectedTable = props => {
+    const deviceMode = useContext(DeviceMode);
     const classes = BoarderSelectionStyle();
     const { selected, monthArg, setMonthArg, sortType } = props;
 
@@ -240,7 +242,7 @@ const SelectedTable = props => {
         }
 
         if (selected.list.length === 0) {
-            return `비어 있음 (당첨순서: ${sortName})`;
+            return `당첨순서: ${sortName}`;
         } else {
             return `그 외 (당첨순서: ${sortName})`;
         }
@@ -259,7 +261,7 @@ const SelectedTable = props => {
                         <TableHead className={classes.tableHead}>
                             <TableRow>
                                 <TableCell className={classes.tableHeadCell} align="center">
-                                    우선순위
+                                    {deviceMode ? '순위' : '우선순위'}
                                 </TableCell>
                             </TableRow>
                         </TableHead>
@@ -391,7 +393,6 @@ const WaitingTable = props => {
                             elevation={5}
                             square
                             className={classes.selectedTable}
-                            style={{ width: '436px' }}
                             ref={provided.innerRef}
                         >
                             <Table component="div">

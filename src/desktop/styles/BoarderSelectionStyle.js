@@ -27,10 +27,10 @@ const BoarderSelectionStyle = makeStyles(theme => ({
     },
     selectionButton: {
         width: '100%',
-        backgroundColor: '#008AEE',
+        backgroundColor: '#FA8700',
         color: 'white',
         '&:hover': {
-            backgroundColor: '#008AEE',
+            backgroundColor: '#FA8700',
         },
     },
 }));

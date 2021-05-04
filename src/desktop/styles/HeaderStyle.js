@@ -69,6 +69,31 @@ const HeaderStyle = makeStyles(theme => ({
     monthNestedIcon: {
         fontSize: 22,
     },
+
+    warningTitle: {
+        fontSize: '23px',
+        fontWeight: 600,
+    },
+    warningText: {
+        fontSize: '18px',
+        fontWeight: 400,
+    },
+    cancelButton: {
+        width: '100%',
+        backgroundColor: '#008AEE',
+        color: 'white',
+        '&:hover': {
+            backgroundColor: '#008AEE',
+        },
+    },
+    createButton: {
+        width: '100%',
+        backgroundColor: '#FA8700',
+        color: 'white',
+        '&:hover': {
+            backgroundColor: '#FA8700',
+        },
+    },
 }));
 
 export default HeaderStyle;

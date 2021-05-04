@@ -16,6 +16,7 @@ import {
     Collapse,
     Button,
     ButtonBase,
+    Dialog,
 } from '@material-ui/core';
 import {
     Menu,
@@ -31,8 +32,11 @@ import {
 import AddCalendar from '../components/AddCalendar';
 import { DeviceMode } from '../../App';
 import { useHistory } from 'react-router-dom';
-import { useQuery } from '@apollo/react-hooks';
+import { useQuery, useMutation } from '@apollo/react-hooks';
 import { GET_ROUTE_BY_MONTH } from '../gql/header/query';
+import { ADD_ALL_MONTHLY_ROUTE } from '../gql/header/mutation';
+
+import * as dayjs from 'dayjs';
 
 const Header = props => {
     const {
@@ -168,14 +172,16 @@ const MenuItems = props => {
         loading,
         setOpenDrawer,
     } = props;
-    const [date, setDate] = useState({});
+    const [date, setDate] = useState({}); //년도별로 월을 담고 있는 json data
+    const [lastMonth, setLastMonth] = useState(''); //생성된 마지막 년,월
     const [select, setSelect] = useState('사용자 관리');
     const [openRoute, setOpenRoute] = useState(false); //노선 관리 세부 list open 여부
     const [openBoarder, setOpenBoarder] = useState(false); //탑승객 관리 세부 list open 여부
     const [yearIndex, setYearIndex] = useState(-1);
     const deviceMode = useContext(DeviceMode);
+    const [openMonthDialog, setOpenMonthDialog] = useState(false);
 
-    const { data } = useQuery(GET_ROUTE_BY_MONTH, {
+    const { data, refetch } = useQuery(GET_ROUTE_BY_MONTH, {
         variables: { partitionKey: routeItems[0].partitionKey },
     });
 
@@ -229,7 +235,11 @@ const MenuItems = props => {
     };
 
     const monthSelectClick = (year, month) => {
-        setState({ titleName: '탑승객 관리', view: 'boarderDefault', month: year + '-' + month });
+        setState({
+            titleName: `탑승객 관리 (${year}-${month})`,
+            view: 'boarderDefault',
+            month: year + '-' + month,
+        });
         setOpenDrawer(!deviceMode || false);
     };
 
@@ -244,6 +254,7 @@ const MenuItems = props => {
                     obj[date[0]].push(date[1]);
                 });
                 setDate(obj);
+                setLastMonth(monthData[monthData.length - 1].month);
             } else console.log(message);
         }
     }, [data]);
@@ -330,13 +341,7 @@ const MenuItems = props => {
                             <ListItem
                                 button
                                 className={classes.nested}
-                                onClick={() => {
-                                    setSelect('신청월 추가');
-                                }}
-                                style={{
-                                    backgroundColor:
-                                        select === '신청월 추가' ? 'rgba(255,0,0,0.2)' : null,
-                                }}
+                                onClick={() => setOpenMonthDialog(true)}
                             >
                                 <ListItemIcon>
                                     <AddCalendar className={classes.monthNestedIcon} />
@@ -347,22 +352,30 @@ const MenuItems = props => {
                                     </Typography>
                                 </ListItemText>
                             </ListItem>
-                            {Object.keys(date).map((year, index) => (
+                            <AddMonthDialog
+                                open={openMonthDialog}
+                                onClose={setOpenMonthDialog}
+                                lastMonth={lastMonth}
+                                refetch={refetch}
+                                setYearIndex={setYearIndex}
+                                setSelect={setSelect}
+                            />
+                            {Object.keys(date).map(year => (
                                 <List key={year} disablePadding>
                                     <ListItem
                                         button
                                         onClick={() =>
-                                            index === yearIndex
+                                            year === yearIndex
                                                 ? setYearIndex(-1)
-                                                : setYearIndex(index)
+                                                : setYearIndex(year)
                                         }
                                         className={classes.nested}
                                     >
-                                        <ListItemIcon></ListItemIcon>
+                                        <ListItemIcon>○</ListItemIcon>
                                         <ListItemText>{year}년</ListItemText>
-                                        {index === yearIndex ? <ExpandLess /> : <ExpandMore />}
+                                        {year === yearIndex ? <ExpandLess /> : <ExpandMore />}
                                     </ListItem>
-                                    <Collapse in={index === yearIndex}>
+                                    <Collapse in={year === yearIndex}>
                                         {date[year].map(month => (
                                             <List disablePadding key={year + month}>
                                                 <ListItem
@@ -370,16 +383,16 @@ const MenuItems = props => {
                                                     className={classes.doubleNested}
                                                     onClick={() => {
                                                         monthSelectClick(year, month);
-                                                        setSelect(year + month);
+                                                        setSelect(year + '-' + month);
                                                     }}
                                                     style={{
                                                         backgroundColor:
-                                                            year + month === select
+                                                            year + '-' + month === select
                                                                 ? 'rgba(255,0,0,0.2)'
                                                                 : null,
                                                     }}
                                                 >
-                                                    <ListItemIcon></ListItemIcon>
+                                                    <ListItemIcon>-</ListItemIcon>
                                                     <ListItemText>{month}월</ListItemText>
                                                 </ListItem>
                                             </List>
@@ -393,6 +406,74 @@ const MenuItems = props => {
             </List>
         </React.Fragment>
     ));
+};
+
+const AddMonthDialog = props => {
+    const { open, onClose, lastMonth, refetch, setYearIndex, setSelect } = props;
+    const classes = HeaderStyle();
+
+    const newMonth = lastMonth
+        ? dayjs(lastMonth).add(1, 'month').format('YYYY-MM')
+        : dayjs().format('YYYY-MM');
+
+    const [addAllMonthlyRoute, { data }] = useMutation(ADD_ALL_MONTHLY_ROUTE, {
+        onCompleted() {
+            refetch();
+        },
+    });
+
+    const createClick = () => {
+        addAllMonthlyRoute({ variables: { month: newMonth } });
+    };
+
+    useEffect(() => {
+        if (data) {
+            const { success, message } = data.addAllMonthlyRoute;
+            if (success) {
+                onClose(false);
+                setYearIndex(newMonth.split('-')[0]);
+                setSelect(newMonth);
+            } else console.log(message);
+        }
+    }, [data, onClose, newMonth, setSelect, setYearIndex]);
+
+    return (
+        <Dialog open={open} onClose={() => onClose(false)} fullWidth maxWidth="xs">
+            <Box px={3} py={2}>
+                <Box mb={2}>
+                    <Typography className={classes.warningTitle}>신청월 추가</Typography>
+                </Box>
+                <Box mb={3}>
+                    <Typography className={classes.warningText}>
+                        모든 노선에 <strong>{newMonth}</strong>월 신청을 생성합니다.
+                        <br />
+                    </Typography>
+                </Box>
+                <Box display="flex" justifyContent="flex-end">
+                    <Box mr={2} width="50%">
+                        <Button
+                            variant="contained"
+                            onClick={createClick}
+                            className={classes.createButton}
+                            fullWidth
+                        >
+                            생성
+                        </Button>
+                    </Box>
+                    <Box width="50%">
+                        <Button
+                            variant="contained"
+                            onClick={() => onClose(false)}
+                            className={classes.cancelButton}
+                            fullWidth
+                        >
+                            취소
+                        </Button>
+                    </Box>
+                </Box>
+            </Box>
+        </Dialog>
+    );
 };
 
 export default Header;

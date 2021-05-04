@@ -58,8 +58,10 @@ const Admin = () => {
                     )}
                     padding="10px"
                 >
-                    <Box height="40px" ml={device ? '10px' : '30px'}>
-                        <Typography className={classes.titleText}>{state.titleName}</Typography>
+                    <Box ml={device ? '10px' : '30px'}>
+                        <Typography className={device ? classes.titleTextSmall : classes.titleText}>
+                            {state.titleName}
+                        </Typography>
                     </Box>
                     <Box className={classes.viewBox} paddingLeft={device ? '10px' : '30px'}>
                         <SelectView

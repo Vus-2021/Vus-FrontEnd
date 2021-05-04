@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
     Box,
     Button,
@@ -22,8 +22,8 @@ import { RESET_MONTH_ROUTE, INIT_PASSENGERS } from '../gql/boarder/mutation';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import * as dayjs from 'dayjs';
 import BoarderSelectionDialog from './BoarderSelection';
-
 import DetailBoarderDialog from './DetailBoarder';
+import { DeviceMode } from '../../App';
 
 const columns = [
     { field: 'name', headerName: '이름', width: 120 },
@@ -93,6 +93,7 @@ const ChipStyle = props => {
 
 const Boarder = props => {
     const { routeItems, month } = props;
+    const deviceMode = useContext(DeviceMode);
     const classes = BoarderStyle();
     const { control, handleSubmit } = useForm();
 
@@ -218,10 +219,14 @@ const Boarder = props => {
     }, [standard, search, refetch, month]);
 
     return (
-        <Box px={15} pt={2} minWidth="600px">
+        <Box px={deviceMode ? 0 : 15} pt={2} minWidth={deviceMode ? null : '600px'}>
             <Box display="flex" justifyContent="space-between" alignItems="flex-end" mb={1}>
-                <Box display="flex" flexDirection="row" alignItems="center">
-                    <Box mr={1}>
+                <Box
+                    display="flex"
+                    alignItems={deviceMode ? 'flex-start' : 'center'}
+                    flexDirection={deviceMode ? 'column' : 'row'}
+                >
+                    <Box mr={1} mb={deviceMode ? 1 : 0}>
                         <FormControl variant="outlined" size="small" fullWidth>
                             <InputLabel>노선</InputLabel>
                             <Select
@@ -260,7 +265,12 @@ const Boarder = props => {
                 </Box>
                 <Box>
                     <form onSubmit={handleSubmit(searchClick)}>
-                        <Box display="flex" flexDirection="row" alignItems="center">
+                        <Box
+                            display="flex"
+                            flexDirection="row"
+                            alignItems="center"
+                            maxWidth={deviceMode ? '250px' : null}
+                        >
                             <Box width="230px" mr={1}>
                                 <Controller
                                     name="search"
@@ -325,7 +335,7 @@ const Boarder = props => {
             </Box>
             <Box mb={1}>
                 <Paper>
-                    <Box width="100%" minHeight="540px" height="65vh">
+                    <Box width="100%" minHeight={deviceMode ? null : '540px'} height="65vh">
                         <DataGrid
                             columns={columns.map(column => ({
                                 ...column,
@@ -401,13 +411,13 @@ const Boarder = props => {
 const CustomToolbar = props => {
     const {
         selection,
-        deleteNoticeClick,
+        deleteBoarderClick,
         selectionClick,
         setOpenResetSelectionDialog,
         boardType,
     } = props;
+    const deviceMode = useContext(DeviceMode);
     const classes = BoarderStyle();
-    // const deviceMode = useContext(DeviceMode);
 
     return (
         <GridToolbarContainer className={classes.customToolBar}>
@@ -424,14 +434,20 @@ const CustomToolbar = props => {
                             variant="contained"
                             color="secondary"
                             className={classes.buttonDelete}
-                            onClick={deleteNoticeClick}
+                            onClick={deleteBoarderClick}
                             disabled={selection.length === 0}
                         >
-                            <DeleteForever /> <Typography>&nbsp;삭제</Typography>
+                            <DeleteForever className={deviceMode ? classes.deleteIcon : null} />{' '}
+                            <Typography className={deviceMode ? classes.deleteText : null}>
+                                &nbsp;삭제
+                            </Typography>
                         </Button>
                     </Box>
+
                     <Box>
-                        <Typography>{selection.length}명 선택됨</Typography>
+                        <Typography className={deviceMode ? classes.deleteText : null}>
+                            {selection.length}명 {!deviceMode && '선택됨'}
+                        </Typography>
                     </Box>
                 </Box>
                 {boardType === 0 && (
@@ -443,7 +459,9 @@ const CustomToolbar = props => {
                                     className={classes.selectionDecideButton}
                                     onClick={selectionClick}
                                 >
-                                    대기자 선별
+                                    <Typography className={classes.deleteText}>
+                                        대기자 선별
+                                    </Typography>
                                 </Button>
                             </Box>
                             <Box>
@@ -452,7 +470,9 @@ const CustomToolbar = props => {
                                     className={classes.selectionResetButton}
                                     onClick={() => setOpenResetSelectionDialog(true)}
                                 >
-                                    선별 초기화
+                                    <Typography className={classes.deleteText}>
+                                        선별 초기화
+                                    </Typography>
                                 </Button>
                             </Box>
                         </Box>
@@ -609,74 +629,5 @@ const SelectionResetDialog = props => {
         </Dialog>
     );
 };
-
-// const AddMonthDialog = props => {
-//     const { open, onClose, monthSelect, currentRoute, currentKey, refetchMonth } = props;
-//     const classes = BoarderStyle();
-
-//     const lastMonth =
-//         monthSelect.length === 0
-//             ? dayjs(new Date()).subtract(1, 'month')
-//             : monthSelect[monthSelect.length - 1].month;
-//     const newMonth = dayjs(lastMonth).add(1, 'month').format('YYYY-MM');
-
-//     const [addMonthlyRoute] = useMutation(ADD_MONTHLY_ROUTE, {
-//         onCompleted() {
-//             refetchMonth();
-//         },
-//         fetchPolicy: 'no-cache',
-//     });
-
-//     const addButtonClick = () => {
-//         addMonthlyRoute({
-//             variables: { partitionKey: currentKey, route: currentRoute, month: newMonth },
-//         });
-//         refetchMonth({ variables: { partitionKey: currentKey } });
-//         onClose(false);
-//     };
-
-//     return (
-//         <Dialog open={open} onClose={() => onClose(false)}>
-//             <MiniHeader
-//                 height="35px"
-//                 headerText="노선 월 추가"
-//                 handleClose={() => onClose(false)}
-//             />
-//             <Box p={4}>
-//                 <Box mb={2} display="flex" width="316px">
-//                     <Box mr={1} width="35%">
-//                         <TextField
-//                             variant="outlined"
-//                             size="small"
-//                             defaultValue={currentRoute}
-//                             disabled
-//                             fullWidth
-//                             label="노선 명"
-//                         />
-//                     </Box>
-//                     <Box width="65%">
-//                         <TextField
-//                             variant="outlined"
-//                             size="small"
-//                             defaultValue={newMonth}
-//                             disabled
-//                             fullWidth
-//                             label="월 추가"
-//                         />
-//                     </Box>
-//                 </Box>
-//                 <Box display="flex" justifyContent="flex-end">
-//                     <Button
-//                         onClick={addButtonClick}
-//                         variant="contained"
-//                         className={classes.addButton}
-//                     >
-//                         월 추가하기
-//                     </Button>
-//                 </Box>
-//             </Box>
-//         </Dialog>
-//     );
-// };
 
 export default Boarder;

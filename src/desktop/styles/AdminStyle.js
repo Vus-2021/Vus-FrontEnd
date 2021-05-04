@@ -34,6 +34,10 @@ const AdminStyle = makeStyles(theme => ({
         fontSize: '23px',
         fontWeight: '500',
     },
+    titleTextSmall: {
+        fontSize: '20px',
+        fontWeight: '500',
+    },
 }));
 
 export default AdminStyle;
