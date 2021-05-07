@@ -17,20 +17,32 @@ import {
 import { Alert } from '@material-ui/lab';
 import { useQuery, useMutation, useLazyQuery } from '@apollo/react-hooks';
 import { GET_USERS, CHECK_USERID } from '../gql/route/query';
-import { CREATE_ROUTE } from '../gql/route/mutation';
+import { CREATE_ROUTE, ADD_MONTHLY_ROUTE } from '../gql/route/mutation';
 import fileUpload from '../components/FileUpload';
 import { DeviceMode } from '../../App';
+import * as dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
 
 const CreateRoute = props => {
-    const { refetch } = props;
+    const { refetch, monthRange } = props;
     const classes = RouteStyle();
     const deviceMode = useContext(DeviceMode);
 
-    const { control, handleSubmit, errors, reset, setValue, setError, clearErrors } = useForm();
+    const {
+        control,
+        handleSubmit,
+        errors,
+        reset,
+        getValues,
+        setValue,
+        setError,
+        clearErrors,
+    } = useForm();
     const [drivers, setDrivers] = useState([]);
     const [openSnackbar, setSnackbar] = useState(false);
     const [imageName, setImageName] = useState('노선 이미지 업로드');
     const [imgPreview, setImgPreview] = useState('');
+    const [partitionKey, setPartitionKey] = useState(null);
 
     const blank_pattern = /\s/gi;
     const special_pattern = /[`~!@#$%^&*|'";:/={}?<>,.-]/gi;
@@ -48,6 +60,8 @@ const CreateRoute = props => {
     const [checkUserId, { data: checkData }] = useLazyQuery(CHECK_USERID, {
         fetchPolicy: 'no-cache',
     });
+
+    const [addMonthlyRoute] = useMutation(ADD_MONTHLY_ROUTE);
 
     const registerRoute = async data => {
         const driverData = data.driver.split('+');
@@ -83,12 +97,13 @@ const CreateRoute = props => {
 
     useEffect(() => {
         if (createData) {
-            const { success, message } = createData.createRoute;
+            const { success, message, data } = createData.createRoute;
             if (success) {
                 reset();
                 setValue('image', null);
                 setImageName('노선 이미지 업로드');
                 setSnackbar(true);
+                setPartitionKey(data.partitionKey);
             } else {
                 console.log(message);
             }
@@ -109,10 +124,27 @@ const CreateRoute = props => {
         }
     }, [checkData, setError, clearErrors]);
 
+    useEffect(() => {
+        if (partitionKey) {
+            let month = monthRange.from;
+            dayjs.extend(isBetween);
+            while (dayjs(month).isBetween(monthRange.from, monthRange.to, null, [])) {
+                addMonthlyRoute({
+                    variables: {
+                        partitionKey: partitionKey,
+                        month: month,
+                        route: getValues('route'),
+                    },
+                });
+                month = dayjs(month).add(1, 'month').format('YYYY-MM');
+            }
+        }
+    }, [partitionKey, addMonthlyRoute, getValues, monthRange]);
+
     return (
         <Box display="flex" justifyContent="center" height="90%" alignItems="center">
             <Paper elevation={10} className={classes.registerPaper}>
-                <Box width={deviceMode ? null : '380px'} height="500px">
+                <Box width={deviceMode ? null : '380px'} minHeight="500px">
                     <MiniHeader headerText="노선 생성" />
                     <Box px={4} pt={6} pb={4}>
                         <form onSubmit={handleSubmit(registerRoute)} encType="multipart/form-data">

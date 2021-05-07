@@ -11,7 +11,7 @@ import {
     Select,
     Typography,
 } from '@material-ui/core';
-import { GET_USERS, GET_ROUTES_INFO } from '../gql/route/query';
+import { GET_USERS, GET_ROUTES_INFO, CHECK_USERID } from '../gql/route/query';
 import {
     UPDATE_ROUTE,
     DELETE_ROUTE,
@@ -19,7 +19,7 @@ import {
     CREATE_ROUTE_DETAIL,
     DELETE_DETAIL_ROUTE,
 } from '../gql/route/mutation';
-import { useQuery, useMutation } from '@apollo/react-hooks';
+import { useQuery, useMutation, useLazyQuery } from '@apollo/react-hooks';
 import { useForm, Controller } from 'react-hook-form';
 import MiniHeader from '../layout/MiniHeader';
 import RouteStyle from '../styles/RouteStyle';
@@ -30,7 +30,7 @@ const UpdateRouteDialog = props => {
     const { open, onClose, routeName } = props;
     const deviceMode = useContext(DeviceMode);
     const classes = RouteStyle();
-    const { control, handleSubmit, errors, setError } = useForm();
+    const { control, handleSubmit, errors, setError, clearErrors } = useForm();
     const [drivers, setDrivers] = useState([]);
     const [routeInfo, setRouteInfo] = useState({});
     const [imageName, setImageName] = useState('노선 이미지 업로드');
@@ -48,6 +48,10 @@ const UpdateRouteDialog = props => {
         fetchPolicy: 'no-cache',
     });
     const [updateRoute, { data: updateData }] = useMutation(UPDATE_ROUTE);
+
+    const [checkUserId, { data: checkData }] = useLazyQuery(CHECK_USERID, {
+        fetchPolicy: 'no-cache',
+    });
 
     const handleClose = () => {
         onClose(false);
@@ -110,6 +114,20 @@ const UpdateRouteDialog = props => {
             }
         }
     }, [updateData, onClose, setError]);
+
+    useEffect(() => {
+        if (checkData) {
+            const { success } = checkData.checkUserId;
+            if (success) {
+                clearErrors('driver');
+            } else {
+                setError('driver', {
+                    type: 'alreadyExist',
+                    message: '다른 노선에 등록된 기사님 입니다.',
+                });
+            }
+        }
+    }, [checkData, setError, clearErrors]);
 
     return (
         <Dialog
@@ -176,7 +194,16 @@ const UpdateRouteDialog = props => {
                                             labelId="bus-driver-select"
                                             label="버스기사 배정"
                                             defaultValue={`${routeInfo.driver.name}+${routeInfo.driver.phone}+${routeInfo.driver.userId}`}
-                                            onChange={e => props.onChange(e.target.value)}
+                                            onChange={e => {
+                                                const driverData = e.target.value.split('+');
+                                                checkUserId({
+                                                    variables: {
+                                                        userId: driverData[2],
+                                                        sortKey: '#driver',
+                                                    },
+                                                });
+                                                props.onChange(e.target.value);
+                                            }}
                                         >
                                             {drivers.map(driver => (
                                                 <MenuItem
@@ -315,6 +342,7 @@ const UpdateRouteDialog = props => {
                                 type="submit"
                                 className={classes.searchButton}
                                 variant="contained"
+                                disabled={errors.driver ? true : false}
                             >
                                 노선 등록하기
                             </Button>

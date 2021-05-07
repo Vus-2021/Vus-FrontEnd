@@ -264,8 +264,10 @@ const DeleteNoticeDialog = props => {
     const { open, onClose, selection, setSelection, setPage, refetch } = props;
     const classes = NoticeStyle();
 
-    const [deleteNotice] = useMutation(DELETE_NOTICE, {
+    const [deleteNotice, { data }] = useMutation(DELETE_NOTICE, {
         onCompleted() {
+            setSelection([]);
+            setPage(0);
             refetch();
             onClose(false);
         },
@@ -277,9 +279,15 @@ const DeleteNoticeDialog = props => {
 
     const deleteClick = () => {
         deleteNotice({ variables: { partitionKey: selection } });
-        setSelection([]);
-        setPage(0);
     };
+
+    useEffect(() => {
+        if (data) {
+            const { success, message } = data.deleteNotice;
+            console.log(success);
+            console.log(message);
+        }
+    }, [data]);
 
     return (
         <Dialog open={open} onClose={handleClose} fullWidth maxWidth="xs">

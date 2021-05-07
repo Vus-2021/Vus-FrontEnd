@@ -17,6 +17,18 @@ export const CREATE_ROUTE = gql`
         ) {
             success
             message
+            data {
+                partitionKey
+            }
+        }
+    }
+`;
+
+export const ADD_MONTHLY_ROUTE = gql`
+    mutation addMonthlyRoute($partitionKey: String!, $month: String!, $route: String!) {
+        addMonthlyRoute(partitionKey: $partitionKey, month: $month, route: $route) {
+            success
+            message
         }
     }
 `;

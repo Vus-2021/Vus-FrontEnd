@@ -23,7 +23,6 @@ import Image from '@ckeditor/ckeditor5-image/src/image';
 import Link from '@ckeditor/ckeditor5-link/src/link';
 import CKFinderUploadAdapter from '@ckeditor/ckeditor5-adapter-ckfinder/src/uploadadapter';
 import ImageUpload from '@ckeditor/ckeditor5-image/src/imageupload';
-import ImageStyle from '@ckeditor/ckeditor5-image/src/imagestyle';
 import ImageResize from '@ckeditor/ckeditor5-image/src/imageresize';
 
 const editorConfiguration = {
@@ -53,7 +52,6 @@ const editorConfiguration = {
         Link,
         CKFinderUploadAdapter,
         ImageUpload,
-        ImageStyle,
         ImageResize,
     ],
     toolbar: {
@@ -84,6 +82,7 @@ const editorConfiguration = {
         ],
         shouldNotGroupWhenFull: true,
     },
+
     fontSize: {
         options: [10, 11, 12, 13, 14, 16, 18, 20, 24, 28, 32],
     },

@@ -137,6 +137,7 @@ const Register = props => {
                 partitionKey: routeInfo.length === 0 ? '' : routeInfo[0].partitionKey,
                 detailPartitionKey: '',
             });
+            refetchRoute({ route: routeInfo[0].route });
         },
     });
 
@@ -299,7 +300,16 @@ const Cancel = props => {
     const classes = RegisterStyle();
     const [routeIndex, setRouteIndex] = useState(0);
     const [month, setMonth] = useState(userBusData.length === 0 ? '' : userBusData[0].month);
-    const routeName = userBusData.length === 0 ? '' : userBusData[routeIndex].route;
+    const [routeName, setRouteName] = useState(
+        userBusData.length === 0 ? '' : userBusData[0].route,
+    );
+    const [confirmCancel, setConfirmCancel] = useState(false);
+
+    const alreadyCancel =
+        userBusData.length === 0
+            ? false
+            : userBusData[routeIndex].month === dayjs().format('YYYY-MM') &&
+              userBusData[routeIndex].isCancellation;
 
     const [cancelRoute, { data }] = useMutation(CANCEL_ROUTE, {
         onCompleted() {
@@ -307,18 +317,32 @@ const Cancel = props => {
         },
     });
 
+    const doCancel = () => {
+        cancelRoute({ variables: { busId: userBusData[routeIndex].busId, month: month } });
+        setMonth(userBusData.length === 0 ? '' : userBusData[0].month);
+        setRouteIndex(0);
+        setSnackbar(true);
+    };
+
     const cancelButtonClick = () => {
-        cancelRoute({ variables: { busId: userBusData[0].busId, month: month } });
+        if (userBusData[routeIndex].month === dayjs().format('YYYY-MM')) {
+            setConfirmCancel(true);
+        } else doCancel();
+    };
+
+    const currMonthCancel = () => {
+        setConfirmCancel(false);
+        doCancel();
     };
 
     useEffect(() => {
         if (data) {
             const { success, message } = data.cancelRoute;
             if (success) {
-                setSnackbar(true);
+                setRouteName(userBusData.length === 0 ? '' : userBusData[0].route);
             } else console.log(message);
         }
-    }, [data, setSnackbar]);
+    }, [data, setSnackbar, userBusData]);
 
     return (
         <React.Fragment>
@@ -354,6 +378,7 @@ const Cancel = props => {
                                 const data = e.target.value.split('+');
                                 setMonth(data[0]);
                                 setRouteIndex(data[1]);
+                                setRouteName(userBusData[data[1]].route);
                             }}
                         >
                             {userBusData.map((data, index) => (
@@ -368,12 +393,55 @@ const Cancel = props => {
                             variant="contained"
                             className={classes.cancelButton}
                             onClick={cancelButtonClick}
+                            disabled={alreadyCancel}
                         >
-                            노선 취소하기
+                            {alreadyCancel ? '이미 취소함' : '노선 취소하기'}
                         </Button>
                     </Box>
                 </React.Fragment>
             )}
+            <Dialog
+                open={confirmCancel}
+                onClose={() => setConfirmCancel(false)}
+                fullWidth
+                maxWidth="xs"
+            >
+                <Box px={3} py={2}>
+                    <Box mb={2}>
+                        <Typography className={classes.warningTitle}>현월 신청 취소</Typography>
+                    </Box>
+                    <Box mb={3}>
+                        <Typography className={classes.warningText}>
+                            <strong>현월({dayjs().format('YYYY-MM')})</strong> 신청을 취소하면 더
+                            이상 현월 신청을 할 수 없습니다.
+                            <br />
+                            정말 취소하시겠습니까?
+                        </Typography>
+                    </Box>
+                    <Box display="flex" justifyContent="flex-end">
+                        <Box mr={2} width="50%">
+                            <Button
+                                variant="contained"
+                                onClick={currMonthCancel}
+                                className={classes.resetButton}
+                                fullWidth
+                            >
+                                현월 취소
+                            </Button>
+                        </Box>
+                        <Box width="50%">
+                            <Button
+                                variant="contained"
+                                onClick={() => setConfirmCancel(false)}
+                                className={classes.decideButton}
+                                fullWidth
+                            >
+                                닫기
+                            </Button>
+                        </Box>
+                    </Box>
+                </Box>
+            </Dialog>
         </React.Fragment>
     );
 };

@@ -334,7 +334,7 @@ const ChipStyle = props => {
     const { state, cancel } = props;
     let chipStyle, chipText;
 
-    if (cancel === 'true') {
+    if (cancel) {
         chipStyle = classes.chipCancel;
         chipText = '취소';
     } else {

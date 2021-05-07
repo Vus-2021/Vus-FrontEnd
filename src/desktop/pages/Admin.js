@@ -26,6 +26,10 @@ const Admin = () => {
     const [partitionKey, setPartitionKey] = useState('');
 
     const [routeItems, setRouteItems] = useState([]);
+    const [monthRange, setMonthRange] = useState({
+        from: '',
+        to: '',
+    });
 
     const { loading, data, refetch } = useQuery(GET_ROUTE_NAME);
 
@@ -47,6 +51,7 @@ const Admin = () => {
                     setState={setState}
                     setRouteName={setRouteName}
                     setPartitionKey={setPartitionKey}
+                    setMonthRange={setMonthRange}
                     routeItems={routeItems}
                     loading={loading}
                 />
@@ -70,6 +75,7 @@ const Admin = () => {
                             routeItems={routeItems}
                             routeName={routeName}
                             partitionKey={partitionKey}
+                            monthRange={monthRange}
                             refetch={refetch}
                         />
                     </Box>
@@ -80,7 +86,7 @@ const Admin = () => {
 };
 
 const SelectView = props => {
-    const { view, boardMonth, routeItems, routeName, partitionKey, refetch } = props;
+    const { view, boardMonth, routeItems, routeName, partitionKey, monthRange, refetch } = props;
 
     switch (view) {
         case 'userDefault':
@@ -88,7 +94,7 @@ const SelectView = props => {
         case 'routeDefault':
             return <Route routeName={routeName} partitionKey={partitionKey} />;
         case 'routeCreate':
-            return <CreateRoute refetch={refetch} />;
+            return <CreateRoute refetch={refetch} monthRange={monthRange} />;
         case 'noticeDefault':
             return <Notice />;
         case 'boarderDefault':

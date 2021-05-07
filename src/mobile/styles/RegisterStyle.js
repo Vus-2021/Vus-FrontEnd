@@ -33,6 +33,30 @@ const RegisterStyle = makeStyles(theme => ({
             backgroundColor: '#FD3434',
         },
     },
+    warningTitle: {
+        fontSize: '23px',
+        fontWeight: 600,
+    },
+    warningText: {
+        fontSize: '18px',
+        fontWeight: 400,
+    },
+    resetButton: {
+        width: '100%',
+        backgroundColor: '#FF3A3A',
+        color: 'white',
+        '&:hover': {
+            backgroundColor: '#FF3A3A',
+        },
+    },
+    decideButton: {
+        width: '100%',
+        backgroundColor: '#008AEE',
+        color: 'white',
+        '&:hover': {
+            backgroundColor: '#008AEE',
+        },
+    },
 }));
 
 export default RegisterStyle;

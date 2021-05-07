@@ -46,6 +46,7 @@ const Header = props => {
         routeItems,
         setRouteName,
         setPartitionKey,
+        setMonthRange,
         loading,
     } = props;
     const classes = HeaderStyle();
@@ -151,6 +152,7 @@ const Header = props => {
                         setState={setState}
                         setRouteName={setRouteName}
                         setPartitionKey={setPartitionKey}
+                        setMonthRange={setMonthRange}
                         loading={loading}
                         setOpenDrawer={setOpenDrawer}
                     />
@@ -169,6 +171,7 @@ const MenuItems = props => {
         setState,
         setRouteName,
         setPartitionKey,
+        setMonthRange,
         loading,
         setOpenDrawer,
     } = props;
@@ -255,9 +258,13 @@ const MenuItems = props => {
                 });
                 setDate(obj);
                 setLastMonth(monthData[monthData.length - 1].month);
+                setMonthRange({
+                    from: monthData[0].month,
+                    to: monthData[monthData.length - 1].month,
+                });
             } else console.log(message);
         }
-    }, [data]);
+    }, [data, setMonthRange]);
 
     return menuItems.map((data, index) => (
         <React.Fragment key={index}>
@@ -360,46 +367,51 @@ const MenuItems = props => {
                                 setYearIndex={setYearIndex}
                                 setSelect={setSelect}
                             />
-                            {Object.keys(date).map(year => (
-                                <List key={year} disablePadding>
-                                    <ListItem
-                                        button
-                                        onClick={() =>
-                                            year === yearIndex
-                                                ? setYearIndex(-1)
-                                                : setYearIndex(year)
-                                        }
-                                        className={classes.nested}
-                                    >
-                                        <ListItemIcon>○</ListItemIcon>
-                                        <ListItemText>{year}년</ListItemText>
-                                        {year === yearIndex ? <ExpandLess /> : <ExpandMore />}
-                                    </ListItem>
-                                    <Collapse in={year === yearIndex}>
-                                        {date[year].map(month => (
-                                            <List disablePadding key={year + month}>
-                                                <ListItem
-                                                    button
-                                                    className={classes.doubleNested}
-                                                    onClick={() => {
-                                                        monthSelectClick(year, month);
-                                                        setSelect(year + '-' + month);
-                                                    }}
-                                                    style={{
-                                                        backgroundColor:
-                                                            year + '-' + month === select
-                                                                ? 'rgba(255,0,0,0.2)'
-                                                                : null,
-                                                    }}
-                                                >
-                                                    <ListItemIcon>-</ListItemIcon>
-                                                    <ListItemText>{month}월</ListItemText>
-                                                </ListItem>
-                                            </List>
-                                        ))}
-                                    </Collapse>
-                                </List>
-                            ))}
+                            {Object.keys(date)
+                                .slice(0)
+                                .reverse()
+                                .map(year => (
+                                    <List key={year} disablePadding>
+                                        <ListItem
+                                            button
+                                            onClick={() =>
+                                                year === yearIndex
+                                                    ? setYearIndex(-1)
+                                                    : setYearIndex(year)
+                                            }
+                                            className={classes.nested}
+                                        >
+                                            <ListItemIcon>○</ListItemIcon>
+                                            <ListItemText>{year}년</ListItemText>
+                                            {year === yearIndex ? <ExpandLess /> : <ExpandMore />}
+                                        </ListItem>
+                                        <Collapse in={year === yearIndex}>
+                                            {date[year].map(month => (
+                                                <List disablePadding key={year + month} dense>
+                                                    <ListItem
+                                                        button
+                                                        className={classes.doubleNested}
+                                                        onClick={() => {
+                                                            monthSelectClick(year, month);
+                                                            setSelect(year + '-' + month);
+                                                        }}
+                                                        style={{
+                                                            backgroundColor:
+                                                                year + '-' + month === select
+                                                                    ? 'rgba(255,0,0,0.2)'
+                                                                    : null,
+                                                        }}
+                                                    >
+                                                        <ListItemIcon>-</ListItemIcon>
+                                                        <ListItemText>
+                                                            <Typography>{month}월</Typography>
+                                                        </ListItemText>
+                                                    </ListItem>
+                                                </List>
+                                            ))}
+                                        </Collapse>
+                                    </List>
+                                ))}
                         </List>
                     </Collapse>
                 )}
@@ -445,7 +457,7 @@ const AddMonthDialog = props => {
                 </Box>
                 <Box mb={3}>
                     <Typography className={classes.warningText}>
-                        모든 노선에 <strong>{newMonth}</strong>월 신청을 생성합니다.
+                        모든 노선에 <strong>{newMonth}</strong>월 신청을 추가합니다.
                         <br />
                     </Typography>
                 </Box>

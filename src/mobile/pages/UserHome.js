@@ -53,7 +53,6 @@ const UserHome = ({ history }) => {
         userId: '',
         type: '',
     });
-    const [userApplyData, setUserApplyData] = useState([]);
     const [userBusData, setUserBusData] = useState([]);
     const [routeInfo, setRouteInfo] = useState([]);
     const [notice, setNotice] = useState([]);
@@ -97,14 +96,13 @@ const UserHome = ({ history }) => {
     useEffect(() => {
         if (myData) {
             if (myData.getMyInformation.success) {
-                const { name, userId, type, routeInfo, routeStates } = myData.getMyInformation.data;
+                const { name, userId, type, routeStates } = myData.getMyInformation.data;
                 setIsLogin(true);
                 setUserData({
                     name: name,
                     userId: userId,
                     type: type,
                 });
-                setUserApplyData(routeInfo);
                 setUserBusData(routeStates);
             }
         }
@@ -295,7 +293,7 @@ const UserHome = ({ history }) => {
                         open={registerBusDialog}
                         onClose={handleRegisterBusClose}
                         routeInfo={routeInfo}
-                        userBusData={userApplyData}
+                        userBusData={userBusData}
                         userRefetch={userRefetch}
                     />
                 </Box>
@@ -325,14 +323,13 @@ const MyApply = props => {
                 chipText = '미당첨';
                 break;
             case 'pending':
-                if (applyData[0].isCancellation === 'true') {
+                if (applyData[0].isCancellation) {
                     chipStyle = classes.chipCancel;
                     chipText = '취소';
                 } else {
                     chipStyle = classes.chipWait;
                     chipText = '대기';
                 }
-
                 break;
             case 'cancelled':
                 chipStyle = classes.chipCancel;

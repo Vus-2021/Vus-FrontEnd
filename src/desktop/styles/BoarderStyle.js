@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/core/styles';
 
-const ApplicantStyle = makeStyles(theme => ({
+const BoarderStyle = makeStyles(theme => ({
     tab: {
         minWidth: 120,
         width: 120,
@@ -140,4 +140,4 @@ const ApplicantStyle = makeStyles(theme => ({
     },
 }));
 
-export default ApplicantStyle;
+export default BoarderStyle;
