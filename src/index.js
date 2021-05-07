@@ -23,6 +23,12 @@ const authMiddleware = new ApolloLink((operation, forward) => {
                 authorization: localStorage.getItem('accessToken'),
             },
         });
+    } else if (sessionStorage.getItem('accessToken')) {
+        operation.setContext({
+            headers: {
+                authorization: sessionStorage.getItem('accessToken'),
+            },
+        });
     }
 
     return forward(operation);

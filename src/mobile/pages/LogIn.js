@@ -30,6 +30,7 @@ const LogIn = props => {
     const { errors, handleSubmit, control } = useForm();
 
     const [signin, { data }] = useMutation(SIGNIN);
+    const [keep, setKeep] = useState(false);
 
     const handleClose = () => {
         onClose(false);
@@ -43,20 +44,26 @@ const LogIn = props => {
                 password: data.password,
             },
         });
+        setKeep(data.keepLogin);
     };
 
     useEffect(() => {
         if (data && open) {
             const { success, data: token } = data.signin;
             if (success) {
-                localStorage.setItem('accessToken', token.accessToken);
-                localStorage.setItem('refreshToken', token.refreshToken);
+                if (keep) {
+                    localStorage.setItem('accessToken', token.accessToken);
+                    localStorage.setItem('refreshToken', token.refreshToken);
+                } else {
+                    sessionStorage.setItem('accessToken', token.accessToken);
+                    sessionStorage.setItem('refreshToken', token.refreshToken);
+                }
                 onClose(true);
             } else {
                 setSnackbar(true);
             }
         }
-    }, [data, onClose, open]);
+    }, [data, onClose, open, keep]);
 
     return (
         <Dialog

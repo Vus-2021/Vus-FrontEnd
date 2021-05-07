@@ -87,6 +87,7 @@ const UserHome = ({ history }) => {
         if (isLogin) {
             if (userData.type === 'ADMIN' || userData.type === 'DRIVER') {
                 localStorage.clear();
+                sessionStorage.clear();
                 window.location.reload();
             } else setRegisterBusDialog(true);
         } else setLoginDialog(true);
@@ -126,7 +127,7 @@ const UserHome = ({ history }) => {
     }, [busData]);
 
     useEffect(() => {
-        if (localStorage) getMyInfo();
+        if (localStorage || sessionStorage) getMyInfo();
     }, [getMyInfo]);
 
     useEffect(() => {

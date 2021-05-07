@@ -93,6 +93,7 @@ const User = () => {
                 setUserRow(userDataChange);
             } else {
                 localStorage.clear();
+                sessionStorage.clear();
                 console.log(message);
                 window.location.href = '/';
             }

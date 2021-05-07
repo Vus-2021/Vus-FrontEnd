@@ -94,7 +94,7 @@ const DriverHome = ({ history }) => {
     };
 
     useEffect(() => {
-        if (localStorage.getItem('accessToken')) {
+        if (localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')) {
             if (myData) {
                 const { success, message, data } = myData.getMyInformation;
                 if (success && data !== null) {
@@ -163,6 +163,7 @@ const DriverHome = ({ history }) => {
                                         className={classes.subButton}
                                         onClick={() => {
                                             localStorage.clear();
+                                            sessionStorage.clear();
                                             window.location.href = '/';
                                         }}
                                     >
@@ -330,6 +331,7 @@ const NotAuthorized = () => {
                     className={classes.signUpButton}
                     onClick={() => {
                         localStorage.clear();
+                        sessionStorage.clear();
                         window.location.reload();
                     }}
                 >

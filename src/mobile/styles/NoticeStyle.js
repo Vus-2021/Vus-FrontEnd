@@ -15,6 +15,8 @@ const NoticeStyle = makeStyles(theme => ({
     noticeField: {
         borderRadius: '4px',
         border: '1px solid #FF6666',
+        overflowY: 'auto',
+        overflowX: 'hidden',
     },
     noticeTitle: {
         fontSize: '17px',

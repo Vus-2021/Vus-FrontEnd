@@ -60,6 +60,7 @@ const Header = props => {
 
     const logoutClick = () => {
         localStorage.clear();
+        sessionStorage.clear();
         window.location.href = '/';
     };
 

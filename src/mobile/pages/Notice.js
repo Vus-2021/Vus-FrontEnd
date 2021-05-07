@@ -149,7 +149,7 @@ const Notice = props => {
                         </Box>
                     </form>
                 </Box>
-                <Box height="92%" overflow="auto" className={classes.noticeField}>
+                <Box height="92%" className={classes.noticeField}>
                     {loading ? (
                         <Box
                             display="flex"

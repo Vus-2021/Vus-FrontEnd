@@ -45,11 +45,13 @@ const MyInformation = ({ history, location }) => {
 
     const logoutClick = () => {
         localStorage.clear();
+        sessionStorage.clear();
         window.location.href = '/';
     };
 
     useEffect(() => {
-        if (!localStorage.getItem('accessToken')) history.push('/');
+        if (!localStorage.getItem('accessToken') && !sessionStorage.getItem('accessToken'))
+            history.push('/');
     }, [history]);
 
     useEffect(() => {
