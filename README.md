@@ -1,7 +1,7 @@
 # 🚌 V-us (Vatech 통근버스) 앱 🚌
 ## I. Contributor
-#### • 엄민식: FrontEnd
-#### • 최영훈: BackEnd
+#### • 엄민식: Front-End
+#### • 최영훈: Back-End
 
 ## II. 프로젝트 개요
 바텍 통근버스 웹 앱  
@@ -9,6 +9,7 @@
 
 ## III. 사용한 기술
 ![Badge](https://img.shields.io/badge/platform-web-yellow) ![Badge](https://img.shields.io/badge/library-React%2C%20Apollo-blue) ![Badge](https://img.shields.io/badge/library-react--hook--form-orange) ![Badge](https://img.shields.io/badge/library-Material--ui%2C%20Dayjs%2C%20react--swipeable--views%2C%20react--beautiful--dnd-red) ![Badge](https://img.shields.io/badge/database-dynamoDB-brightgreen) ![Badge](https://img.shields.io/badge/library-sheetjs-blueviolet)<br/><br/>
+<strong>홈페이지 주소:</strong> https://test-vus.vsmart00.com<br/>
 <strong>Figma UI/UX 디자인:</strong> https://www.figma.com/file/tod3O35VfSXjhP9iFg9GL3/vatech-bus?node-id=0%3A1<br/>
 <strong>백엔드 깃허브:</strong>  https://github.com/Vus-2021/Vus-backend
 
