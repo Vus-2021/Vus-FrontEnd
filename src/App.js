@@ -5,6 +5,7 @@ import { Admin, Error } from './desktop/pages';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DayjsUtils from '@date-io/dayjs';
 import { useMediaQuery } from '@material-ui/core';
+import * as dayjs from 'dayjs';
 
 export const WebSocketContext = createContext(null);
 export const DeviceMode = createContext(null);
@@ -20,12 +21,13 @@ const App = () => {
         console.log('Connected to ' + webSocketUrl);
     };
     ws.current.onclose = error => {
+        const currHour = dayjs().hour();
+        if (currHour >= 7 && currHour < 9) window.location.reload();
         console.log(error);
     };
     ws.current.onerror = error => {
         console.log(error);
     };
-
     return (
         <MuiPickersUtilsProvider utils={DayjsUtils}>
             <WebSocketContext.Provider value={ws}>
